@@ -1,0 +1,318 @@
+/* ======================================================== */
+/* Academic Calendar Planner Screen Styles                  */
+/* ======================================================== */
+
+.planner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.planner-title-block h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text-main);
+  margin-bottom: 0.25rem;
+}
+
+.planner-title-block p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.planner-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Planner Grid Scaffolding */
+.planner-grid-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* 1. Left Sidebar: Curriculum Explorer */
+.planner-sidebar {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  max-height: calc(100vh - var(--header-height) - 160px);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.curriculum-picker h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-main);
+  margin-bottom: 0.75rem;
+}
+
+.curriculum-picker h3 i {
+  color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.syllabus-subject-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0.75rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  flex-grow: 1;
+  text-align: center;
+  transition: var(--transition-fast);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+.chapters-accordion {
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chapter-accordion-item {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--bg-app);
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.chapter-header:hover {
+  background-color: var(--border-color);
+}
+
+.chapter-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.3;
+}
+
+.chapter-header i {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+
+.chapter-accordion-item.expanded .chapter-header i {
+  transform: rotate(180deg);
+}
+
+.chapter-body {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.chapter-body button {
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* 2. Main Calendar Widget */
+.planner-main-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cal-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cal-nav-left h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.cal-nav-right {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Calendar Grid Core */
+.calendar-grid-wrapper {
+  overflow-x: auto;
+  position: relative;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr); /* 8 columns: Time labels, then Mon-Sun */
+  grid-template-rows: auto repeat(13, 50px); /* 1 header row, 13 time slots (8am to 8pm) */
+  min-width: 750px;
+  position: relative;
+}
+
+/* Headers */
+.cal-grid-header {
+  grid-row: 1;
+  text-align: center;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cal-grid-header.active {
+  color: var(--primary);
+}
+
+.cal-grid-header span {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 0.15rem;
+}
+
+.cal-grid-header.active span {
+  color: var(--primary);
+}
+
+/* Time labels side column */
+.cal-time-label {
+  grid-column: 1;
+  text-align: right;
+  padding-right: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-light);
+  transform: translateY(-50%);
+  position: relative;
+}
+
+/* Grid lines overlay */
+.cal-grid-cell {
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px dashed var(--border-color);
+  grid-row: span 1;
+}
+
+/* Last row adjustments */
+.cal-grid-cell:nth-child(8n) {
+  border-right: none;
+}
+
+/* Calendar Event Blocks positioning rules */
+.cal-event {
+  border-radius: var(--radius-sm);
+  padding: 0.45rem;
+  font-size: 0.725rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  margin: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cal-event:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+}
+
+.cal-event-title {
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-event-time {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Color schemes for event cards */
+.cal-event.class {
+  background-color: var(--primary-light);
+  border-left: 3px solid var(--primary);
+}
+
+.cal-event.study {
+  background-color: var(--accent-light);
+  border-left: 3px solid var(--accent);
+}
+
+.cal-event.exam {
+  background-color: var(--color-error-bg);
+  border-left: 3px solid var(--color-error);
+}
+
+/* Modal and layout mobile responsiveness */
+@media (max-width: 992px) {
+  .planner-grid-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .planner-sidebar {
+    max-height: 300px;
+  }
+}

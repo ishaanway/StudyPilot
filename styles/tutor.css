@@ -1,0 +1,505 @@
+/* ======================================================== */
+/* AI Tutor, Quizzes, & Flashcards Screen Styles            */
+/* ======================================================== */
+
+.tutor-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+  height: calc(100vh - var(--header-height) - 100px);
+  align-items: stretch;
+}
+
+/* ======================================================== */
+/* 1. Left Panel: AI Tutor Chatbot                         */
+/* ======================================================== */
+.tutor-chat-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.tutor-chat-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bot-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bot-avatar {
+  width: 38px;
+  height: 38px;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bot-avatar i {
+  width: 18px;
+  height: 18px;
+}
+
+.bot-info h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.bot-info p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.tutor-chat-messages {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.chat-message {
+  display: flex;
+  flex-direction: column;
+  max-width: 80%;
+  animation: messageFadeIn 0.3s ease;
+}
+
+@keyframes messageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chat-message.bot {
+  align-self: flex-start;
+}
+
+.chat-message.user {
+  align-self: flex-end;
+}
+
+.chat-message p {
+  padding: 0.85rem 1.15rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.chat-message.bot p {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  border-top-left-radius: 4px;
+}
+
+.chat-message.user p {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-top-right-radius: 4px;
+}
+
+/* Chat suggestions chips */
+.chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.chat-suggestions button {
+  background-color: var(--primary-light);
+  border: 1px solid var(--border-focus);
+  color: var(--primary);
+  font-size: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.chat-suggestions button:hover {
+  background-color: var(--primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Input Bar */
+.tutor-chat-input-bar {
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.tutor-chat-input-bar input {
+  flex-grow: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  outline: none;
+  font-size: 0.875rem;
+  transition: var(--transition-fast);
+}
+
+.tutor-chat-input-bar input:focus {
+  border-color: var(--primary);
+  background-color: var(--bg-card);
+}
+
+/* ======================================================== */
+/* 2. Right Panel: Quizzes & Flashcards                     */
+/* ======================================================== */
+.tutor-resources-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+  padding: 1.25rem;
+  gap: 1rem;
+}
+
+.tutor-tabs {
+  display: flex;
+  background-color: var(--bg-app);
+  padding: 0.35rem;
+  border-radius: var(--radius-md);
+}
+
+.tutor-tab-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-fast);
+}
+
+.tutor-tab-btn.active {
+  background-color: var(--bg-card);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tutor-tab-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Quiz Content card */
+.quiz-container-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  justify-content: center;
+  height: 100%;
+}
+
+.quiz-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-app);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width var(--transition-normal);
+}
+
+.quiz-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.quiz-question {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.quiz-opt-btn {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.quiz-opt-btn:hover {
+  border-color: var(--primary);
+  background-color: var(--bg-card);
+}
+
+.quiz-opt-btn.correct {
+  background-color: var(--color-success-bg);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+.quiz-opt-btn.incorrect {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.quiz-feedback-box {
+  background-color: var(--bg-app);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  border-left: 3px solid var(--text-muted);
+}
+
+.quiz-feedback-box.correct {
+  border-left-color: var(--color-success);
+}
+
+.quiz-feedback-box.incorrect {
+  border-left-color: var(--color-error);
+}
+
+/* Results view */
+.quiz-score-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 auto 1rem;
+}
+
+/* ======================================================== */
+/* Flashcard Deck Flipping                                  */
+/* ======================================================== */
+.flashcard-deck-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flashcard-subject-filters {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-chip {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.filter-chip.active {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* 3D Flipping Card viewport */
+.flashcard-viewport {
+  perspective: 1000px;
+  width: 100%;
+  height: 200px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.flashcard {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-inner,
+.flashcard-front,
+.flashcard-back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flashcard-front {
+  background-color: var(--bg-app);
+}
+
+.flashcard-back {
+  background-color: var(--primary-light);
+  transform: rotateY(180deg);
+}
+
+[data-theme="dark"] .flashcard-back {
+  background-color: #1e1b4b;
+}
+
+.card-subject-tag {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+
+.card-content-wrap {
+  text-align: center;
+}
+
+.card-content-wrap p {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+.card-tip {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Rating Panel */
+.spaced-rep-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+}
+
+.btn-rep {
+  flex: 1;
+  border: none;
+  color: #ffffff;
+  padding: 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: center;
+  transition: var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  align-items: center;
+}
+
+.btn-rep:active { transform: scale(0.96); }
+
+.btn-easy { background-color: var(--color-success); }
+.btn-medium { background-color: var(--color-warning); }
+.btn-hard { background-color: var(--color-error); }
+
+.rep-interval {
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.deck-footer-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.deck-arrows {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Responsive Tutor */
+@media (max-width: 992px) {
+  .tutor-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  
+  .tutor-chat-panel,
+  .tutor-resources-panel {
+    height: 400px;
+  }
+}

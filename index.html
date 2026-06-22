@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SchoolPilot — CBSE 2026-27 Grade 7 Academic OS</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="StudyPilot is an AI-powered academic operating system that helps students organize school life, prepare for exams, and improve learning.">
+  
+  <!-- Typography (Inter) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="stylesheet" href="styles/setup.css">
+  <link rel="stylesheet" href="styles/dashboard.css">
+  <link rel="stylesheet" href="styles/planner.css">
+  <link rel="stylesheet" href="styles/tutor.css">
+  <link rel="stylesheet" href="styles/toolbox.css">
+</head>
+<body>
+
+  <!-- ======================================================== -->
+  <!-- SETUP WIZARD (ONBOARDING)                                -->
+  <!-- ======================================================== -->
+  <div id="setup-wizard" class="modal-overlay hidden">
+    <div class="setup-card animate-fade-in">
+      <div class="setup-header">
+        <img src="assets/logo.svg" alt="StudyPilot Logo" class="setup-logo">
+        <h2>Welcome to StudyPilot</h2>
+        <p>Let's set up your academic operating system in a few quick steps.</p>
+      </div>
+      
+      <!-- Step 1: Personal Info -->
+      <div class="setup-step" id="setup-step-1">
+        <div class="input-group">
+          <label for="setup-name">What is your first name?</label>
+          <input type="text" id="setup-name" placeholder="e.g., Ishaan" required>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="setup-grade">Grade</label>
+            <select id="setup-grade">
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="setup-board">School Board</label>
+            <select id="setup-board">
+              <option value="CBSE">CBSE (India)</option>
+              <option value="ICSE">ICSE (India)</option>
+              <option value="State Board">State Board</option>
+              <option value="IB">IB / Cambridge</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="window.StudyPilotSetup.nextStep(2)">Next <i data-lucide="arrow-right"></i></button>
+      </div>
+
+      <!-- Step 2: Subjects & Time -->
+      <div class="setup-step hidden" id="setup-step-2">
+        <div class="input-group">
+          <label>Select your subjects</label>
+          <div class="subjects-grid">
+            <label class="subject-chip checked">
+              <input type="checkbox" value="Mathematics" checked> Mathematics (Ganita Prakash)
+            </label>
+            <label class="subject-chip checked">
+              <input type="checkbox" value="Science" checked> Science (Curiosity)
+            </label>
+            <label class="subject-chip checked">
+              <input type="checkbox" value="Social Science" checked> Social Science
+            </label>
+            <label class="subject-chip checked">
+              <input type="checkbox" value="English" checked> English
+            </label>
+            <label class="subject-chip">
+              <input type="checkbox" value="Hindi"> Hindi / Local Language
+            </label>
+            <label class="subject-chip">
+              <input type="checkbox" value="Computer Science"> Computer Science
+            </label>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="setup-hours">Target daily study hours</label>
+          <div class="range-container">
+            <input type="range" id="setup-hours" min="1" max="6" value="2" step="0.5" oninput="setupHoursVal.innerText = this.value + ' hrs'">
+            <span id="setupHoursVal" class="range-badge">2 hrs</span>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" onclick="window.StudyPilotSetup.nextStep(1)">Back</button>
+          <button type="button" class="btn btn-primary" onclick="window.StudyPilotSetup.nextStep(3)">Next <i data-lucide="arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 3: Academic Goal -->
+      <div class="setup-step hidden" id="setup-step-3">
+        <div class="input-group">
+          <label>What is your primary academic goal right now?</label>
+          <div class="goals-list">
+            <label class="goal-option">
+              <input type="radio" name="setup-goal" value="Improve overall grades" checked>
+              <div class="goal-option-card">
+                <i data-lucide="trending-up" class="goal-icon text-indigo"></i>
+                <div class="goal-text">
+                  <h3>Improve Grades</h3>
+                  <p>Excel in periodic tests and final term exams.</p>
+                </div>
+              </div>
+            </label>
+            <label class="goal-option">
+              <input type="radio" name="setup-goal" value="Complete homework and projects on time">
+              <div class="goal-option-card">
+                <i data-lucide="check-square" class="goal-icon text-green"></i>
+                <div class="goal-text">
+                  <h3>Organize Homework</h3>
+                  <p>Never miss a submission and manage daily tasks.</p>
+                </div>
+              </div>
+            </label>
+            <label class="goal-option">
+              <input type="radio" name="setup-goal" value="Build structured daily study habits">
+              <div class="goal-option-card">
+                <i data-lucide="calendar" class="goal-icon text-purple"></i>
+                <div class="goal-text">
+                  <h3>Build Better Habits</h3>
+                  <p>Balance study with rest to avoid last-minute burnout.</p>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" onclick="window.StudyPilotSetup.nextStep(2)">Back</button>
+          <button type="button" class="btn btn-primary" onclick="window.StudyPilotSetup.completeSetup()">Get Started <i data-lucide="sparkles"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MAIN APP CONTAINER                                       -->
+  <!-- ======================================================== -->
+  <div class="app-layout">
+    
+    <!-- LEFT SIDEBAR (Desktop) -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="assets/logo.svg" alt="StudyPilot Logo" class="brand-logo">
+        <span class="brand-name">StudyPilot</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-screen="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-screen="planner">
+          <i data-lucide="calendar"></i>
+          <span>Planner</span>
+        </button>
+        <button class="nav-item" data-screen="tutor">
+          <i data-lucide="graduation-cap"></i>
+          <span>AI Tutor</span>
+        </button>
+        <button class="nav-item" data-screen="toolbox">
+          <i data-lucide="briefcase"></i>
+          <span>Toolbox</span>
+        </button>
+        <button class="nav-item" data-screen="profile">
+          <i data-lucide="user"></i>
+          <span>Profile</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="theme-toggle-btn" class="theme-toggle">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon hidden"></i>
+          <span>Light Mode</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-left">
+        <div class="mobile-logo-container">
+          <img src="assets/logo.svg" alt="StudyPilot Logo" class="brand-logo-mobile">
+          <span class="brand-name-mobile">StudyPilot</span>
+        </div>
+        <div class="search-bar-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" placeholder="Search tasks, formulas, or summaries..." id="global-search">
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- Notification Bell -->
+        <div class="notification-bell" id="notification-bell">
+          <i data-lucide="bell"></i>
+          <span class="bell-badge hidden"></span>
+          <div class="notification-dropdown hidden" id="notification-dropdown">
+            <div class="dropdown-header">
+              <h3>Notifications</h3>
+              <button onclick="window.StudyPilotApp.clearNotifications(event)">Clear all</button>
+            </div>
+            <div class="dropdown-list" id="notification-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Profile quick link -->
+        <button class="header-profile-btn" onclick="window.StudyPilotApp.switchScreen('profile')">
+          <span class="avatar-fallback" id="header-avatar">ST</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW AREA -->
+    <main class="main-content">
+      
+      <!-- SCREEN: DASHBOARD -->
+      <section id="screen-dashboard" class="screen-view">
+        <div class="dashboard-greeting">
+          <h1 id="dashboard-welcome">Hello, Scholar!</h1>
+          <p id="dashboard-date">Monday, 22 June 2026</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- Left Column (Schedules and Tasks) -->
+          <div class="dashboard-left">
+            <!-- Schedule Card -->
+            <div class="card card-schedule">
+              <div class="card-header">
+                <h2><i data-lucide="calendar"></i> Today's Schedule</h2>
+                <button class="btn-text" onclick="window.StudyPilotApp.switchScreen('planner')">View Full Calendar</button>
+              </div>
+              <div class="timeline" id="dashboard-timeline">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Tasks Checklist Card -->
+            <div class="card card-tasks">
+              <div class="card-header">
+                <h2><i data-lucide="check-square"></i> Today's Homework & Tasks</h2>
+                <button class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.showAddTaskModal()">+ Add Task</button>
+              </div>
+              <ul class="task-list" id="dashboard-task-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right Column (Progress, AI, Upcoming) -->
+          <div class="dashboard-right">
+            <!-- Streak & Progress Card -->
+            <div class="card card-progress">
+              <div class="progress-streak-row">
+                <div class="progress-ring-container">
+                  <svg class="progress-ring" width="80" height="80">
+                    <circle class="progress-ring__circle-bg" stroke="#e2e8f0" stroke-width="6" fill="transparent" r="34" cx="40" cy="40"/>
+                    <circle class="progress-ring__circle" stroke="#4f46e5" stroke-width="6" fill="transparent" r="34" cx="40" cy="40" stroke-dasharray="213.63" stroke-dashoffset="213.63"/>
+                  </svg>
+                  <div class="progress-ring-text" id="dashboard-progress-percent">0%</div>
+                </div>
+                <div class="streak-badge">
+                  <div class="streak-icon-container">
+                    <i data-lucide="flame" class="streak-icon"></i>
+                  </div>
+                  <div class="streak-details">
+                    <span class="streak-num" id="dashboard-streak-count">1</span>
+                    <span class="streak-label">Day Study Streak</span>
+                  </div>
+                </div>
+              </div>
+              <div class="progress-summary-text" id="dashboard-progress-summary">
+                Complete your tasks to fill your ring today!
+              </div>
+            </div>
+
+            <!-- AI Suggestions Box -->
+            <div class="card card-ai-tips">
+              <div class="ai-tips-header">
+                <i data-lucide="sparkles" class="ai-spark-icon"></i>
+                <h2>AI Coach Suggestions</h2>
+              </div>
+              <div class="ai-tips-content" id="dashboard-ai-suggestions">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Upcoming Exams and Major Deadlines -->
+            <div class="card card-upcoming">
+              <div class="card-header">
+                <h2><i data-lucide="alert-circle"></i> Upcoming Exams</h2>
+                <button class="btn-text" onclick="window.StudyPilotDashboard.showAddExamModal()">Add Exam</button>
+              </div>
+              <div class="upcoming-list" id="dashboard-upcoming-exams">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: PLANNER (Calendar) -->
+      <section id="screen-planner" class="screen-view hidden">
+        <div class="planner-header">
+          <div class="planner-title-block">
+            <h1>Academic Planner & Calendar</h1>
+            <p>Organize classes, exam revisions, and study blocks aligned with CBSE 2026 syllabus.</p>
+          </div>
+          <div class="planner-controls">
+            <button class="btn btn-outline" onclick="window.StudyPilotPlanner.autoGeneratePlan()">
+              <i data-lucide="sparkles"></i> AI Auto-Schedule Revision
+            </button>
+            <button class="btn btn-primary" onclick="window.StudyPilotPlanner.showEventModal()">
+              <i data-lucide="plus"></i> Add Event
+            </button>
+          </div>
+        </div>
+
+        <div class="planner-grid-container">
+          <!-- Sidebar: Curriculum explorer and Drag-to-schedule list -->
+          <div class="planner-sidebar">
+            <div class="curriculum-picker">
+              <h3><i data-lucide="book-open"></i> CBSE 2026-27 Class 7 Syllabus</h3>
+              <div class="syllabus-subject-tabs">
+                <button class="tab-btn active" data-subject="Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Science')">🔬 Science</button>
+                <button class="tab-btn" data-subject="Mathematics" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Mathematics')">📐 Maths</button>
+                <button class="tab-btn" data-subject="Social Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Social Science')">🌍 Soc. Sci.</button>
+                <button class="tab-btn" data-subject="English" onclick="window.StudyPilotPlanner.selectSyllabusSubject('English')">📖 English</button>
+                <button class="tab-btn" data-subject="Tamil" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Tamil')">🌺 Tamil</button>
+                <button class="tab-btn" data-subject="Hindi" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Hindi')">🔤 Hindi</button>
+                <button class="tab-btn" data-subject="Computer Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Computer Science')">💻 CS</button>
+              </div>
+              
+              <div class="chapters-accordion" id="syllabus-chapters-list">
+                <!-- Dynamically populated with NCERT Chapters (Curiosity/Ganita Prakash) -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Weekly Calendar Grid -->
+          <div class="planner-main-card">
+            <div class="calendar-nav">
+              <div class="cal-nav-left">
+                <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(-1)"><i data-lucide="chevron-left"></i></button>
+                <h3 id="calendar-week-range">22 June - 28 June 2026</h3>
+                <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(1)"><i data-lucide="chevron-right"></i></button>
+              </div>
+              <div class="cal-nav-right">
+                <span class="badge badge-indigo">Class Time</span>
+                <span class="badge badge-accent">AI Study Block</span>
+                <span class="badge badge-red">Exams</span>
+              </div>
+            </div>
+            
+            <div class="calendar-grid-wrapper">
+              <div class="calendar-grid" id="weekly-calendar-grid">
+                <!-- Dynamic Header and Time Grid -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: AI TUTOR -->
+      <section id="screen-tutor" class="screen-view hidden">
+        <div class="tutor-layout">
+          <!-- Left Panel: Chat Companion -->
+          <div class="tutor-chat-panel">
+            <div class="tutor-chat-header">
+              <div class="bot-info">
+                <div class="bot-avatar">
+                  <i data-lucide="sparkles"></i>
+                </div>
+                <div>
+                  <h2>AI Study Pilot</h2>
+                    <p>CBSE 2026-27 · All Subjects · Tamil (Samacheer Kalvi)</p>
+                </div>
+              </div>
+            </div>
+            <div class="tutor-chat-messages" id="tutor-chat-messages">
+              <div class="chat-message bot">
+                <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from your Grade 7 textbooks, summarize chapters, or generate quizzes. What are we studying today?</p>
+                  <div class="chat-suggestions">
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain acids and bases — neutralization reaction (Science Ch 2)')">⚗️ Acids & Bases</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Solve 2x + 5 = 13 — explain simple equations (Maths Ch 7)')">📐 Simple Equations</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain the Mughal Empire — Akbar and Mansabdari system (Social Science H-4)')">🏰 Mughal Empire</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('திருக்குறளின் ஆசிரியர் யார்? சிலப்பதிகாரம் பற்றி கூறு')">🌺 Tamil — திருக்குறள்</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('What is the Law of Reflection in light? (Science Ch 8)')">💡 Light & Reflection</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain Excel SUM and AVERAGE formulas (Computer Science Ch 5)')">💻 Excel Formulas</button>
+                  </div>
+              </div>
+            </div>
+            <div class="tutor-chat-input-bar">
+              <input type="text" id="tutor-chat-input" placeholder="Ask about acids and bases, fractions, simple equations...">
+              <button id="tutor-chat-send-btn" class="btn btn-primary btn-icon-only"><i data-lucide="send"></i></button>
+            </div>
+          </div>
+
+          <!-- Right Panel: Interactive Flashcards & Quizzes -->
+          <div class="tutor-resources-panel">
+            <!-- Tabs -->
+            <div class="tutor-tabs">
+              <button class="tutor-tab-btn active" data-tab="quiz">Practice Quizzes</button>
+              <button class="tutor-tab-btn" data-tab="flashcard">Flashcards</button>
+            </div>
+
+            <!-- TAB CONTENT: QUIZZES -->
+            <div class="tutor-tab-content" id="tutor-tab-quiz">
+              <div class="quiz-container-card">
+                <div id="quiz-init-view">
+                  <h3>Generate Chapter Quiz</h3>
+                  <p>Test your knowledge with 5 interactive questions based on the new CBSE syllabus.</p>
+                  
+                  <div class="input-group">
+                    <label for="quiz-subject-select">Subject</label>
+                     <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
+                      <option value="Science">🔬 Science (Curiosity)</option>
+                      <option value="Mathematics">📐 Mathematics (Ganita Prakash)</option>
+                      <option value="Social Science">🌍 Social Science (Exploring Society)</option>
+                      <option value="English">📖 English (Poorvi)</option>
+                      <option value="Tamil">🌺 Tamil (Samacheer Kalvi)</option>
+                      <option value="Computer Science">💻 Computer Science</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label for="quiz-chapter-select">Chapter</label>
+                    <select id="quiz-chapter-select">
+                      <!-- Dynamically populated -->
+                    </select>
+                  </div>
+                  <button class="btn btn-primary w-full" onclick="window.StudyPilotTutor.startQuiz()">Start Quiz</button>
+                </div>
+
+                <div id="quiz-active-view" class="hidden">
+                  <div class="quiz-progress-bar">
+                    <div class="quiz-progress-fill" id="quiz-progress" style="width: 20%;"></div>
+                  </div>
+                  <div class="quiz-meta">
+                    <span id="quiz-quest-num">Question 1 of 5</span>
+                    <span id="quiz-timer">00:00</span>
+                  </div>
+                  <h3 id="quiz-question-text" class="quiz-question"></h3>
+                  <div class="quiz-options" id="quiz-options-container">
+                    <!-- Populated in JS -->
+                  </div>
+                  <div id="quiz-feedback" class="quiz-feedback-box hidden">
+                    <!-- Explanation display -->
+                  </div>
+                  <button id="quiz-next-btn" class="btn btn-primary w-full hidden" onclick="window.StudyPilotTutor.nextQuizQuestion()">Next Question <i data-lucide="arrow-right"></i></button>
+                </div>
+
+                <div id="quiz-result-view" class="hidden">
+                  <div class="quiz-score-circle">
+                    <span id="quiz-final-score">4/5</span>
+                  </div>
+                  <h3>Quiz Completed!</h3>
+                  <p id="quiz-result-text">Excellent job! You have a solid understanding of this topic.</p>
+                  <button class="btn btn-outline" onclick="window.StudyPilotTutor.resetQuiz()">Try Another Chapter</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB CONTENT: FLASHCARDS -->
+            <div class="tutor-tab-content hidden" id="tutor-tab-flashcard">
+              <div class="flashcard-deck-container">
+                <div class="deck-header">
+                  <h3>Subject Flashcards</h3>
+                  <button class="btn btn-outline btn-xs" onclick="window.StudyPilotTutor.showAddFlashcardModal()">+ New Card</button>
+                </div>
+                
+                <div class="flashcard-subject-filters">
+                  <button class="filter-chip active" data-filter="all" onclick="window.StudyPilotTutor.filterFlashcards('all')">All</button>
+                  <button class="filter-chip" data-filter="Science" onclick="window.StudyPilotTutor.filterFlashcards('Science')">🔬 Science</button>
+                  <button class="filter-chip" data-filter="Mathematics" onclick="window.StudyPilotTutor.filterFlashcards('Mathematics')">📐 Maths</button>
+                  <button class="filter-chip" data-filter="Social Science" onclick="window.StudyPilotTutor.filterFlashcards('Social Science')">🌍 Soc. Sci.</button>
+                  <button class="filter-chip" data-filter="English" onclick="window.StudyPilotTutor.filterFlashcards('English')">📖 English</button>
+                  <button class="filter-chip" data-filter="Tamil" onclick="window.StudyPilotTutor.filterFlashcards('Tamil')">🌺 Tamil</button>
+                  <button class="filter-chip" data-filter="Computer Science" onclick="window.StudyPilotTutor.filterFlashcards('Computer Science')">💻 CS</button>
+                </div>
+
+                <!-- Flashcard Widget -->
+                <div class="flashcard-viewport" id="flashcard-viewport">
+                  <div class="flashcard" id="active-flashcard" onclick="window.StudyPilotTutor.flipFlashcard()">
+                    <div class="flashcard-inner">
+                      <!-- Front Side -->
+                      <div class="flashcard-front">
+                        <span class="card-subject-tag" id="flashcard-front-subject">Science</span>
+                        <div class="card-content-wrap">
+                          <p id="flashcard-front-text">What is the main component of clean air that supports breathing?</p>
+                        </div>
+                        <span class="card-tip"><i data-lucide="help-circle"></i> Click to reveal answer</span>
+                      </div>
+                      <!-- Back Side -->
+                      <div class="flashcard-back">
+                        <span class="card-subject-tag" id="flashcard-back-subject">Science</span>
+                        <div class="card-content-wrap">
+                          <p id="flashcard-back-text">Oxygen (takes up about 21% of the atmosphere).</p>
+                        </div>
+                        <span class="card-tip"><i data-lucide="check"></i> Rate difficulty below</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Spaced Repetition Rating Buttons -->
+                <div class="spaced-rep-buttons hidden" id="spaced-rep-buttons">
+                  <button class="btn-rep btn-easy" onclick="window.StudyPilotTutor.rateFlashcard(1)">Easy <span class="rep-interval">(4 days)</span></button>
+                  <button class="btn-rep btn-medium" onclick="window.StudyPilotTutor.rateFlashcard(2)">Medium <span class="rep-interval">(2 days)</span></button>
+                  <button class="btn-rep btn-hard" onclick="window.StudyPilotTutor.rateFlashcard(3)">Hard <span class="rep-interval">(10 mins)</span></button>
+                </div>
+                
+                <div class="deck-footer-nav">
+                  <span id="flashcard-count-indicator">1 of 12 cards</span>
+                  <div class="deck-arrows">
+                    <button class="btn-icon" onclick="window.StudyPilotTutor.navigateFlashcard(-1)"><i data-lucide="arrow-left"></i></button>
+                    <button class="btn-icon" onclick="window.StudyPilotTutor.navigateFlashcard(1)"><i data-lucide="arrow-right"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: TOOLBOX -->
+      <section id="screen-toolbox" class="screen-view hidden">
+        <div class="toolbox-header">
+          <h1>Student Toolbox</h1>
+          <p>Handy tools to help you study, take notes, focus, and plan your career path.</p>
+        </div>
+
+        <div class="toolbox-container">
+          <!-- Left Panel: Tool Tiles / Navigation -->
+          <div class="toolbox-menu">
+            <button class="tool-menu-btn active" data-tool="pomodoro">
+              <i data-lucide="timer"></i>
+              <div>
+                <h3>Pomodoro Timer</h3>
+                <p>25-minute study intervals</p>
+              </div>
+            </button>
+            <button class="tool-menu-btn" data-tool="notes">
+              <i data-lucide="book-marked"></i>
+              <div>
+                <h3>Quick Notes</h3>
+                <p>Google Keep / Notion notes board</p>
+              </div>
+            </button>
+            <button class="tool-menu-btn" data-tool="ocr">
+              <i data-lucide="scan"></i>
+              <div>
+                <h3>Document Summarizer</h3>
+                <p>Mock OCR textbook scanner</p>
+              </div>
+            </button>
+            <button class="tool-menu-btn" data-tool="career" id="toolbox-menu-career">
+              <i data-lucide="compass"></i>
+              <div>
+                <h3>Career Guidance Mode</h3>
+                <p>Personalized learning roadmaps</p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Right Panel: Active Tool Display -->
+          <div class="tool-workspace-card">
+            
+            <!-- TOOL: POMODORO -->
+            <div class="tool-panel" id="tool-panel-pomodoro">
+              <div class="pomodoro-wrapper">
+                <div class="timer-circle-container">
+                  <svg class="timer-progress-ring" width="220" height="220">
+                    <circle class="timer-ring-bg" stroke="#f1f5f9" stroke-width="8" fill="transparent" r="96" cx="110" cy="110"/>
+                    <circle class="timer-ring-fill" stroke="#4f46e5" stroke-width="8" fill="transparent" r="96" cx="110" cy="110" stroke-dasharray="603.18" stroke-dashoffset="0"/>
+                  </svg>
+                  <div class="timer-display" id="pomodoro-timer-display">25:00</div>
+                  <div class="timer-state-label" id="pomodoro-state-label">FOCUS SESSION</div>
+                </div>
+                
+                <div class="pomodoro-buttons">
+                  <button class="btn btn-outline" id="pomodoro-mode-toggle" onclick="window.StudyPilotToolbox.togglePomodoroMode()">Switch to Break</button>
+                  <button class="btn btn-primary" id="pomodoro-start-btn" onclick="window.StudyPilotToolbox.startPomodoro()">Start</button>
+                  <button class="btn btn-secondary" id="pomodoro-reset-btn" onclick="window.StudyPilotToolbox.resetPomodoro()">Reset</button>
+                </div>
+                
+                <div class="timer-audio-row">
+                  <i data-lucide="music"></i>
+                  <label for="timer-ambient-select">Ambient Sound:</label>
+                  <select id="timer-ambient-select" onchange="window.StudyPilotToolbox.changeAmbientSound()">
+                    <option value="none">Silence</option>
+                    <option value="rain">Soft Rain</option>
+                    <option value="lofi">Lofi Study Beats</option>
+                    <option value="forest">Quiet Forest</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL: QUICK NOTES -->
+            <div class="tool-panel hidden" id="tool-panel-notes">
+              <div class="notes-workspace">
+                <div class="notes-composer">
+                  <input type="text" id="note-title-input" placeholder="Title">
+                  <textarea id="note-body-input" placeholder="Write a note... Add formulas, definitions, chapter summaries..."></textarea>
+                  <div class="composer-toolbar">
+                    <div class="color-picker-row">
+                      <button class="color-dot color-default active" data-color="default" onclick="window.StudyPilotToolbox.selectNoteColor('default')"></button>
+                      <button class="color-dot color-blue" data-color="blue" onclick="window.StudyPilotToolbox.selectNoteColor('blue')"></button>
+                      <button class="color-dot color-green" data-color="green" onclick="window.StudyPilotToolbox.selectNoteColor('green')"></button>
+                      <button class="color-dot color-purple" data-color="purple" onclick="window.StudyPilotToolbox.selectNoteColor('purple')"></button>
+                      <button class="color-dot color-yellow" data-color="yellow" onclick="window.StudyPilotToolbox.selectNoteColor('yellow')"></button>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="window.StudyPilotToolbox.saveNote()">Save Note</button>
+                  </div>
+                </div>
+
+                <div class="notes-grid" id="notes-grid-container">
+                  <!-- Dynamically populated from localStorage -->
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL: OCR SCANNER & SUMMARIZER -->
+            <div class="tool-panel hidden" id="tool-panel-ocr">
+              <div class="ocr-wrapper">
+                <h3>Document Summarizer (Mock OCR Scanner)</h3>
+                <p>Drag and drop a PDF chapter or image page of your textbook to extract summary & key formulas instantly.</p>
+                
+                <div class="ocr-drag-zone" id="ocr-drag-zone" onclick="window.StudyPilotToolbox.triggerMockOCR()">
+                  <i data-lucide="file-text" class="drag-icon"></i>
+                  <p>Click here to simulate uploading a textbook chapter</p>
+                  <span class="text-muted text-xs">Supports PDF, PNG, JPG up to 10MB</span>
+                </div>
+                
+                <div class="ocr-progress-container hidden" id="ocr-progress-container">
+                  <div class="ocr-progress-row">
+                    <span>Extracting text & formulas...</span>
+                    <span id="ocr-progress-pct">45%</span>
+                  </div>
+                  <div class="ocr-progress-track">
+                    <div class="ocr-progress-fill" id="ocr-progress-fill" style="width: 45%;"></div>
+                  </div>
+                </div>
+
+                <div class="ocr-results hidden" id="ocr-results">
+                  <div class="ocr-results-header">
+                    <h4><i data-lucide="file-check"></i> Extracted Summary: Curiosity Chapter 3 (Electricity)</h4>
+                    <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
+                  </div>
+                  <div class="ocr-results-body">
+                    <h5>Key Concepts</h5>
+                    <ul>
+                      <li><strong>Electric Current:</strong> The flow of electric charge through a conductor (e.g. copper wire).</li>
+                      <li><strong>Electric Circuit:</strong> A closed pathway through which current flows. Requires a cell/battery, conducting wires, a switch, and a load (like a bulb).</li>
+                      <li><strong>Heating Effect:</strong> When current flows, the wire heats up due to resistance. Used in irons, heaters, and safety fuses.</li>
+                      <li><strong>Magnetic Effect:</strong> Current creates a magnetic field around the wire. Discovered by Hans Christian Oersted. Basis for electromagnets.</li>
+                    </ul>
+                    <h5>Important Formulas</h5>
+                    <p class="formula-box">\[\text{Current } (I) = \frac{\text{Charge } (Q)}{\text{Time } (t)}\]</p>
+                    <p class="formula-box">\[\text{Electromagnet strength} \propto \text{Number of turns in wire coil} \times \text{Current}\]</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TOOL: CAREER GUIDANCE -->
+            <div class="tool-panel hidden" id="tool-panel-career">
+              <div class="career-wrapper" id="career-opt-in-view">
+                <div class="career-promo-card">
+                  <i data-lucide="compass" class="career-promo-icon"></i>
+                  <h2>Career suggestions are ready!</h2>
+                  <p>Our AI Coach has analyzed your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and learning history. Would you like personalized career roadmap suggestions?</p>
+                  <button class="btn btn-primary" onclick="window.StudyPilotToolbox.unlockCareerMode()">Show Career Suggestions</button>
+                </div>
+              </div>
+              
+              <div class="career-wrapper hidden" id="career-active-view">
+                <div class="career-header-row">
+                  <h3>AI Recommended Career Pathways</h3>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
+                </div>
+                
+                <div class="career-grid" id="career-cards-grid">
+                  <!-- Loaded dynamically based on user goals/subjects -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: PROFILE -->
+      <section id="screen-profile" class="screen-view hidden">
+        <div class="profile-header-card">
+          <div class="profile-main-info">
+            <div class="profile-avatar-large" id="profile-avatar-lg">IS</div>
+            <div>
+              <h1 id="profile-fullname">Ishaan</h1>
+              <p id="profile-details">Grade 7 Student • CBSE Board</p>
+              <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-layout-grid">
+          <div class="profile-column">
+            <div class="card">
+              <div class="card-header">
+                <h2><i data-lucide="user-cog"></i> Edit Academic Details</h2>
+              </div>
+              <div class="card-body">
+                <div class="input-group">
+                  <label for="profile-edit-name">Student First Name</label>
+                  <input type="text" id="profile-edit-name" value="Ishaan">
+                </div>
+                <div class="input-row">
+                  <div class="input-group">
+                    <label for="profile-edit-grade">Grade</label>
+                    <select id="profile-edit-grade">
+                      <option value="7">Grade 7</option>
+                      <option value="8">Grade 8</option>
+                      <option value="9">Grade 9</option>
+                      <option value="10">Grade 10</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
+                    <label for="profile-edit-board">School Board</label>
+                    <select id="profile-edit-board">
+                      <option value="CBSE">CBSE (India)</option>
+                      <option value="ICSE">ICSE (India)</option>
+                      <option value="State Board">State Board</option>
+                      <option value="IB">IB / Cambridge</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-goal">Primary Academic Goal</label>
+                  <select id="profile-edit-goal">
+                    <option value="Improve overall grades">Improve overall grades</option>
+                    <option value="Complete homework and projects on time">Complete homework and projects on time</option>
+                    <option value="Build structured daily study habits">Build structured daily study habits</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" onclick="window.StudyPilotApp.saveProfileEdits()">Save Settings</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-column">
+            <!-- Reset Card -->
+            <div class="card">
+              <div class="card-header">
+                <h2><i data-lucide="settings"></i> Application Controls</h2>
+              </div>
+              <div class="card-body">
+                <p>Need to reset the application and run the first setup wizard again? All local progress will be cleared.</p>
+                <button class="btn btn-danger btn-outline mt-md" onclick="window.StudyPilotApp.resetApp()">Reset All Data</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="mobile-nav">
+      <button class="mobile-nav-item active" data-screen="dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Home</span>
+      </button>
+      <button class="mobile-nav-item" data-screen="planner">
+        <i data-lucide="calendar"></i>
+        <span>Planner</span>
+      </button>
+      <button class="mobile-nav-item" data-screen="tutor">
+        <i data-lucide="graduation-cap"></i>
+        <span>AI</span>
+      </button>
+      <button class="mobile-nav-item" data-screen="toolbox">
+        <i data-lucide="briefcase"></i>
+        <span>Tools</span>
+      </button>
+      <button class="mobile-nav-item" data-screen="profile">
+        <i data-lucide="user"></i>
+        <span>Profile</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- MODALS                                                   -->
+  <!-- ======================================================== -->
+  
+  <!-- Add Task Modal -->
+  <div id="modal-add-task" class="modal-overlay hidden">
+    <div class="modal-card animate-fade-in">
+      <div class="modal-header">
+        <h3>Add New Homework/Task</h3>
+        <button class="modal-close" onclick="window.StudyPilotDashboard.hideAddTaskModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="task-input-title">Task Title</label>
+          <input type="text" id="task-input-title" placeholder="e.g. Science Ch 3 Questions">
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="task-input-subject">Subject</label>
+            <select id="task-input-subject">
+              <!-- Dynamically loaded -->
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="task-input-duration">Study Time (mins)</label>
+            <select id="task-input-duration">
+              <option value="30">30 mins</option>
+              <option value="45">45 mins</option>
+              <option value="60">60 mins</option>
+              <option value="90">90 mins</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row justify-end">
+          <button class="btn btn-secondary" onclick="window.StudyPilotDashboard.hideAddTaskModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="window.StudyPilotDashboard.addTaskSubmit()">Save Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Exam Modal -->
+  <div id="modal-add-exam" class="modal-overlay hidden">
+    <div class="modal-card animate-fade-in">
+      <div class="modal-header">
+        <h3>Add Upcoming Exam</h3>
+        <button class="modal-close" onclick="window.StudyPilotDashboard.hideAddExamModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="exam-input-subject">Subject</label>
+          <select id="exam-input-subject">
+            <!-- Loaded -->
+          </select>
+        </div>
+        <div class="input-group">
+          <label for="exam-input-topic">Topic/Chapter Summary</label>
+          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Curiosity Chapters 1-3">
+        </div>
+        <div class="input-group">
+          <label for="exam-input-date">Exam Date</label>
+          <input type="date" id="exam-input-date" required>
+        </div>
+        <div class="btn-row justify-end">
+          <button class="btn btn-secondary" onclick="window.StudyPilotDashboard.hideAddExamModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="window.StudyPilotDashboard.addExamSubmit()">Save Exam</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Event Modal (Planner Screen) -->
+  <div id="modal-add-event" class="modal-overlay hidden">
+    <div class="modal-card animate-fade-in">
+      <div class="modal-header">
+        <h3>Add Calendar Event</h3>
+        <button class="modal-close" onclick="window.StudyPilotPlanner.hideEventModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="event-input-title">Event Title</label>
+          <input type="text" id="event-input-title" placeholder="e.g., Mathematics Class, Study Science">
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="event-input-day">Day of Week</label>
+            <select id="event-input-day">
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="event-input-type">Event Type</label>
+            <select id="event-input-type">
+              <option value="class">School Class</option>
+              <option value="study">Study Block</option>
+              <option value="exam">Exam Block</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="event-input-start">Start Time</label>
+            <select id="event-input-start">
+              <option value="08:00">08:00 AM</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">01:00 PM</option>
+              <option value="14:00">02:00 PM</option>
+              <option value="15:00">03:00 PM</option>
+              <option value="16:00">04:00 PM</option>
+              <option value="17:00">05:00 PM</option>
+              <option value="18:00">06:00 PM</option>
+              <option value="19:00">07:00 PM</option>
+              <option value="20:00">08:00 PM</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="event-input-end">End Time</label>
+            <select id="event-input-end">
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">01:00 PM</option>
+              <option value="14:00">02:00 PM</option>
+              <option value="15:00">03:00 PM</option>
+              <option value="16:00">04:00 PM</option>
+              <option value="17:00">05:00 PM</option>
+              <option value="18:00">06:00 PM</option>
+              <option value="19:00">07:00 PM</option>
+              <option value="20:00">08:00 PM</option>
+              <option value="21:00">09:00 PM</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row justify-end">
+          <button class="btn btn-secondary" onclick="window.StudyPilotPlanner.hideEventModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="window.StudyPilotPlanner.addEventSubmit()">Save Event</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Flashcard Modal (Tutor Screen) -->
+  <div id="modal-add-flashcard" class="modal-overlay hidden">
+    <div class="modal-card animate-fade-in">
+      <div class="modal-header">
+        <h3>Create New Flashcard</h3>
+        <button class="modal-close" onclick="window.StudyPilotTutor.hideAddFlashcardModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-row">
+          <div class="input-group">
+            <label for="card-input-subject">Subject</label>
+            <select id="card-input-subject">
+              <!-- Loaded -->
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="card-input-question">Front (Question / Prompt)</label>
+          <input type="text" id="card-input-question" placeholder="e.g. What is the unit of electric current?">
+        </div>
+        <div class="input-group">
+          <label for="card-input-answer">Back (Answer / Explanation)</label>
+          <textarea id="card-input-answer" placeholder="e.g. Ampere (denoted by symbol 'A')"></textarea>
+        </div>
+        <div class="btn-row justify-end">
+          <button class="btn btn-secondary" onclick="window.StudyPilotTutor.hideAddFlashcardModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="window.StudyPilotTutor.addFlashcardSubmit()">Save Flashcard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LaTeX Render Support via KaTeX (Local fallback or light CDN link) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <!-- Application Modules -->
+  <script src="js/syllabus.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/setup.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/planner.js"></script>
+  <script src="js/tutor.js"></script>
+  <script src="js/toolbox.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

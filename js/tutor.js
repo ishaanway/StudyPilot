@@ -1,0 +1,430 @@
+/* ======================================================== */
+/* StudyPilot AI Tutor Chat, Quizzes & Flashcards — CBSE 2026-27 */
+/* Uses window.CBSE7Syllabus central data module            */
+/* ======================================================== */
+
+(function () {
+
+  window.StudyPilotTutor = {
+    /* Quiz state */
+    activeQuizSubject: "Science",
+    activeQuizChapter: "ch3",
+    currentQuestionIndex: 0,
+    quizScore: 0,
+    quizTimerInterval: null,
+    quizTimeSeconds: 0,
+
+    /* Flashcard state */
+    flashcardList: [],
+    currentFlashcardIndex: 0,
+    filteredCards: [],
+
+    init: function () {
+      this.initTabs();
+      this.initChat();
+      this.updateQuizChapters();
+      this.loadFlashcards();
+    },
+
+    /* ─────────────────────────────────────────────
+       TAB SWITCHER (Quizzes ↔ Flashcards)
+    ───────────────────────────────────────────── */
+    initTabs: function () {
+      document.querySelectorAll(".tutor-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tutor-tab-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          const tabName = btn.getAttribute("data-tab");
+          document.querySelectorAll(".tutor-tab-content").forEach(c => c.classList.add("hidden"));
+          document.getElementById(`tutor-tab-${tabName}`).classList.remove("hidden");
+        });
+      });
+    },
+
+    /* ─────────────────────────────────────────────
+       AI CHAT
+    ───────────────────────────────────────────── */
+    initChat: function () {
+      const input = document.getElementById("tutor-chat-input");
+      const btn   = document.getElementById("tutor-chat-send-btn");
+      if (!input || !btn) return;
+
+      const triggerSend = () => {
+        const query = input.value.trim();
+        if (query) { this.handleUserMessage(query); input.value = ""; }
+      };
+
+      btn.addEventListener("click", triggerSend);
+      input.addEventListener("keypress", e => { if (e.key === "Enter") triggerSend(); });
+    },
+
+    handleUserMessage: function (msg) {
+      this.appendMessage(msg, "user");
+      const loader = this.appendMessage(`<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`, "bot typing");
+
+      this.fetchTutorResponse(msg)
+        .then(({ answer, mode }) => {
+          if (loader) loader.remove();
+          this.appendMessage(this.formatTutorAnswer(answer, mode), "bot");
+        })
+        .catch(() => {
+          if (loader) loader.remove();
+          this.appendMessage(this.buildOfflineFallback(msg), "bot");
+        });
+    },
+
+    fetchTutorResponse: function (msg) {
+      const profile     = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const subjectHint = this.inferSubjectHint(msg);
+
+      return fetch("/api/tutor/respond", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: msg,
+          grade: profile ? profile.grade : "7",
+          subject: subjectHint,
+          student_id: profile && profile.id ? profile.id : undefined
+        })
+      })
+        .then(async res => {
+          if (!res.ok) throw new Error("Tutor API unavailable");
+          return res.json();
+        })
+        .then(data => {
+          if (!data || !data.ok || !data.answer) throw new Error("Empty tutor response");
+          return { answer: data.answer, mode: data.mode || "offline_knowledge" };
+        });
+    },
+
+    inferSubjectHint: function (msg) {
+      const lowerMsg = msg.toLowerCase();
+      if (/math|bodmas|equation|angle|fraction|triangle|algebra|ganita/.test(lowerMsg)) return "Mathematics";
+      if (/science|acid|electric|change|magnet|light|photosynthes|respirat|soil|curiosity/.test(lowerMsg)) return "Science";
+      if (/history|mughal|delhi sultan|akbar|babur|bhakti|sufi/.test(lowerMsg)) return "Social Science";
+      if (/geography|atmosphere|earth|rock|water cycle|climate|vegetation/.test(lowerMsg)) return "Social Science";
+      if (/civics|equality|mla|government|democracy|franchise/.test(lowerMsg)) return "Social Science";
+      if (/english|tolstoy|galsworthy|cricket|bicycle|fire|poorvi/.test(lowerMsg)) return "English";
+      if (/tamil|திருக்குறள்|சிலப்பதிகாரம்|sangam|kural|valluvar/.test(lowerMsg)) return "Tamil";
+      if (/computer|excel|internet|algorithm|spreadsheet|url|browser/.test(lowerMsg)) return "Computer Science";
+      return "";
+    },
+
+    formatTutorAnswer: function (answer, mode) {
+      const badge = mode === "ollama"
+        ? `<span class="ai-badge local-badge">🤖 Local AI</span>`
+        : `<span class="ai-badge online-badge">✨ AI Tutor</span>`;
+      return `${badge}<p>${escapeHTML(answer).replace(/\n/g, "<br>")}</p>`;
+    },
+
+    buildOfflineFallback: function (msg) {
+      const lowerMsg = msg.toLowerCase();
+
+      // Try the central knowledge base
+      const knowledge = window.CBSE7Syllabus.findKnowledge(lowerMsg);
+      if (knowledge) return knowledge;
+
+      // Fallbacks for common patterns
+      if (/quiz|test me|practice/.test(lowerMsg)) {
+        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose your subject and chapter, then click <strong>Start Quiz</strong>. All CBSE 2026-27 chapters are covered!</p>`;
+      }
+      if (/flashcard/.test(lowerMsg)) {
+        return `<p>Go to the <strong>Flashcards</strong> tab to review quick Q&A across all subjects. Click a card to flip it and rate your confidence!</p>`;
+      }
+      if (/hello|hi|hey|namaste/.test(lowerMsg)) {
+        const profile = window.StudyPilotDB.getProfile();
+        const name = profile ? escapeHTML(profile.name || "Scholar") : "Scholar";
+        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE 2026-27. I can help with all subjects:<br>
+          🔬 <strong>Science</strong> (Curiosity) · 📐 <strong>Maths</strong> (Ganita Prakash) · 🌍 <strong>Social Science</strong> (Exploring Society)<br>
+          📖 <strong>English</strong> (Poorvi) · 🔤 <strong>Hindi</strong> (Malhar) · 🌺 <strong>Tamil</strong> (Samacheer Kalvi) · 💻 <strong>CS</strong><br>
+          What are we studying today?</p>`;
+      }
+
+      return `<p>Interesting question! My offline knowledge covers all major CBSE 2026-27 Grade 7 chapters. Try asking about:
+        <br>🔬 <strong>Science:</strong> acids & bases, electricity, light, photosynthesis
+        <br>📐 <strong>Maths:</strong> BODMAS, equations, triangles, Pythagoras
+        <br>🌍 <strong>Social Science:</strong> Mughal Empire, Delhi Sultans, atmosphere, equality
+        <br>📖 <strong>English:</strong> Three Questions, Quality, fire triangle
+        <br>🌺 <strong>Tamil:</strong> திருக்குறள், சிலப்பதிகாரம், சங்க இலக்கியம்
+        <br>💻 <strong>CS:</strong> Excel formulas, internet, algorithms</p>`;
+    },
+
+    appendMessage: function (htmlContent, type) {
+      const container = document.getElementById("tutor-chat-messages");
+      if (!container) return null;
+
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `chat-message ${type}`;
+      msgDiv.innerHTML = type.includes("bot")
+        ? htmlContent
+        : `<p>${escapeHTML(htmlContent)}</p>`;
+
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+
+      if (window.renderMathInElement) window.renderMathInElement(msgDiv);
+      if (window.lucide) window.lucide.createIcons();
+
+      return msgDiv;
+    },
+
+    askQuestion: function (query) {
+      this.handleUserMessage(query);
+    },
+
+    /* ─────────────────────────────────────────────
+       QUIZZES
+    ───────────────────────────────────────────── */
+    updateQuizChapters: function () {
+      const subjEl = document.getElementById("quiz-subject-select");
+      const chapEl = document.getElementById("quiz-chapter-select");
+      if (!subjEl || !chapEl) return;
+
+      const subj    = subjEl.value;
+      const chapters = window.CBSE7Syllabus.getQuizChapters(subj);
+
+      chapEl.innerHTML = chapters.length > 0
+        ? chapters.map(ch => `<option value="${escapeHTML(ch.key)}">${escapeHTML(ch.label)}</option>`).join("")
+        : `<option value="">No quiz available for this subject yet</option>`;
+    },
+
+    startQuiz: function () {
+      this.activeQuizSubject = document.getElementById("quiz-subject-select").value;
+      this.activeQuizChapter = document.getElementById("quiz-chapter-select").value;
+      this.currentQuestionIndex = 0;
+      this.quizScore = 0;
+      this.quizTimeSeconds = 0;
+
+      const quizBank = window.CBSE7Syllabus.getQuizBank();
+      const subjectBank = quizBank[this.activeQuizSubject];
+      if (!subjectBank || !subjectBank[this.activeQuizChapter]) {
+        alert("No quiz questions available for this chapter yet. Please try another chapter.");
+        return;
+      }
+
+      document.getElementById("quiz-init-view").classList.add("hidden");
+      document.getElementById("quiz-active-view").classList.remove("hidden");
+
+      this.startQuizTimer();
+      this.loadQuizQuestion();
+    },
+
+    startQuizTimer: function () {
+      const timerEl = document.getElementById("quiz-timer");
+      clearInterval(this.quizTimerInterval);
+      this.quizTimerInterval = setInterval(() => {
+        this.quizTimeSeconds++;
+        const m = Math.floor(this.quizTimeSeconds / 60).toString().padStart(2, "0");
+        const s = (this.quizTimeSeconds % 60).toString().padStart(2, "0");
+        if (timerEl) timerEl.innerText = `${m}:${s}`;
+      }, 1000);
+    },
+
+    loadQuizQuestion: function () {
+      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
+      const qData     = questions[this.currentQuestionIndex];
+      const total     = Math.min(questions.length, 5);
+
+      document.getElementById("quiz-quest-num").innerText = `Question ${this.currentQuestionIndex + 1} of ${total}`;
+      document.getElementById("quiz-question-text").innerText = qData.q;
+      document.getElementById("quiz-progress").style.width = `${((this.currentQuestionIndex + 1) / total) * 100}%`;
+
+      const container = document.getElementById("quiz-options-container");
+      container.innerHTML = qData.options.map((opt, i) =>
+        `<button class="quiz-opt-btn" onclick="window.StudyPilotTutor.submitAnswer(${i})">${escapeHTML(opt)}</button>`
+      ).join("");
+
+      document.getElementById("quiz-feedback").classList.add("hidden");
+      document.getElementById("quiz-next-btn").classList.add("hidden");
+    },
+
+    submitAnswer: function (selectedIdx) {
+      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
+      const qData     = questions[this.currentQuestionIndex];
+      const buttons   = document.querySelectorAll(".quiz-options .quiz-opt-btn");
+
+      buttons.forEach(btn => btn.disabled = true);
+
+      const feedback = document.getElementById("quiz-feedback");
+      feedback.classList.remove("hidden");
+
+      if (selectedIdx === qData.answer) {
+        buttons[selectedIdx].classList.add("correct");
+        feedback.className = "quiz-feedback-box correct";
+        feedback.innerHTML = `<strong>✅ Correct!</strong> ${escapeHTML(qData.explain)}`;
+        this.quizScore++;
+      } else {
+        buttons[selectedIdx].classList.add("incorrect");
+        if (buttons[qData.answer]) buttons[qData.answer].classList.add("correct");
+        feedback.className = "quiz-feedback-box incorrect";
+        feedback.innerHTML = `<strong>❌ Incorrect.</strong> Correct answer: "<em>${escapeHTML(qData.options[qData.answer])}</em>".<br>${escapeHTML(qData.explain)}`;
+      }
+
+      document.getElementById("quiz-next-btn").classList.remove("hidden");
+    },
+
+    nextQuizQuestion: function () {
+      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
+      const total     = Math.min(questions.length, 5);
+
+      this.currentQuestionIndex++;
+      if (this.currentQuestionIndex < total) {
+        this.loadQuizQuestion();
+      } else {
+        this.completeQuiz(total);
+      }
+    },
+
+    completeQuiz: function (total) {
+      clearInterval(this.quizTimerInterval);
+      document.getElementById("quiz-active-view").classList.add("hidden");
+      document.getElementById("quiz-result-view").classList.remove("hidden");
+      document.getElementById("quiz-final-score").innerText = `${this.quizScore}/${total}`;
+
+      const resultText = document.getElementById("quiz-result-text");
+      if (this.quizScore === total) {
+        resultText.innerText = "🏆 Perfect score! You're fully prepared on this topic!";
+      } else if (this.quizScore >= Math.ceil(total * 0.6)) {
+        resultText.innerText = "👍 Good job! A little revision will make it perfect.";
+      } else {
+        resultText.innerText = "📚 Keep practising. Re-read the chapter and try again!";
+      }
+
+      window.StudyPilotDB.addNotification(
+        `Quiz: ${this.quizScore}/${total} in ${this.activeQuizSubject}.`,
+        "success"
+      );
+    },
+
+    resetQuiz: function () {
+      document.getElementById("quiz-result-view").classList.add("hidden");
+      document.getElementById("quiz-init-view").classList.remove("hidden");
+    },
+
+    /* ─────────────────────────────────────────────
+       FLASHCARDS
+    ───────────────────────────────────────────── */
+    loadFlashcards: function () {
+      this.flashcardList = window.StudyPilotDB.getFlashcards();
+      this.filterFlashcards("all");
+    },
+
+    filterFlashcards: function (subj) {
+      document.querySelectorAll(".flashcard-subject-filters .filter-chip").forEach(c => {
+        const chipSubj = c.getAttribute("data-filter");
+        c.classList.toggle("active", chipSubj === subj || (subj === "all" && chipSubj === "all"));
+      });
+
+      this.filteredCards = subj === "all"
+        ? this.flashcardList
+        : this.flashcardList.filter(c => c.subject === subj);
+
+      this.currentFlashcardIndex = 0;
+      this.renderFlashcard();
+    },
+
+    renderFlashcard: function () {
+      const cardEl     = document.getElementById("active-flashcard");
+      const indicator  = document.getElementById("flashcard-count-indicator");
+      const ratingBtns = document.getElementById("spaced-rep-buttons");
+      if (!cardEl) return;
+
+      cardEl.classList.remove("flipped");
+      if (ratingBtns) ratingBtns.classList.add("hidden");
+
+      if (this.filteredCards.length === 0) {
+        document.getElementById("flashcard-front-subject").innerText = "Info";
+        document.getElementById("flashcard-front-text").innerText = "No flashcards for this subject. Create one by clicking '+ New Card'!";
+        document.getElementById("flashcard-back-subject").innerText = "Info";
+        document.getElementById("flashcard-back-text").innerText = "No flashcards found.";
+        if (indicator) indicator.innerText = "0 of 0 cards";
+        return;
+      }
+
+      const card = this.filteredCards[this.currentFlashcardIndex];
+      document.getElementById("flashcard-front-subject").innerText = card.subject;
+      document.getElementById("flashcard-front-text").innerText = card.question;
+      document.getElementById("flashcard-back-subject").innerText = card.subject;
+      document.getElementById("flashcard-back-text").innerText = card.answer;
+      if (indicator) indicator.innerText = `${this.currentFlashcardIndex + 1} of ${this.filteredCards.length} cards`;
+
+      if (window.renderMathInElement) window.renderMathInElement(cardEl);
+    },
+
+    flipFlashcard: function () {
+      const cardEl = document.getElementById("active-flashcard");
+      if (!cardEl || this.filteredCards.length === 0) return;
+
+      const ratingBtns = document.getElementById("spaced-rep-buttons");
+      cardEl.classList.toggle("flipped");
+      if (ratingBtns) ratingBtns.classList.toggle("hidden", !cardEl.classList.contains("flipped"));
+    },
+
+    rateFlashcard: function (rating) {
+      let msg = rating === 1 ? "Easy — see in 4 days."
+              : rating === 2 ? "Medium — see in 2 days."
+              : "Hard — see again in 10 mins.";
+
+      window.StudyPilotDB.addNotification(`Flashcard rated: ${msg}`, "info");
+      setTimeout(() => this.navigateFlashcard(1), 300);
+    },
+
+    navigateFlashcard: function (dir) {
+      if (this.filteredCards.length === 0) return;
+      this.currentFlashcardIndex = (this.currentFlashcardIndex + dir + this.filteredCards.length) % this.filteredCards.length;
+      this.renderFlashcard();
+    },
+
+    /* ─────────────────────────────────────────────
+       ADD FLASHCARD MODAL
+    ───────────────────────────────────────────── */
+    showAddFlashcardModal: function () {
+      const modal  = document.getElementById("modal-add-flashcard");
+      const select = document.getElementById("card-input-subject");
+      if (!modal || !select) return;
+
+      const profile = window.StudyPilotDB.getProfile();
+      const subjects = window.CBSE7Syllabus.getSubjects();
+      select.innerHTML = subjects.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("");
+
+      modal.classList.remove("hidden");
+    },
+
+    hideAddFlashcardModal: function () {
+      const modal = document.getElementById("modal-add-flashcard");
+      if (modal) modal.classList.add("hidden");
+    },
+
+    addFlashcardSubmit: function () {
+      const subject  = document.getElementById("card-input-subject").value;
+      const question = document.getElementById("card-input-question").value.trim();
+      const answer   = document.getElementById("card-input-answer").value.trim();
+
+      if (!question || !answer) { alert("Please enter both question and answer."); return; }
+
+      window.StudyPilotDB.addFlashcard(subject, question, answer);
+      this.hideAddFlashcardModal();
+      document.getElementById("card-input-question").value = "";
+      document.getElementById("card-input-answer").value = "";
+      this.loadFlashcards();
+    }
+  };
+
+  /* ──────────────────────────────────────────
+     HELPERS
+  ────────────────────────────────────────── */
+  function escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  window.StudyPilotTutor.escapeHTMLText = escapeHTML;
+})();
