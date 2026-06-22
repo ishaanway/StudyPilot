@@ -196,6 +196,9 @@
 
     buildOfflineFallback: function (msg) {
       const lowerMsg = msg.toLowerCase();
+      const curriculum = window.StudyPilotCurriculum;
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? String(profile.grade || "10") : "10";
 
       const arithmetic = this.solveArithmeticQuestion(msg);
       if (arithmetic) {
@@ -203,32 +206,30 @@
       }
 
       // Try the central knowledge base
-      const curriculum = window.StudyPilotCurriculum;
-      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
       const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg, profile ? profile.grade : "10") : null;
       if (knowledge) return knowledge;
 
+      const scienceChapters = curriculum && typeof curriculum.getScienceChapters === "function"
+        ? curriculum.getScienceChapters(grade)
+        : [];
+      const chapterNames = scienceChapters.map(chapter => `<strong>${escapeHTML(chapter.title)}</strong>`).join("<br>");
+
       // Fallbacks for common patterns
       if (/quiz|test me|practice/.test(lowerMsg)) {
-        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose the official Grade 10 Science chapter, then click <strong>Start Quiz</strong>.</p>`;
+        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose the official Grade ${escapeHTML(grade)} Science chapter, then click <strong>Start Quiz</strong>.</p>`;
       }
       if (/flashcard/.test(lowerMsg)) {
         return `<p>Go to the <strong>Flashcards</strong> tab to review quick Q&A across all subjects. Click a card to flip it and rate your confidence!</p>`;
       }
       if (/hello|hi|hey|namaste/.test(lowerMsg)) {
-        const profile = window.StudyPilotDB.getProfile();
         const name = profile ? escapeHTML(profile.name || "Scholar") : "Scholar";
-        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE Grade 10 Science. I can open the official NCERT chapters for:<br>
-          ⚗️ <strong>Acids, Bases and Salts</strong><br>
-          💡 <strong>Light - Reflection and Refraction</strong><br>
-          🔋 <strong>Electricity</strong><br>
+        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE Grade ${escapeHTML(grade)}. I can open the official NCERT chapters for:<br>
+          ${chapterNames || "⚗️ <strong>official chapters</strong><br>"}
           What are we studying today?</p>`;
       }
 
-      return `<p>Interesting question! My offline knowledge currently covers the official Grade 10 NCERT Science chapters only. Try asking about:
-        <br>⚗️ <strong>Acids, Bases and Salts</strong>
-        <br>💡 <strong>Light - Reflection and Refraction</strong>
-        <br>🔋 <strong>Electricity</strong>
+      return `<p>Interesting question! My offline knowledge currently covers the official Grade ${escapeHTML(grade)} NCERT Science chapters only. Try asking about:
+        ${chapterNames ? `<br>${chapterNames}` : ""}
         <br>You can also ask me to open the official textbook link for a chapter.</p>`;
     },
 

@@ -4,7 +4,7 @@
 /* ======================================================== */
 
 (function () {
-  if (window.StudyPilotCurriculum && !window.CBSE7Syllabus) {
-    window.CBSE7Syllabus = window.StudyPilotCurriculum;
+  if (window.StudyPilotCurriculum && !window.StudyPilotSyllabus) {
+    window.StudyPilotSyllabus = window.StudyPilotCurriculum;
   }
 })();

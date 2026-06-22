@@ -425,5 +425,5 @@
   };
 
   window.StudyPilotCurriculum = catalog;
-  window.CBSE7Syllabus = catalog;
+  window.StudyPilotSyllabus = catalog;
 })();

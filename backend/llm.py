@@ -1,13 +1,9 @@
 """Local LLM integration for StudyPilot.
 
-The tutor can run against either:
-- Ollama on localhost
-- a fine-tuned Hugging Face model stored locally on disk
-
-Set ``STUDYPILOT_LLM_PROVIDER=transformers`` and
-``STUDYPILOT_LLM_MODEL_PATH=...`` to point the tutor at a local fine-tuned
-model. If that model is unavailable, the backend falls back to Ollama and then
-to the offline syllabus knowledge base.
+StudyPilot uses Ollama as the default and preferred text generation engine.
+A local Hugging Face/transformers model can still be enabled explicitly for
+developer experiments, but the production path is Ollama-first so the tutor
+behaves consistently across chat, greetings, and explanation prompts.
 """
 
 from __future__ import annotations
@@ -163,17 +159,15 @@ def generate_tutor_response(system_prompt: str, user_prompt: str) -> tuple[str |
     """Generate a tutor response using the configured local model stack."""
 
     provider = LLM_PROVIDER
-    wants_transformers = provider in {"transformers", "hf", "auto"} or bool(HF_MODEL_PATH)
-
-    if wants_transformers:
-        response = generate_with_transformers(system_prompt, user_prompt, HF_MODEL_PATH)
-        if response:
-            return response, "transformers"
-
-    if provider in {"ollama", "auto", "transformers", "hf"} or not provider:
+    if provider in {"ollama", "auto", ""} or provider not in {"transformers", "hf"}:
         if ollama_is_available():
             response = generate_with_ollama(system_prompt, user_prompt)
             if response:
                 return response, "ollama"
+
+    if provider in {"transformers", "hf"}:
+        response = generate_with_transformers(system_prompt, user_prompt, HF_MODEL_PATH)
+        if response:
+            return response, "transformers"
 
     return None, "offline_knowledge"
