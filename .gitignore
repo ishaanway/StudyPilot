@@ -3,3 +3,5 @@ docs/syllabus_sources/
 database/studypilot.db
 *.db
 node_modules/
+__pycache__/
+*.pyc
