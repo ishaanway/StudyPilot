@@ -20,6 +20,18 @@
     },
 
     tasks: [
+      { id: "t6_1", grade: "6", title: "Read Science: Food and Its Sources", subject: "Science", duration: 20, completed: false, date: "2026-06-22" },
+      { id: "t6_2", grade: "6", title: "Practice Maths: Fractions and Numbers", subject: "Mathematics", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t6_3", grade: "6", title: "Revise English: nouns and sentences", subject: "English", duration: 20, completed: false, date: "2026-06-23" },
+      { id: "t7_1", grade: "7", title: "Read Science: Nutrition in Plants", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t7_2", grade: "7", title: "Practice Maths: Simple Equations", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
+      { id: "t7_3", grade: "7", title: "Review Social Science: Environment", subject: "Social Science", duration: 20, completed: false, date: "2026-06-23" },
+      { id: "t8_1", grade: "8", title: "Read Science: Force and Pressure", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t8_2", grade: "8", title: "Practice Maths: Linear Equations", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
+      { id: "t8_3", grade: "8", title: "Revise English: formal letter format", subject: "English", duration: 20, completed: false, date: "2026-06-23" },
+      { id: "t9_1", grade: "9", title: "Read Science: Matter in Our Surroundings", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t9_2", grade: "9", title: "Practice Maths: Number Systems", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
+      { id: "t9_3", grade: "9", title: "Review Social Science: Democratic Politics", subject: "Social Science", duration: 20, completed: false, date: "2026-06-23" },
       { id: "t1", grade: "10", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: "2026-06-22" },
       { id: "t2", grade: "10", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: "2026-06-22" },
       { id: "t3", grade: "10", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: "2026-06-22" },
@@ -28,12 +40,24 @@
     ],
 
     exams: [
+      { id: "e6_1", grade: "6", subject: "Science", topic: "Chapter quiz: Food and Its Sources", date: "2026-06-25" },
+      { id: "e7_1", grade: "7", subject: "Science", topic: "Chapter quiz: Heat", date: "2026-06-26" },
+      { id: "e8_1", grade: "8", subject: "Science", topic: "Chapter quiz: Force and Pressure", date: "2026-06-27" },
+      { id: "e9_1", grade: "9", subject: "Science", topic: "Chapter quiz: Matter in Our Surroundings", date: "2026-06-28" },
       { id: "e1", grade: "10", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: "2026-06-25" },
       { id: "e2", grade: "10", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: "2026-06-29" },
       { id: "e3", grade: "10", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: "2026-07-03" }
     ],
 
     calendar: [
+      { id: "c6_1", grade: "6", title: "Science Class", day: "Monday", type: "class", start: "08:00", end: "09:00" },
+      { id: "c6_2", grade: "6", title: "AI Study Block: Science Chapter Practice", day: "Monday", type: "study", start: "18:00", end: "18:45" },
+      { id: "c7_1", grade: "7", title: "Science Class", day: "Tuesday", type: "class", start: "09:00", end: "10:00" },
+      { id: "c7_2", grade: "7", title: "AI Study Block: Maths Practice", day: "Wednesday", type: "study", start: "17:00", end: "18:00" },
+      { id: "c8_1", grade: "8", title: "Science Lab", day: "Thursday", type: "class", start: "10:00", end: "11:00" },
+      { id: "c8_2", grade: "8", title: "AI Study Block: Revision Time", day: "Friday", type: "study", start: "18:00", end: "18:45" },
+      { id: "c9_1", grade: "9", title: "Science Lab", day: "Monday", type: "class", start: "10:00", end: "11:00" },
+      { id: "c9_2", grade: "9", title: "AI Study Block: Matter Revision", day: "Wednesday", type: "study", start: "18:00", end: "18:45" },
       { id: "c1", grade: "10", title: "Science Class", day: "Monday", type: "class", start: "09:00", end: "10:00" },
       { id: "c2", grade: "10", title: "AI Study Block: Science Ch 2 Revision", day: "Monday", type: "study", start: "18:00", end: "19:00" },
       { id: "c3", grade: "10", title: "AI Study Block: Science Ch 9 Practice", day: "Wednesday", type: "study", start: "17:00", end: "18:00" },
@@ -41,6 +65,30 @@
     ],
 
     notes: [
+      {
+        id: "n6_1",
+        grade: "6",
+        title: "Science - Food and Its Sources",
+        body: "Food comes from plants and animals. Use one example for each source.",
+        color: "blue",
+        updatedAt: "2026-06-22 09:30"
+      },
+      {
+        id: "n7_1",
+        grade: "7",
+        title: "Science - Heat",
+        body: "Remember conduction, convection, and radiation with a daily-life example.",
+        color: "yellow",
+        updatedAt: "2026-06-22 10:00"
+      },
+      {
+        id: "n8_1",
+        grade: "8",
+        title: "Science - Force and Pressure",
+        body: "Force is a push or pull. Pressure depends on force and area.",
+        color: "purple",
+        updatedAt: "2026-06-22 10:30"
+      },
       {
         id: "n1",
         grade: "9",
@@ -187,10 +235,13 @@
     },
 
     // Tasks API
+    getAllTasks: function () {
+      return Array.isArray(get("tasks")) ? get("tasks") : [];
+    },
     getTasks: function (gradeOverride) {
       const profile = this.getProfile();
       const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
-      const tasks = Array.isArray(get("tasks")) ? get("tasks") : [];
+      const tasks = this.getAllTasks();
       return tasks.filter(task => String(task && task.grade ? task.grade : "10") === grade);
     },
     saveTasks: function (tasks) {
@@ -198,7 +249,7 @@
       window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addTask: function (title, subject, duration) {
-      const tasks = Array.isArray(get("tasks")) ? get("tasks") : [];
+      const tasks = this.getAllTasks();
       const profile = this.getProfile();
       const newTask = {
         id: "task_" + Date.now(),
@@ -215,7 +266,7 @@
       return newTask;
     },
     toggleTask: function (id) {
-      const tasks = this.getTasks();
+      const tasks = this.getAllTasks();
       const task = tasks.find(t => t.id === id);
       if (task) {
         task.completed = !task.completed;
@@ -223,16 +274,19 @@
       }
     },
     deleteTask: function (id) {
-      let tasks = this.getTasks();
+      let tasks = this.getAllTasks();
       tasks = tasks.filter(t => t.id !== id);
       this.saveTasks(tasks);
     },
 
     // Exams API
+    getAllExams: function () {
+      return Array.isArray(get("exams")) ? get("exams") : [];
+    },
     getExams: function (gradeOverride) {
       const profile = this.getProfile();
       const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
-      const exams = Array.isArray(get("exams")) ? get("exams") : [];
+      const exams = this.getAllExams();
       return exams.filter(exam => String(exam && exam.grade ? exam.grade : "10") === grade);
     },
     saveExams: function (exams) {
@@ -263,10 +317,13 @@
     },
 
     // Calendar API
+    getAllCalendarEvents: function () {
+      return Array.isArray(get("calendar")) ? get("calendar") : [];
+    },
     getCalendarEvents: function (gradeOverride) {
       const profile = this.getProfile();
       const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
-      const events = Array.isArray(get("calendar")) ? get("calendar") : [];
+      const events = this.getAllCalendarEvents();
       return events.filter(event => String(event && event.grade ? event.grade : "10") === grade);
     },
     saveCalendarEvents: function (events) {
@@ -290,7 +347,7 @@
       return newEvent;
     },
     deleteCalendarEvent: function (id) {
-      let events = this.getCalendarEvents();
+      let events = this.getAllCalendarEvents();
       events = events.filter(e => e.id !== id);
       this.saveCalendarEvents(events);
     },
@@ -355,7 +412,9 @@
     },
     getChapterCompletionSummary: function () {
       const progress = this.getCurriculumProgress();
-      const chapters = window.StudyPilotCurriculum ? window.StudyPilotCurriculum.getScienceChapters() : [];
+      const profile = this.getProfile();
+      const grade = profile ? String(profile.grade || "10") : "10";
+      const chapters = window.StudyPilotCurriculum ? window.StudyPilotCurriculum.getScienceChapters(grade) : [];
       const completed = chapters.filter(ch => (progress[ch.id] || {}).status === "Completed").length;
       const started = chapters.filter(ch => ["Started", "Completed"].includes((progress[ch.id] || {}).status)).length;
       const total = chapters.length;

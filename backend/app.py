@@ -724,10 +724,15 @@ def tutor_respond():
             }
         )
 
-    matches = [] if greeting_mode else search_knowledge(question, grade=grade, subject=subject, limit=4)
+    use_knowledge = (not greeting_mode) and (not subject or subject.lower() == "science")
+    matches = search_knowledge(question, grade=grade, subject=subject, limit=4) if use_knowledge else []
     syllabus_matches = [] if greeting_mode else search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
     if not greeting_mode and not matches and not syllabus_matches:
         syllabus_matches = search_syllabus_nodes(question, grade=None, subject=subject, limit=6)
+    if syllabus_matches:
+        same_grade_matches = [row for row in syllabus_matches if row.get("grade") in {None, grade}]
+        if same_grade_matches:
+            syllabus_matches = same_grade_matches
     context = format_knowledge_context(matches) if matches else ""
     if syllabus_matches:
         syllabus_lines = ["Imported syllabus matches:"]

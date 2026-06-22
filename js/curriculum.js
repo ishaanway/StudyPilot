@@ -87,6 +87,120 @@
   };
 
   const SCIENCE_CHAPTERS_BY_GRADE = {
+    6: [
+      {
+        id: "cbse6_science_ch1",
+        num: 1,
+        key: "g6_ch1",
+        grade: 6,
+        title: "Food and Its Sources",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Understand where food comes from and how living things depend on plants and animals for energy.",
+        highlights: ["Sources of food", "Plant and animal foods", "Healthy eating habits"],
+        keywords: ["food", "source", "nutrition", "plants", "animals"],
+      },
+      {
+        id: "cbse6_science_ch2",
+        num: 2,
+        key: "g6_ch2",
+        grade: 6,
+        title: "Sorting Materials into Groups",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Learn how materials are grouped by properties like texture, hardness, transparency, and solubility.",
+        highlights: ["Properties of materials", "Soluble and insoluble", "Transparent and opaque"],
+        keywords: ["sorting", "materials", "properties", "soluble", "transparent", "opaque"],
+      },
+      {
+        id: "cbse6_science_ch3",
+        num: 3,
+        key: "g6_ch3",
+        grade: 6,
+        title: "Motion and Measurement of Distances",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Use standard units, compare lengths, and identify how motion is measured in everyday life.",
+        highlights: ["Standard units", "Length and distance", "Simple motion ideas"],
+        keywords: ["motion", "measurement", "distance", "length", "unit"],
+      },
+    ],
+    7: [
+      {
+        id: "cbse7_science_ch1",
+        num: 1,
+        key: "g7_ch1",
+        grade: 7,
+        title: "Nutrition in Plants",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Study how plants make food, how chlorophyll works, and why photosynthesis matters.",
+        highlights: ["Photosynthesis", "Chlorophyll and sunlight", "Autotrophic nutrition"],
+        keywords: ["nutrition", "plants", "photosynthesis", "chlorophyll", "food"],
+      },
+      {
+        id: "cbse7_science_ch2",
+        num: 2,
+        key: "g7_ch2",
+        grade: 7,
+        title: "Heat",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Explore temperature, transfer of heat, and how heat moves by conduction, convection, and radiation.",
+        highlights: ["Temperature and heat", "Conduction and convection", "Radiation"],
+        keywords: ["heat", "temperature", "conduction", "convection", "radiation"],
+      },
+      {
+        id: "cbse7_science_ch3",
+        num: 3,
+        key: "g7_ch3",
+        grade: 7,
+        title: "Acids, Bases and Salts",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Revise indicators, neutralisation, and everyday examples of acidic and basic substances.",
+        highlights: ["Acids and bases", "Indicators", "Neutralisation"],
+        keywords: ["acid", "base", "salt", "indicator", "neutralisation"],
+      },
+    ],
+    8: [
+      {
+        id: "cbse8_science_ch1",
+        num: 1,
+        key: "g8_ch1",
+        grade: 8,
+        title: "Crop Production and Management",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Learn how farmers prepare soil, sow seeds, water crops, and store grains safely.",
+        highlights: ["Preparation of soil", "Manure and irrigation", "Storage of grains"],
+        keywords: ["crop", "production", "soil", "irrigation", "storage"],
+      },
+      {
+        id: "cbse8_science_ch2",
+        num: 2,
+        key: "g8_ch2",
+        grade: 8,
+        title: "Microorganisms: Friend and Foe",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Study useful and harmful microorganisms, food preservation, and the role of microbes in life.",
+        highlights: ["Bacteria and fungi", "Food preservation", "Diseases and vaccines"],
+        keywords: ["microorganism", "microbes", "bacteria", "fungi", "preservation"],
+      },
+      {
+        id: "cbse8_science_ch3",
+        num: 3,
+        key: "g8_ch3",
+        grade: 8,
+        title: "Force and Pressure",
+        textbookUrl: OFFICIAL_SOURCE_URLS.Science,
+        textbookPage: OFFICIAL_SOURCE_URLS.Science,
+        summary: "Understand push and pull, pressure, and how forces act in daily situations.",
+        highlights: ["Force as push/pull", "Pressure", "Applications in daily life"],
+        keywords: ["force", "pressure", "push", "pull", "motion"],
+      },
+    ],
     9: [
       {
         id: "cbse9_science_ch1",
@@ -153,6 +267,63 @@
   };
 
   const QUIZ_BANK_BY_GRADE = {
+    6: {
+      Science: {
+        g6_ch1: [
+          { q: "Which of these is a source of food?", options: ["Plants", "Rocks", "Books", "Clouds"], answer: 0, explain: "Plants are a source of food." },
+          { q: "Why do we need food?", options: ["For energy and growth", "To make noise", "To stay asleep", "To stop breathing"], answer: 0, explain: "Food gives energy and helps us grow." },
+          { q: "Which is a healthy food choice?", options: ["Fruit", "Stone", "Plastic", "Sand"], answer: 0, explain: "Fruit is nutritious and healthy." },
+        ],
+        g6_ch2: [
+          { q: "Which property helps us identify materials?", options: ["Colour and hardness", "Music", "Speed", "Temperature only"], answer: 0, explain: "Materials can be grouped by properties." },
+          { q: "What does transparent mean?", options: ["You can see through it", "It is always heavy", "It is edible", "It is magnetic"], answer: 0, explain: "Transparent materials allow light to pass through." },
+          { q: "Which is insoluble in water?", options: ["Sand", "Salt", "Sugar", "Honey"], answer: 0, explain: "Sand does not dissolve in water." },
+        ],
+        g6_ch3: [
+          { q: "What is used to measure length?", options: ["Metre scale", "Clock", "Thermometer", "Compass"], answer: 0, explain: "Length is measured using standard units like metre." },
+          { q: "Which object shows motion?", options: ["A moving car", "A fixed wall", "A chair", "A book on a shelf"], answer: 0, explain: "Motion means change in position." },
+          { q: "Which unit is commonly used for distance?", options: ["Metre", "Litre", "Gram", "Second"], answer: 0, explain: "Distance is measured in metres or kilometres." },
+        ],
+      },
+    },
+    7: {
+      Science: {
+        g7_ch1: [
+          { q: "What process do plants use to make food?", options: ["Photosynthesis", "Respiration", "Digestion", "Evaporation"], answer: 0, explain: "Plants make food by photosynthesis." },
+          { q: "Which pigment helps plants trap sunlight?", options: ["Chlorophyll", "Melanin", "Haemoglobin", "Starch"], answer: 0, explain: "Chlorophyll absorbs sunlight." },
+          { q: "Plants are called what kind of organisms?", options: ["Autotrophs", "Parasites", "Carnivores", "Consumers"], answer: 0, explain: "Plants make their own food, so they are autotrophs." },
+        ],
+        g7_ch2: [
+          { q: "What is heat?", options: ["A form of energy", "A type of stone", "A metal only", "A gas only"], answer: 0, explain: "Heat is a form of energy." },
+          { q: "Which method transfers heat through solids?", options: ["Conduction", "Evaporation", "Condensation", "Fusion"], answer: 0, explain: "Conduction transfers heat through solids." },
+          { q: "Heat from the Sun reaches us by:", options: ["Radiation", "Conduction", "Friction", "Sound"], answer: 0, explain: "Heat travels from the Sun by radiation." },
+        ],
+        g7_ch3: [
+          { q: "What do acids taste like?", options: ["Sour", "Sweet", "Bitter", "Salty"], answer: 0, explain: "Acids usually taste sour." },
+          { q: "What does neutralisation produce?", options: ["Salt and water", "Only heat", "Only gas", "Only acid"], answer: 0, explain: "Neutralisation produces salt and water." },
+          { q: "Which is a base?", options: ["Soap", "Vinegar", "Lemon juice", "Orange juice"], answer: 0, explain: "Soap is basic." },
+        ],
+      },
+    },
+    8: {
+      Science: {
+        g8_ch1: [
+          { q: "What helps loosen the soil before sowing?", options: ["Ploughing", "Freezing", "Painting", "Typing"], answer: 0, explain: "Ploughing loosens and aerates the soil." },
+          { q: "What is added to soil to increase fertility?", options: ["Manure", "Plastic", "Ink", "Oil"], answer: 0, explain: "Manure improves soil fertility." },
+          { q: "What should grains be protected from in storage?", options: ["Moisture", "Sunlight", "Books", "Bells"], answer: 0, explain: "Stored grains must be kept dry." },
+        ],
+        g8_ch2: [
+          { q: "Which is a useful microorganism?", options: ["Yeast", "Stone", "Dust", "Plastic"], answer: 0, explain: "Yeast is a useful microorganism." },
+          { q: "Why is food preserved?", options: ["To stop spoilage", "To make it loud", "To turn it blue", "To increase weight"], answer: 0, explain: "Preservation stops food from spoiling." },
+          { q: "Which can cause diseases?", options: ["Some bacteria", "Rocks", "Tables", "Pencils"], answer: 0, explain: "Some microbes are harmful and cause disease." },
+        ],
+        g8_ch3: [
+          { q: "A push or pull is called:", options: ["Force", "Heat", "Light", "Sound"], answer: 0, explain: "Force means push or pull." },
+          { q: "Pressure depends on:", options: ["Force and area", "Colour and shape", "Taste and smell", "Weight only"], answer: 0, explain: "Pressure depends on force applied over area." },
+          { q: "Which is an example of force?", options: ["Kicking a ball", "Reading a book", "Sleeping", "Drawing a line"], answer: 0, explain: "Kicking a ball applies force." },
+        ],
+      },
+    },
     9: {
       Science: {
         g9_ch1: [
@@ -178,6 +349,87 @@
   };
 
   const GRADE_FLASHCARD_SPECS = {
+    6: {
+      Science: [
+        ["Food and Its Sources", "Why do students study food sources?", "To know how plants and animals provide food and energy."],
+        ["Sorting Materials", "What does transparent mean?", "It means we can see through the material."],
+        ["Motion and Measurement", "What unit is used for length?", "The metre is the standard unit for length."],
+      ],
+      Mathematics: [
+        ["Numbers", "What is a whole number?", "A counting number including zero."],
+        ["Fractions", "What does the denominator show?", "The total number of equal parts."],
+        ["Geometry", "What is a point?", "A point shows exact position and has no size."],
+      ],
+      "Social Science": [
+        ["Our Community", "What is a community?", "People living and working together in an area."],
+        ["Maps", "What does a map help us do?", "Find places and directions."],
+        ["Resources", "What is a resource?", "Anything useful to people."],
+      ],
+      English: [
+        ["Grammar", "What is a noun?", "A naming word."],
+        ["Reading", "What do we do in comprehension?", "Read and understand the passage."],
+        ["Writing", "What is a sentence?", "A group of words that makes complete sense."],
+      ],
+      "Computer Science": [
+        ["Devices", "What is a computer used for?", "Processing information and helping with tasks."],
+        ["Files", "What is a folder?", "A place to organize files."],
+        ["Safety", "Why should we be careful online?", "To protect personal information."],
+      ],
+    },
+    7: {
+      Science: [
+        ["Nutrition in Plants", "What do plants need for photosynthesis?", "Sunlight, water, carbon dioxide, and chlorophyll."],
+        ["Heat", "What is conduction?", "Heat transfer through direct contact."],
+        ["Acids, Bases and Salts", "What happens in neutralisation?", "An acid and a base form salt and water."],
+      ],
+      Mathematics: [
+        ["Integers", "What is an integer?", "A whole number that can be positive, negative, or zero."],
+        ["Simple Equations", "What is an equation?", "A mathematical statement with an equal sign."],
+        ["Fractions", "What is a proper fraction?", "A fraction with numerator smaller than denominator."],
+      ],
+      "Social Science": [
+        ["Environment", "What is the environment?", "Everything around us in nature and society."],
+        ["History", "What does chronology mean?", "Arranging events in time order."],
+        ["Civics", "What is a rule?", "A guideline that helps people live together."],
+      ],
+      English: [
+        ["Tenses", "Why do we use tenses?", "To show the time of an action."],
+        ["Writing", "What is a notice?", "A short formal message."],
+        ["Reading", "What is the main idea?", "The most important point of a text."],
+      ],
+      "Computer Science": [
+        ["Hardware", "What is hardware?", "The physical parts of a computer."],
+        ["Internet", "What is a browser?", "Software used to open websites."],
+        ["Spreadsheets", "What does a cell contain?", "Data such as text, number, or formula."],
+      ],
+    },
+    8: {
+      Science: [
+        ["Crop Production", "Why do farmers plough soil?", "To loosen soil and help roots grow better."],
+        ["Microorganisms", "Which microbe helps in baking?", "Yeast."],
+        ["Force and Pressure", "What is pressure?", "Force acting on a unit area."],
+      ],
+      Mathematics: [
+        ["Linear Equations", "What is the goal of solving an equation?", "Find the value of the unknown."],
+        ["Exponents", "What does a power show?", "Repeated multiplication."],
+        ["Mensuration", "What does area measure?", "The surface inside a shape."],
+      ],
+      "Social Science": [
+        ["Resources", "What is sustainable use?", "Using resources without wasting them."],
+        ["History", "Why study the colonial period?", "To understand major changes in society and economy."],
+        ["Civics", "What is justice?", "Fair treatment for everyone."],
+      ],
+      English: [
+        ["Grammar", "What is a clause?", "A group of words with a subject and verb."],
+        ["Writing", "What should a formal letter include?", "Clear format, purpose, and respectful tone."],
+        ["Literature", "Why do we discuss theme?", "To understand the deeper message of the text."],
+      ],
+      "Computer Science": [
+        ["Networks", "What is a network?", "A group of connected computers."],
+        ["Presentations", "Why use slides?", "To present information clearly."],
+        ["Algorithms", "What is an algorithm?", "A step-by-step way to solve a problem."],
+      ],
+    },
     9: {
       Science: [
         ["Matter in Our Surroundings", "Which state of matter has fixed shape and fixed volume?", "Solid has fixed shape and fixed volume."],
@@ -263,10 +515,11 @@
   }
 
   const GRADE_FLASHCARDS = {
-    9: buildFlashcardsForGrade(9),
-    10: buildFlashcardsForGrade(10),
+    6: buildFlashcardsForGrade(6),
     7: buildFlashcardsForGrade(7),
     8: buildFlashcardsForGrade(8),
+    9: buildFlashcardsForGrade(9),
+    10: buildFlashcardsForGrade(10),
   };
 
   function cleanText(value) {
@@ -292,7 +545,7 @@
   }
 
   function getChapterByKey(key, grade = null) {
-    const chapters = grade ? getScienceChapters(grade) : [...getScienceChapters(9), ...getScienceChapters(10)];
+    const chapters = grade ? getScienceChapters(grade) : Object.values(SCIENCE_CHAPTERS_BY_GRADE).flat();
     return chapters.find(chapter => chapter.key === key || chapter.id === key) || null;
   }
 
@@ -409,7 +662,7 @@
     subject: "Science",
     textbookPage: "https://ncert.nic.in/textbook.php?jesc1=1-16",
     getBoards: () => ["CBSE"],
-    getGrades: () => [7, 8, 9, 10],
+    getGrades: () => [6, 7, 8, 9, 10],
     getSubjects,
     getSubjectsForGrade,
     getChapters: (subject) => {

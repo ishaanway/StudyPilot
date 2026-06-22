@@ -4,8 +4,10 @@
 
 (function () {
   window.StudyPilotDashboard = {
+    profileListenerBound: false,
     
     init: function () {
+      this.bindProfileListener();
       this.renderTimeline();
       this.renderTasks();
       this.renderProgressRing();
@@ -13,12 +15,26 @@
       this.renderAISuggestions();
     },
 
+    bindProfileListener: function () {
+      if (this.profileListenerBound) return;
+      this.profileListenerBound = true;
+      window.addEventListener("studypilot_profile_updated", () => {
+        this.init();
+      });
+    },
+
+    getCurrentGrade: function () {
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      return profile ? String(profile.grade || "10") : "10";
+    },
+
     // 1. Timeline: filter for events on Monday (demo active day)
     renderTimeline: function () {
       const timelineEl = document.getElementById("dashboard-timeline");
       if (!timelineEl) return;
 
-      const events = window.StudyPilotDB.getCalendarEvents();
+      const grade = this.getCurrentGrade();
+      const events = window.StudyPilotDB.getCalendarEvents(grade);
       // Filter for Monday
       const todayEvents = events.filter(e => e.day === "Monday");
       
@@ -52,7 +68,8 @@
       const listEl = document.getElementById("dashboard-task-list");
       if (!listEl) return;
 
-      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
+      const grade = this.getCurrentGrade();
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
 
       if (tasks.length === 0) {
         listEl.innerHTML = '<div class="task-empty">All caught up! Add a new task to get started.</div>';
@@ -102,7 +119,8 @@
       const streakVal = document.getElementById("dashboard-streak-count");
       if (!ring || !label) return;
 
-      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
+      const grade = this.getCurrentGrade();
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
       const total = tasks.length;
       const completed = tasks.filter(t => t.completed).length;
       
@@ -144,7 +162,8 @@
       const container = document.getElementById("dashboard-upcoming-exams");
       if (!container) return;
 
-      const exams = window.StudyPilotDB.getExams();
+      const grade = this.getCurrentGrade();
+      const exams = window.StudyPilotDB.getExams(grade);
       if (exams.length === 0) {
         container.innerHTML = '<div class="upcoming-empty">No upcoming exams scheduled. Click "Add Exam" to prepare.</div>';
         return;
@@ -195,20 +214,20 @@
       const container = document.getElementById("dashboard-ai-suggestions");
       if (!container) return;
 
-      const exams = window.StudyPilotDB.getExams();
-      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
+      const grade = this.getCurrentGrade();
+      const exams = window.StudyPilotDB.getExams(grade);
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
       const uncompletedTasks = tasks.filter(t => !t.completed);
-      const events = window.StudyPilotDB.getCalendarEvents().filter(e => e.day === "Monday");
+      const events = window.StudyPilotDB.getCalendarEvents(grade).filter(e => e.day === "Monday");
       
-      // Let's check if they have a Science exam coming in 3 days (June 25 is exam e1)
-      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date === "2026-06-25");
-      const hasMathStudyBlock = events.some(e => e.title.includes("Maths") && e.type === "study");
+      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date >= "2026-06-22" && e.date <= "2026-06-30");
+      const hasMathStudyBlock = events.some(e => /math/i.test(e.title) && e.type === "study");
       
       let html = "";
 
       if (hasScienceExamSoon && uncompletedTasks.some(t => t.subject === "Science")) {
         html = `
-          <p>Your <strong>CBSE Science exam</strong> is coming up soon. You still have a Science revision task incomplete, so I suggest revising the official NCERT chapters now.</p>
+          <p>Your <strong>CBSE Grade ${escapeHTML(grade)} Science exam</strong> is coming up soon. You still have a Science revision task incomplete, so I suggest revising the official NCERT chapters now.</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Start Science Quiz</button>
           </div>
@@ -225,14 +244,14 @@
       } else if (!hasMathStudyBlock) {
         // Suggest scheduling a Math revision block since they have math tasks
         html = `
-          <p>Nice job completing today's tasks! You have a Maths Class Test coming next week. Shall we schedule a 1-hour revision block for <strong>Arithmetic Expressions</strong> this evening?</p>
+          <p>Nice job completing today's tasks! For Grade ${escapeHTML(grade)}, you can lock in a focused revision block for your strongest subjects this evening.</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotDashboard.scheduleStudyBlock('Maths Revision', '19:00', '20:00')">Schedule at 7 PM</button>
           </div>
         `;
       } else {
         html = `
-          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> if you want to explore the official NCERT chapters for your current grade!</p>
+          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> to explore the official NCERT chapters for Grade ${escapeHTML(grade)}!</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Ask Tutor</button>
           </div>
@@ -250,7 +269,7 @@
     },
 
     rescheduleTask: function (id) {
-      const tasks = window.StudyPilotDB.getTasks();
+      const tasks = window.StudyPilotDB.getAllTasks ? window.StudyPilotDB.getAllTasks() : window.StudyPilotDB.getTasks();
       const task = tasks.find(t => t.id === id);
       if (task) {
         task.date = "2026-06-23"; // Push to tomorrow
@@ -279,7 +298,11 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      select.innerHTML = profile.subjects.map(s => `<option value="${s}">${s}</option>`).join("");
+      const curriculum = window.StudyPilotCurriculum;
+      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === "function"
+        ? curriculum.getSubjectsForGrade(profile ? profile.grade : "10")
+        : (profile.subjects || []);
+      select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join("");
       modal.classList.remove("hidden");
     },
 
@@ -311,7 +334,11 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      select.innerHTML = profile.subjects.map(s => `<option value="${s}">${s}</option>`).join("");
+      const curriculum = window.StudyPilotCurriculum;
+      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === "function"
+        ? curriculum.getSubjectsForGrade(profile ? profile.grade : "10")
+        : (profile.subjects || []);
+      select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join("");
       
       // Set default date to today or tomorrow
       document.getElementById("exam-input-date").value = "2026-06-26";

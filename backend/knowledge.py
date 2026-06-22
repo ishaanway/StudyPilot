@@ -17,6 +17,138 @@ NCERT_MANIFEST_PATH = PROJECT_ROOT / "docs" / "syllabus_sources" / "ncert_manife
 
 SEED_ENTRIES: list[dict[str, Any]] = [
     {
+        "grade": 6,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 1,
+        "chapter_title": "Food and Its Sources",
+        "summary": "Introduces the idea that food comes from plants and animals and builds healthy eating vocabulary for younger learners.",
+        "keywords": "food sources plants animals nutrition healthy eating",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 6,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 2,
+        "chapter_title": "Sorting Materials into Groups",
+        "summary": "Covers properties such as hardness, transparency, solubility, and grouping materials by shared features.",
+        "keywords": "sorting materials properties transparent opaque soluble insoluble",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 6,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 3,
+        "chapter_title": "Motion and Measurement of Distances",
+        "summary": "Explains measurement, standard units, and simple ideas of motion using familiar everyday examples.",
+        "keywords": "motion measurement distance unit length metre",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 7,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 1,
+        "chapter_title": "Nutrition in Plants",
+        "summary": "Teaches photosynthesis, chlorophyll, and how plants make food from sunlight, water, and carbon dioxide.",
+        "keywords": "nutrition plants photosynthesis chlorophyll food",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 7,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 2,
+        "chapter_title": "Heat",
+        "summary": "Introduces temperature, heat transfer, and the three common modes of heat movement.",
+        "keywords": "heat temperature conduction convection radiation",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 7,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 3,
+        "chapter_title": "Acids, Bases and Salts",
+        "summary": "Builds understanding of indicators, neutralisation, and everyday acidic and basic substances.",
+        "keywords": "acid base salt indicator neutralisation",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 8,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 1,
+        "chapter_title": "Crop Production and Management",
+        "summary": "Explains how soil is prepared, seeds are sown, and crops are cared for and stored safely.",
+        "keywords": "crop production soil manure irrigation storage",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 8,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 2,
+        "chapter_title": "Microorganisms: Friend and Foe",
+        "summary": "Introduces helpful and harmful microbes, food preservation, and diseases caused by microorganisms.",
+        "keywords": "microorganism microbes bacteria fungi preservation disease",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 8,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 3,
+        "chapter_title": "Force and Pressure",
+        "summary": "Covers push and pull, pressure, and how force changes the motion of objects.",
+        "keywords": "force pressure push pull motion",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 9,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 1,
+        "chapter_title": "Matter in Our Surroundings",
+        "summary": "Explains the states of matter, diffusion, evaporation, and how matter behaves around us.",
+        "keywords": "matter surroundings diffusion evaporation solid liquid gas",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 9,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 2,
+        "chapter_title": "Is Matter Around Us Pure",
+        "summary": "Covers mixtures, solutions, suspensions, colloids, and separation methods.",
+        "keywords": "pure matter mixture solution suspension colloid separation",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 9,
+        "subject": "Science",
+        "book_title": "Science",
+        "chapter_number": 3,
+        "chapter_title": "Atoms and Molecules",
+        "summary": "Introduces laws of chemical combination, atomic mass, molecular mass, and formula writing.",
+        "keywords": "atom molecule formula mass conservation chemical combination",
+        "source_url": "https://epathshala.ncert.gov.in/",
+        "source_type": "NCERT Official",
+    },
+    {
         "grade": 10,
         "subject": "Science",
         "book_title": "Science",
@@ -59,20 +191,7 @@ def clean_text(value: object) -> str:
 def seed_knowledge_base() -> None:
     """Populate the SQLite knowledge table the first time the app runs."""
 
-    row = fetch_one("SELECT COUNT(*) AS total FROM knowledge_entries")
-    if row and int(row["total"]) > 0:
-        expected = fetch_one(
-            """
-            SELECT COUNT(*) AS total
-            FROM knowledge_entries
-            WHERE grade = 10
-              AND subject = 'Science'
-              AND chapter_number IN (2, 9, 11)
-            """
-        )
-        if expected and int(expected["total"]) >= 3:
-            return
-        execute("DELETE FROM knowledge_entries")
+    execute("DELETE FROM knowledge_entries")
 
     for entry in SEED_ENTRIES:
         execute(
@@ -413,6 +532,7 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
     scored: list[tuple[int, dict]] = []
     for entry in entries:
         score = 0
+        matched_token = False
         entry_text = " ".join(
             [
                 str(entry.get("subject", "")),
@@ -423,21 +543,26 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
             ]
         ).lower()
 
-        if grade and int(entry.get("grade") or 0) == int(grade):
-            score += 3
         if subject_lower and subject_lower in str(entry.get("subject", "")).lower():
             score += 5
 
         for token in query_tokens:
             if token in entry_text:
                 score += 2
-        if any(token in entry_text for token in query_tokens):
+                matched_token = True
+        if grade and int(entry.get("grade") or 0) == int(grade) and matched_token:
+            score += 1
+        if matched_token:
             score += 1
 
         if score > 0:
             scored.append((score, entry))
 
     scored.sort(key=lambda pair: (-pair[0], pair[1]["grade"], pair[1]["subject"], pair[1]["chapter_number"]))
+    if grade is not None:
+      same_grade = [pair for pair in scored if int(pair[1].get("grade") or 0) == int(grade)]
+      if same_grade:
+          scored = same_grade
     return [entry for _, entry in scored[:limit]]
 
 

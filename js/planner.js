@@ -12,10 +12,20 @@
   window.StudyPilotPlanner = {
     selectedSubject: "Science",
     currentWeekOffset: 0,
+    profileListenerBound: false,
 
     init: function () {
+      this.bindProfileListener();
       this.renderSyllabusExplorer();
       this.renderGrid();
+    },
+
+    bindProfileListener: function () {
+      if (this.profileListenerBound) return;
+      this.profileListenerBound = true;
+      window.addEventListener("studypilot_profile_updated", () => {
+        this.init();
+      });
     },
 
     /* ──────────────────────────────────────────
@@ -173,7 +183,9 @@
       grid.innerHTML += gridHTML;
 
       // Overlay events from DB
-      const events = window.StudyPilotDB.getCalendarEvents();
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? String(profile.grade || "10") : "10";
+      const events = window.StudyPilotDB.getCalendarEvents(grade);
       events.forEach(e => {
         const colIndex = DAYS.indexOf(e.day) + 2;
         if (colIndex < 2) return;
@@ -217,7 +229,9 @@
        AI AUTO-SCHEDULE REVISION
     ────────────────────────────────────────── */
     autoGeneratePlan: function () {
-      const events = window.StudyPilotDB.getCalendarEvents();
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? String(profile.grade || "10") : "10";
+      const events = window.StudyPilotDB.getCalendarEvents(grade);
 
       const slots = [
         { title: "AI Block: Science - Acids, Bases and Salts (Ch 2)", day: "Monday", start: "19:00", end: "20:00" },
