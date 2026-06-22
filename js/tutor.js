@@ -1,6 +1,6 @@
 /* ======================================================== */
-/* StudyPilot AI Tutor Chat, Quizzes & Flashcards — CBSE 2026-27 */
-/* Uses window.CBSE7Syllabus central data module            */
+/* StudyPilot AI Tutor Chat, Quizzes & Flashcards — Grade 10 */
+/* Uses the official NCERT Grade 10 Science curriculum      */
 /* ======================================================== */
 
 (function () {
@@ -100,6 +100,7 @@
 
     inferSubjectHint: function (msg) {
       const lowerMsg = msg.toLowerCase();
+      if (/[0-9][0-9\s\+\-\*\/\(\)\.\u00d7\u00f7\u2212\u2013]*[0-9]/.test(lowerMsg)) return "Mathematics";
       if (/math|bodmas|equation|angle|fraction|triangle|algebra|ganita/.test(lowerMsg)) return "Mathematics";
       if (/science|acid|electric|change|magnet|light|photosynthes|respirat|soil|curiosity/.test(lowerMsg)) return "Science";
       if (/history|mughal|delhi sultan|akbar|babur|bhakti|sufi/.test(lowerMsg)) return "Social Science";
@@ -118,16 +119,45 @@
       return `${badge}<p>${escapeHTML(answer).replace(/\n/g, "<br>")}</p>`;
     },
 
+    solveArithmeticQuestion: function (msg) {
+      const normalized = String(msg || "")
+        .replace(/\u00d7/g, "*")
+        .replace(/\u00f7/g, "/")
+        .replace(/\u2212/g, "-")
+        .replace(/\u2013/g, "-")
+        .replace(/^(can you\s+)?(what is|whats|what's|calculate|compute|solve|evaluate)\s*[:\-]?\s*/i, "")
+        .replace(/[?.!]$/g, "")
+        .trim();
+
+      const expression = normalized.replace(/[^0-9+\-*/().\s]/g, " ").replace(/\s+/g, " ").trim();
+      if (!expression || !/[0-9]/.test(expression) || !/[+\-*/]/.test(expression)) return null;
+
+      try {
+        const value = Function(`"use strict"; return (${expression});`)();
+        if (!Number.isFinite(value)) return null;
+        const answer = Number.isInteger(value) ? String(value) : parseFloat(value.toFixed(10)).toString();
+        return `${expression} = ${answer}`;
+      } catch {
+        return null;
+      }
+    },
+
     buildOfflineFallback: function (msg) {
       const lowerMsg = msg.toLowerCase();
 
+      const arithmetic = this.solveArithmeticQuestion(msg);
+      if (arithmetic) {
+        return `<p>${escapeHTML(arithmetic)}</p>`;
+      }
+
       // Try the central knowledge base
-      const knowledge = window.CBSE7Syllabus.findKnowledge(lowerMsg);
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg) : null;
       if (knowledge) return knowledge;
 
       // Fallbacks for common patterns
       if (/quiz|test me|practice/.test(lowerMsg)) {
-        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose your subject and chapter, then click <strong>Start Quiz</strong>. All CBSE 2026-27 chapters are covered!</p>`;
+        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose the official Grade 10 Science chapter, then click <strong>Start Quiz</strong>.</p>`;
       }
       if (/flashcard/.test(lowerMsg)) {
         return `<p>Go to the <strong>Flashcards</strong> tab to review quick Q&A across all subjects. Click a card to flip it and rate your confidence!</p>`;
@@ -135,19 +165,18 @@
       if (/hello|hi|hey|namaste/.test(lowerMsg)) {
         const profile = window.StudyPilotDB.getProfile();
         const name = profile ? escapeHTML(profile.name || "Scholar") : "Scholar";
-        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE 2026-27. I can help with all subjects:<br>
-          🔬 <strong>Science</strong> (Curiosity) · 📐 <strong>Maths</strong> (Ganita Prakash) · 🌍 <strong>Social Science</strong> (Exploring Society)<br>
-          📖 <strong>English</strong> (Poorvi) · 🔤 <strong>Hindi</strong> (Malhar) · 🌺 <strong>Tamil</strong> (Samacheer Kalvi) · 💻 <strong>CS</strong><br>
+        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE Grade 10 Science. I can open the official NCERT chapters for:<br>
+          ⚗️ <strong>Acids, Bases and Salts</strong><br>
+          💡 <strong>Light - Reflection and Refraction</strong><br>
+          🔋 <strong>Electricity</strong><br>
           What are we studying today?</p>`;
       }
 
-      return `<p>Interesting question! My offline knowledge covers all major CBSE 2026-27 Grade 7 chapters. Try asking about:
-        <br>🔬 <strong>Science:</strong> acids & bases, electricity, light, photosynthesis
-        <br>📐 <strong>Maths:</strong> BODMAS, equations, triangles, Pythagoras
-        <br>🌍 <strong>Social Science:</strong> Mughal Empire, Delhi Sultans, atmosphere, equality
-        <br>📖 <strong>English:</strong> Three Questions, Quality, fire triangle
-        <br>🌺 <strong>Tamil:</strong> திருக்குறள், சிலப்பதிகாரம், சங்க இலக்கியம்
-        <br>💻 <strong>CS:</strong> Excel formulas, internet, algorithms</p>`;
+      return `<p>Interesting question! My offline knowledge currently covers the official Grade 10 NCERT Science chapters only. Try asking about:
+        <br>⚗️ <strong>Acids, Bases and Salts</strong>
+        <br>💡 <strong>Light - Reflection and Refraction</strong>
+        <br>🔋 <strong>Electricity</strong>
+        <br>You can also ask me to open the official textbook link for a chapter.</p>`;
     },
 
     appendMessage: function (htmlContent, type) {
@@ -182,7 +211,8 @@
       if (!subjEl || !chapEl) return;
 
       const subj    = subjEl.value;
-      const chapters = window.CBSE7Syllabus.getQuizChapters(subj);
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const chapters = curriculum ? curriculum.getQuizChapters(subj) : [];
 
       chapEl.innerHTML = chapters.length > 0
         ? chapters.map(ch => `<option value="${escapeHTML(ch.key)}">${escapeHTML(ch.label)}</option>`).join("")
@@ -196,7 +226,8 @@
       this.quizScore = 0;
       this.quizTimeSeconds = 0;
 
-      const quizBank = window.CBSE7Syllabus.getQuizBank();
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const quizBank = curriculum ? curriculum.getQuizBank() : {};
       const subjectBank = quizBank[this.activeQuizSubject];
       if (!subjectBank || !subjectBank[this.activeQuizChapter]) {
         alert("No quiz questions available for this chapter yet. Please try another chapter.");
@@ -222,7 +253,8 @@
     },
 
     loadQuizQuestion: function () {
-      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
       const total     = Math.min(questions.length, 5);
@@ -241,7 +273,8 @@
     },
 
     submitAnswer: function (selectedIdx) {
-      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
       const buttons   = document.querySelectorAll(".quiz-options .quiz-opt-btn");
@@ -267,7 +300,8 @@
     },
 
     nextQuizQuestion: function () {
-      const quizBank  = window.CBSE7Syllabus.getQuizBank();
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const total     = Math.min(questions.length, 5);
 
@@ -388,7 +422,8 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      const subjects = window.CBSE7Syllabus.getSubjects();
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const subjects = curriculum ? curriculum.getSubjects() : [];
       select.innerHTML = subjects.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("");
 
       modal.classList.remove("hidden");

@@ -1,6 +1,6 @@
 /* ======================================================== */
 /* StudyPilot Academic Calendar Planner View JS             */
-/* CBSE 2026-27 | All subjects via CBSE7Syllabus module     */
+/* CBSE Grade 10 | Official NCERT textbook links only       */
 /* ======================================================== */
 
 (function () {
@@ -36,36 +36,44 @@
       const container = document.getElementById("syllabus-chapters-list");
       if (!container) return;
 
-      const chapters = window.CBSE7Syllabus.getChapters(this.selectedSubject);
+      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const chapters = curriculum ? curriculum.getChapters(this.selectedSubject) : [];
 
       if (!chapters || chapters.length === 0) {
-        container.innerHTML = `<p style="padding:12px;opacity:0.6;">No chapters found for ${escapeHTML(this.selectedSubject)}.</p>`;
+        container.innerHTML = `<p style="padding:12px;opacity:0.6;">No official Grade 10 chapters are wired for ${escapeHTML(this.selectedSubject)} yet.</p>`;
         return;
       }
 
       container.innerHTML = chapters.map(ch => {
-        const chNum = ch.num || ch.num;
-        const strandBadge = ch.strand
-          ? `<span class="strand-badge strand-${ch.strand.toLowerCase()}">${ch.strand}</span>`
-          : "";
-        const termBadge = ch.term
-          ? `<span class="strand-badge strand-term">${ch.term}</span>`
+        const status = curriculum && typeof curriculum.getChapterStatus === "function"
+          ? curriculum.getChapterStatus(ch.id)
+          : "Not Started";
+        const highlights = Array.isArray(ch.highlights)
+          ? `<ul class="chapter-highlights">${ch.highlights.map(item => `<li>${escapeHTML(item)}</li>`).join("")}</ul>`
           : "";
 
         return `
           <div class="chapter-accordion-item" id="ch-item-${ch.id}">
             <div class="chapter-header" onclick="window.StudyPilotPlanner.toggleChapter('${ch.id}')">
               <span class="chapter-title">
-                ${strandBadge}${termBadge}
-                Ch ${chNum}: ${escapeHTML(ch.title)}
+                <span class="strand-badge strand-term">Official NCERT</span>
+                Ch ${ch.num}: ${escapeHTML(ch.title)}
               </span>
+              <span class="badge badge-indigo">${escapeHTML(status)}</span>
               <i data-lucide="chevron-down"></i>
             </div>
             <div class="chapter-body hidden" id="ch-body-${ch.id}">
-              <p>${escapeHTML(ch.desc)}</p>
-              <button class="btn btn-primary btn-xs w-full" onclick="window.StudyPilotPlanner.quickScheduleRevision('${escapeHTML(this.selectedSubject)}', '${chNum}', '${escapeHTML(ch.title).replace(/'/g,"\\'")}')">
-                <i data-lucide="calendar-plus"></i> Schedule Revision
-              </button>
+              <p>${escapeHTML(ch.summary)}</p>
+              ${highlights}
+              <div class="chapter-action-row">
+                <a class="btn btn-secondary btn-xs" href="${ch.textbookUrl}" target="_blank" rel="noopener noreferrer">Open Textbook</a>
+                <a class="btn btn-outline btn-xs" href="${ch.textbookPage}" target="_blank" rel="noopener noreferrer">Open Page</a>
+                <button class="btn btn-primary btn-xs" onclick="window.StudyPilotPlanner.markChapterStarted('${ch.id}')">Mark as Started</button>
+                <button class="btn btn-primary btn-xs" onclick="window.StudyPilotPlanner.markChapterCompleted('${ch.id}')">Mark as Completed</button>
+                <button class="btn btn-outline btn-xs" onclick="window.StudyPilotPlanner.quickScheduleRevision('${escapeHTML(this.selectedSubject)}', '${ch.num}', '${escapeHTML(ch.title).replace(/'/g,"\\'")}')">
+                  <i data-lucide="calendar-plus"></i> Add Revision Task
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -99,6 +107,22 @@
       }
       const typeInput = document.getElementById("event-input-type");
       if (typeInput) typeInput.value = "study";
+    },
+
+    markChapterStarted: function (chapterId) {
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.markChapterStarted === "function") {
+        window.StudyPilotDB.markChapterStarted(chapterId);
+        this.renderSyllabusExplorer();
+        if (window.StudyPilotDashboard) window.StudyPilotDashboard.init();
+      }
+    },
+
+    markChapterCompleted: function (chapterId) {
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.markChapterCompleted === "function") {
+        window.StudyPilotDB.markChapterCompleted(chapterId);
+        this.renderSyllabusExplorer();
+        if (window.StudyPilotDashboard) window.StudyPilotDashboard.init();
+      }
     },
 
     /* ──────────────────────────────────────────
@@ -215,7 +239,7 @@
 
       if (added > 0) {
         window.StudyPilotDB.addNotification(
-          `AI Planner: Generated ${added} revision blocks across all 6 CBSE 2026-27 subjects.`,
+          `AI Planner: Generated ${added} revision blocks for the official Grade 10 NCERT Science chapters.`,
           "success"
         );
         this.renderGrid();

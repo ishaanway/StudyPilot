@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SchoolPilot — CBSE 2026-27 Grade 7 Academic OS</title>
+  <title>SchoolPilot — CBSE Grade 10 Science Tutor</title>
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="StudyPilot is an AI-powered academic operating system that helps students organize school life, prepare for exams, and improve learning.">
@@ -50,7 +50,7 @@
               <option value="7">Grade 7</option>
               <option value="8">Grade 8</option>
               <option value="9">Grade 9</option>
-              <option value="10">Grade 10</option>
+              <option value="10" selected>Grade 10</option>
             </select>
           </div>
           <div class="input-group">
@@ -72,10 +72,10 @@
           <label>Select your subjects</label>
           <div class="subjects-grid">
             <label class="subject-chip checked">
-              <input type="checkbox" value="Mathematics" checked> Mathematics (Ganita Prakash)
+              <input type="checkbox" value="Mathematics" checked> Mathematics
             </label>
             <label class="subject-chip checked">
-              <input type="checkbox" value="Science" checked> Science (Curiosity)
+              <input type="checkbox" value="Science" checked> Science
             </label>
             <label class="subject-chip checked">
               <input type="checkbox" value="Social Science" checked> Social Science
@@ -335,7 +335,7 @@
           <!-- Sidebar: Curriculum explorer and Drag-to-schedule list -->
           <div class="planner-sidebar">
             <div class="curriculum-picker">
-              <h3><i data-lucide="book-open"></i> CBSE 2026-27 Class 7 Syllabus</h3>
+              <h3><i data-lucide="book-open"></i> CBSE Grade 10 Official Textbooks</h3>
               <div class="syllabus-subject-tabs">
                 <button class="tab-btn active" data-subject="Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Science')">🔬 Science</button>
                 <button class="tab-btn" data-subject="Mathematics" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Mathematics')">📐 Maths</button>
@@ -347,7 +347,7 @@
               </div>
               
               <div class="chapters-accordion" id="syllabus-chapters-list">
-                <!-- Dynamically populated with NCERT Chapters (Curiosity/Ganita Prakash) -->
+                <!-- Dynamically populated with official NCERT chapter links -->
               </div>
             </div>
           </div>
@@ -388,20 +388,20 @@
                 </div>
                 <div>
                   <h2>AI Study Pilot</h2>
-                    <p>CBSE 2026-27 · All Subjects · Tamil (Samacheer Kalvi)</p>
+                    <p>CBSE Grade 10 · Official NCERT Science links</p>
                 </div>
               </div>
             </div>
             <div class="tutor-chat-messages" id="tutor-chat-messages">
               <div class="chat-message bot">
-                <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from your Grade 7 textbooks, summarize chapters, or generate quizzes. What are we studying today?</p>
+                <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from the official Grade 10 NCERT Science chapters, open the textbook, or generate quizzes. What are we studying today?</p>
                   <div class="chat-suggestions">
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain acids and bases — neutralization reaction (Science Ch 2)')">⚗️ Acids & Bases</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Solve 2x + 5 = 13 — explain simple equations (Maths Ch 7)')">📐 Simple Equations</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain the Mughal Empire — Akbar and Mansabdari system (Social Science H-4)')">🏰 Mughal Empire</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain acids, bases and salts for Grade 10 Science')">⚗️ Acids & Bases</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain reflection and refraction in Grade 10 Science')">💡 Light & Reflection</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain electricity and Ohms law in Grade 10 Science')">🔋 Electricity</button>
                     <button onclick="window.StudyPilotTutor.askQuestion('திருக்குறளின் ஆசிரியர் யார்? சிலப்பதிகாரம் பற்றி கூறு')">🌺 Tamil — திருக்குறள்</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('What is the Law of Reflection in light? (Science Ch 8)')">💡 Light & Reflection</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain Excel SUM and AVERAGE formulas (Computer Science Ch 5)')">💻 Excel Formulas</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('What is the official NCERT chapter for Grade 10 Science electricity?')">📖 Open Chapter</button>
+                    <button onclick="window.StudyPilotTutor.askQuestion('Explain the official Grade 10 NCERT Science textbook links')">📘 Official Textbook</button>
                   </div>
               </div>
             </div>
@@ -424,17 +424,12 @@
               <div class="quiz-container-card">
                 <div id="quiz-init-view">
                   <h3>Generate Chapter Quiz</h3>
-                  <p>Test your knowledge with 5 interactive questions based on the new CBSE syllabus.</p>
+                  <p>Test your knowledge with 5 interactive questions based on the official Grade 10 NCERT Science chapters.</p>
                   
                   <div class="input-group">
                     <label for="quiz-subject-select">Subject</label>
                      <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
-                      <option value="Science">🔬 Science (Curiosity)</option>
-                      <option value="Mathematics">📐 Mathematics (Ganita Prakash)</option>
-                      <option value="Social Science">🌍 Social Science (Exploring Society)</option>
-                      <option value="English">📖 English (Poorvi)</option>
-                      <option value="Tamil">🌺 Tamil (Samacheer Kalvi)</option>
-                      <option value="Computer Science">💻 Computer Science</option>
+                      <option value="Science">🔬 Science - Official NCERT Grade 10</option>
                     </select>
                   </div>
                   <div class="input-group">
@@ -659,7 +654,7 @@
 
                 <div class="ocr-results hidden" id="ocr-results">
                   <div class="ocr-results-header">
-                    <h4><i data-lucide="file-check"></i> Extracted Summary: Curiosity Chapter 3 (Electricity)</h4>
+                    <h4><i data-lucide="file-check"></i> Extracted Summary: Grade 10 Science Chapter 11 (Electricity)</h4>
                     <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
                   </div>
                   <div class="ocr-results-body">
@@ -712,7 +707,7 @@
             <div class="profile-avatar-large" id="profile-avatar-lg">IS</div>
             <div>
               <h1 id="profile-fullname">Ishaan</h1>
-              <p id="profile-details">Grade 7 Student • CBSE Board</p>
+              <p id="profile-details">Grade 10 Student • CBSE Board</p>
               <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
             </div>
           </div>
@@ -736,7 +731,7 @@
                       <option value="7">Grade 7</option>
                       <option value="8">Grade 8</option>
                       <option value="9">Grade 9</option>
-                      <option value="10">Grade 10</option>
+                      <option value="10" selected>Grade 10</option>
                     </select>
                   </div>
                   <div class="input-group">
@@ -862,7 +857,7 @@
         </div>
         <div class="input-group">
           <label for="exam-input-topic">Topic/Chapter Summary</label>
-          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Curiosity Chapters 1-3">
+          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Grade 10 Science Chapters 2, 9, 11">
         </div>
         <div class="input-group">
           <label for="exam-input-date">Exam Date</label>
@@ -994,7 +989,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <!-- Application Modules -->
-  <script src="js/syllabus.js"></script>
+  <script src="js/curriculum.js"></script>
   <script src="js/db.js"></script>
   <script src="js/setup.js"></script>
   <script src="js/dashboard.js"></script>

@@ -20,8 +20,10 @@ from backend.knowledge import (
     search_knowledge,
     search_syllabus_nodes,
     seed_knowledge_base,
+    seed_official_curriculum_catalog,
+    solve_simple_arithmetic,
 )
-from backend.llm import generate_with_ollama, ollama_is_available
+from backend.llm import generate_tutor_response
 from backend.reminder import build_reminders
 from backend.scheduler import build_daily_plan, rebalance_missed_sessions
 
@@ -48,7 +50,7 @@ def _clamp_grade(value: Any) -> int:
     try:
         grade = int(value)
     except (TypeError, ValueError):
-        return 7
+        return 10
     return max(6, min(10, grade))
 
 
@@ -531,7 +533,7 @@ def curriculum():
         """,
         (
             student_id,
-            int(payload.get("grade") or 7),
+            int(payload.get("grade") or 10),
             payload.get("subject_id"),
             subject_name,
             chapter_title,
@@ -670,8 +672,19 @@ def tutor_respond():
 
     student_id = _resolve_student_id(payload)
     profile = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)) if student_id else None
-    grade = _clamp_grade(payload.get("grade") or (profile.get("grade") if profile else 7))
+    grade = _clamp_grade(payload.get("grade") or (profile.get("grade") if profile else 10))
     subject = (payload.get("subject") or "").strip()
+
+    arithmetic_answer = solve_simple_arithmetic(question)
+    if arithmetic_answer:
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "calculator",
+                "answer": arithmetic_answer,
+                "sources": [],
+            }
+        )
 
     matches = search_knowledge(question, grade=grade, subject=subject, limit=4)
     syllabus_matches = search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
@@ -685,8 +698,6 @@ def tutor_respond():
                 + (f" | Chapter {row.get('chapter_number')}" if row.get('chapter_number') else "")
             )
         context = f"{context}\n\n" + "\n".join(syllabus_lines)
-    llm_available = ollama_is_available()
-
     system_prompt = (
         "You are StudyPilot, a calm and honest school tutor for Grades 6-10. "
         "Use only the provided CBSE syllabus context and the student's details. "
@@ -704,18 +715,17 @@ def tutor_respond():
         "If helpful, end with one short follow-up question."
     )
 
-    response_text = None
-    if llm_available:
-        response_text = generate_with_ollama(system_prompt, user_prompt)
+    response_text, llm_mode = generate_tutor_response(system_prompt, user_prompt)
 
     if not response_text:
         response_text = offline_answer(question, matches)
+        llm_mode = "offline_knowledge"
 
     return jsonify(
-            {
-                "ok": True,
-                "mode": "ollama" if llm_available and response_text else "offline_knowledge",
-                "answer": response_text,
+        {
+            "ok": True,
+            "mode": llm_mode,
+            "answer": response_text,
             "sources": [
                 {
                     "grade": entry["grade"],
@@ -726,7 +736,8 @@ def tutor_respond():
                     "source_url": entry["source_url"],
                 }
                 for entry in matches
-            ] + [
+            ]
+            + [
                 {
                     "grade": row.get("grade"),
                     "subject": row.get("subject"),
@@ -786,6 +797,7 @@ def syllabus_search():
 
 init_db()
 seed_knowledge_base()
+seed_official_curriculum_catalog()
 
 
 if __name__ == "__main__":

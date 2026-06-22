@@ -5,3 +5,10 @@ database/studypilot.db
 node_modules/
 __pycache__/
 *.pyc
+models/
+artifacts/
+data/tutor_training*.jsonl
+*.safetensors
+*.bin
+*.pt
+*.ckpt

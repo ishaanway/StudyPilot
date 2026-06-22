@@ -8,7 +8,7 @@
   const DEFAULTS = {
     profile: {
       name: "",
-      grade: "7",
+      grade: "10",
       board: "CBSE",
       subjects: ["Mathematics", "Science", "Social Science", "English", "Tamil", "Computer Science"],
       dailyHours: 2,
@@ -109,7 +109,12 @@
       { id: "no2", message: "🤖 AI Coach: Study session for BODMAS & Simple Equations scheduled for Wednesday 5 PM.",          read: false, type: "info" },
       { id: "no3", message: "📅 Social Science Unit Test on 3 July — Delhi Sultans & Mughal Empire.",                         read: false, type: "exam" },
       { id: "no4", message: "🌺 Tamil Term I Exam on 10 July — திருக்குறள் & இலக்கணம் (Grammar) chapters.",                 read: false, type: "exam" }
-    ]
+    ],
+    curriculumProgress: {
+      "cbse10_science_ch2": { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] },
+      "cbse10_science_ch9": { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] },
+      "cbse10_science_ch11": { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] }
+    }
   };
 
   // Helper local storage wrappers
@@ -132,6 +137,7 @@
           set(key, DEFAULTS[key]);
         }
       }
+      this.migrateLegacyDemoData();
       this.checkStreak();
     },
 
@@ -141,6 +147,51 @@
         localStorage.removeItem(DB_PREFIX + key);
       }
       this.init();
+    },
+
+    migrateLegacyDemoData: function () {
+      const profile = this.getProfile();
+      if (profile && String(profile.board || "").toUpperCase() === "CBSE" && String(profile.grade || "") === "7") {
+        profile.grade = "10";
+        this.saveProfile(profile);
+      }
+
+      const replaceText = (value) => String(value || "")
+        .replace(/Curiosity Ch 1-3 \(Electricity, Acids, Science Methods\)/g, "Grade 10 Science Ch 2, 9, 11")
+        .replace(/Curiosity Ch 3 — Electricity summary/g, "Grade 10 Science Ch 11 — Electricity")
+        .replace(/Curiosity Ch 2/g, "Grade 10 Science Ch 2")
+        .replace(/Curiosity Ch 1-3/g, "Grade 10 Science Ch 2, 9, 11")
+        .replace(/Curiosity/g, "Grade 10 Science")
+        .replace(/Ganita Prakash Ch 1-2 \(Large Numbers, BODMAS\)/g, "BODMAS practice")
+        .replace(/Ganita Prakash Ch 7 — Simple Equations/g, "BODMAS practice")
+        .replace(/Ganita Prakash/g, "Grade 10 Science")
+        .replace(/Poorvi/g, "official Grade 10 Science")
+        .replace(/Exploring Society/g, "Grade 10 Science");
+
+      const tasks = this.getTasks().map(task => ({
+        ...task,
+        title: replaceText(task.title),
+      }));
+      this.saveTasks(tasks);
+
+      const exams = this.getExams().map(exam => ({
+        ...exam,
+        topic: replaceText(exam.topic),
+      }));
+      this.saveExams(exams);
+
+      const calendar = this.getCalendarEvents().map(event => ({
+        ...event,
+        title: replaceText(event.title),
+      }));
+      this.saveCalendarEvents(calendar);
+
+      const notes = this.getNotes().map(note => ({
+        ...note,
+        title: replaceText(note.title),
+        body: replaceText(note.body),
+      }));
+      this.saveNotes(notes);
     },
 
     // Profile API
@@ -240,6 +291,78 @@
       let events = this.getCalendarEvents();
       events = events.filter(e => e.id !== id);
       this.saveCalendarEvents(events);
+    },
+
+    // Curriculum progress API
+    getCurriculumProgress: function () {
+      return get("curriculumProgress");
+    },
+    saveCurriculumProgress: function (progress) {
+      set("curriculumProgress", progress);
+    },
+    updateCurriculumChapter: function (chapterId, patch) {
+      const progress = this.getCurriculumProgress();
+      const current = progress[chapterId] || { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] };
+      progress[chapterId] = { ...current, ...patch };
+      this.saveCurriculumProgress(progress);
+      return progress[chapterId];
+    },
+    markChapterStarted: function (chapterId) {
+      const chapter = this.updateCurriculumChapter(chapterId, {
+        status: "Started",
+        startedAt: new Date().toISOString(),
+      });
+      this.addNotification("Chapter marked as started.", "info");
+      return chapter;
+    },
+    markChapterCompleted: function (chapterId) {
+      const chapter = this.updateCurriculumChapter(chapterId, {
+        status: "Completed",
+        completedAt: new Date().toISOString(),
+      });
+      this.scheduleRevisionForChapter(chapterId);
+      this.addNotification("Chapter marked as completed. Revision has been scheduled.", "success");
+      return chapter;
+    },
+    scheduleRevisionForChapter: function (chapterId) {
+      const chapter = window.StudyPilotCurriculum ? window.StudyPilotCurriculum.getChapterByKey(chapterId) : null;
+      if (!chapter) return;
+
+      const progress = this.getCurriculumProgress();
+      const current = progress[chapterId] || { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] };
+      const revisionDates = Array.isArray(current.revisionDates) ? current.revisionDates.slice() : [];
+      const baseDate = new Date("2026-06-22T00:00:00");
+      const offsets = [2, 7];
+
+      offsets.forEach(days => {
+        const reviewDate = new Date(baseDate);
+        reviewDate.setDate(reviewDate.getDate() + days);
+        const reviewIso = reviewDate.toISOString().slice(0, 10);
+        if (!revisionDates.includes(reviewIso)) {
+          revisionDates.push(reviewIso);
+          const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][reviewDate.getDay()];
+          this.addCalendarEvent(`Revision: ${chapter.title}`, dayName, "study", "18:00", "18:45");
+        }
+      });
+
+      progress[chapterId] = {
+        ...current,
+        revisionDates,
+      };
+      this.saveCurriculumProgress(progress);
+    },
+    getChapterCompletionSummary: function () {
+      const progress = this.getCurriculumProgress();
+      const chapters = window.StudyPilotCurriculum ? window.StudyPilotCurriculum.getScienceChapters() : [];
+      const completed = chapters.filter(ch => (progress[ch.id] || {}).status === "Completed").length;
+      const started = chapters.filter(ch => ["Started", "Completed"].includes((progress[ch.id] || {}).status)).length;
+      const total = chapters.length;
+      return {
+        completed,
+        started,
+        total,
+        percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
     },
 
     // Notes API

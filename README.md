@@ -17,13 +17,25 @@ The current workspace already contains a polished browser prototype in the proje
 
 ## Local LLM
 
-StudyPilot now supports a local LLM tutor path through [Ollama](https://ollama.com/). The backend will call Ollama when it is available and otherwise fall back to the offline CBSE knowledge base.
+StudyPilot now supports a local LLM tutor path through [Ollama](https://ollama.com/) or a locally fine-tuned Hugging Face model. The backend will try the configured local model first and otherwise fall back to Ollama and the offline CBSE knowledge base.
 
 Default model:
 
 - `tinyllama`
 
 That model is small enough to run locally for a school exhibition and is suitable for retrieval-style tutoring, summaries, and simple explanations.
+
+If you fine-tune a local model, point StudyPilot at it with:
+
+- `STUDYPILOT_LLM_PROVIDER=transformers`
+- `STUDYPILOT_LLM_MODEL_PATH=path/to/merged/model`
+
+If you want to keep using Ollama, set:
+
+- `STUDYPILOT_LLM_PROVIDER=ollama`
+- `STUDYPILOT_OLLAMA_MODEL=your-ollama-model-name`
+
+Fine-tuning steps are documented in [`docs/fine_tuning.md`](docs/fine_tuning.md).
 
 ## Current frontend
 
