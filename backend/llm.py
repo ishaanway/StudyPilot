@@ -17,7 +17,7 @@ from urllib.request import Request, urlopen
 OLLAMA_BASE_URL = os.getenv("STUDYPILOT_OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv(
     "STUDYPILOT_OLLAMA_MODEL",
-    os.getenv("STUDYPILOT_LLM_MODEL", "tinyllama"),
+    os.getenv("STUDYPILOT_LLM_MODEL", "qwen2.5:1.5b"),
 )
 LLM_PROVIDER = os.getenv("STUDYPILOT_LLM_PROVIDER", "ollama").strip().lower()
 HF_MODEL_PATH = os.getenv(
@@ -44,7 +44,7 @@ def generate_with_ollama(
     system_prompt: str,
     user_prompt: str,
     model: str | None = None,
-    timeout: float = 30.0,
+    timeout: float = 90.0,
 ) -> str | None:
     payload = {
         "model": model or OLLAMA_MODEL,
@@ -55,6 +55,7 @@ def generate_with_ollama(
         ],
         "options": {
             "temperature": 0.2,
+            "num_predict": 180,
         },
     }
     request = Request(

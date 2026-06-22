@@ -6,14 +6,19 @@
   window.StudyPilotApp = {
     activeScreen: "dashboard",
     currentTheme: "light",
+    themePickerBound: false,
 
     init: function () {
       this.loadTheme();
+      this.initThemePicker();
       this.checkOnboarding();
       this.initNavigation();
       this.initThemeToggle();
       this.initNotifications();
       this.initGlobalSearch();
+      if (window.StudyPilotReminderService && typeof window.StudyPilotReminderService.init === "function") {
+        window.StudyPilotReminderService.init();
+      }
       
       // Load user profile details initially
       this.loadUserProfile();
@@ -134,8 +139,35 @@
       if (!btn) return;
 
       btn.addEventListener("click", () => {
-        const targetTheme = this.currentTheme === "light" ? "dark" : "light";
-        this.setTheme(targetTheme);
+        const menu = document.getElementById("theme-picker-menu");
+        if (menu) {
+          menu.classList.toggle("hidden");
+        }
+      });
+    },
+
+    initThemePicker: function () {
+      if (this.themePickerBound) return;
+      this.themePickerBound = true;
+
+      document.addEventListener("click", (event) => {
+        const wrap = document.querySelector(".theme-picker-wrap");
+        const menu = document.getElementById("theme-picker-menu");
+        if (!wrap || !menu) return;
+        if (!wrap.contains(event.target)) {
+          menu.classList.add("hidden");
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+        const option = event.target.closest ? event.target.closest(".theme-option") : null;
+        if (!option) return;
+        const theme = option.getAttribute("data-theme");
+        if (theme) {
+          this.setTheme(theme);
+          const menu = document.getElementById("theme-picker-menu");
+          if (menu) menu.classList.add("hidden");
+        }
       });
     },
 
@@ -148,23 +180,38 @@
       const moon = document.querySelector("#theme-toggle-btn .moon-icon");
       const text = document.querySelector("#theme-toggle-btn span");
 
-      if (theme === "dark") {
+      const themeLabels = {
+        light: "Light Mode",
+        dark: "Dark Mode",
+        midnight: "Midnight",
+        ocean: "Ocean",
+        forest: "Forest",
+        sunset: "Sunset",
+        aurora: "Aurora",
+      };
+
+      const darkLikeThemes = new Set(["dark", "midnight"]);
+      if (darkLikeThemes.has(theme)) {
         sun.classList.add("hidden");
         moon.classList.remove("hidden");
-        text.innerText = "Dark Mode";
       } else {
         sun.classList.remove("hidden");
         moon.classList.add("hidden");
-        text.innerText = "Light Mode";
       }
+      text.innerText = themeLabels[theme] || "Light Mode";
+
+      document.querySelectorAll(".theme-option").forEach(option => {
+        option.classList.toggle("active", option.getAttribute("data-theme") === theme);
+      });
       
       localStorage.setItem("studypilot_theme", theme);
     },
 
     loadTheme: function () {
       const savedTheme = localStorage.getItem("studypilot_theme");
+      const allowedThemes = new Set(["light", "dark", "midnight", "ocean", "forest", "sunset", "aurora"]);
       // Respect OS system preferences if no saved theme
-      if (!savedTheme) {
+      if (!savedTheme || !allowedThemes.has(savedTheme)) {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
         this.setTheme(prefersDark ? "dark" : "light");
       } else {
@@ -306,13 +353,18 @@
   };
 
   // Run automatically when DOM loaded
-  document.addEventListener("DOMContentLoaded", () => {
+  const bootApp = () => {
     window.StudyPilotApp.init();
-    // Run Lucide drawer initially
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootApp, { once: true });
+  } else {
+    bootApp();
+  }
 
   function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

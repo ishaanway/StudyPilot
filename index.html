@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SchoolPilot — CBSE Grade 10 Science Tutor</title>
+  <title>SchoolPilot — CBSE Grades 6-10 Tutor</title>
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="StudyPilot is an AI-powered academic operating system that helps students organize school life, prepare for exams, and improve learning.">
@@ -47,6 +47,9 @@
           <div class="input-group">
             <label for="setup-grade">Grade</label>
             <select id="setup-grade">
+              <option value="6">Grade 6</option>
+              <option value="7">Grade 7</option>
+              <option value="8">Grade 8</option>
               <option value="9">Grade 9</option>
               <option value="10" selected>Grade 10</option>
             </select>
@@ -181,11 +184,22 @@
         </button>
       </nav>
       <div class="sidebar-footer">
-        <button id="theme-toggle-btn" class="theme-toggle">
-          <i data-lucide="sun" class="sun-icon"></i>
-          <i data-lucide="moon" class="moon-icon hidden"></i>
-          <span>Light Mode</span>
-        </button>
+        <div class="theme-picker-wrap">
+          <button id="theme-toggle-btn" class="theme-toggle" type="button">
+            <i data-lucide="sun" class="sun-icon"></i>
+            <i data-lucide="moon" class="moon-icon hidden"></i>
+            <span>Light Mode</span>
+            <i data-lucide="chevron-up" class="theme-caret"></i>
+          </button>
+          <div id="theme-picker-menu" class="theme-picker-menu hidden">
+            <button class="theme-option" data-theme="light" type="button">Light</button>
+            <button class="theme-option" data-theme="midnight" type="button">Midnight</button>
+            <button class="theme-option" data-theme="ocean" type="button">Ocean</button>
+            <button class="theme-option" data-theme="forest" type="button">Forest</button>
+            <button class="theme-option" data-theme="sunset" type="button">Sunset</button>
+            <button class="theme-option" data-theme="aurora" type="button">Aurora</button>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -308,6 +322,16 @@
                 <!-- Dynamically populated -->
               </div>
             </div>
+
+            <div class="card card-upcoming">
+              <div class="card-header">
+                <h2><i data-lucide="alarm-clock"></i> Overdue Reminders</h2>
+                <span class="badge badge-red">Loud Alert</span>
+              </div>
+              <div class="upcoming-list" id="dashboard-reminders">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -333,7 +357,7 @@
           <!-- Sidebar: Curriculum explorer and Drag-to-schedule list -->
           <div class="planner-sidebar">
             <div class="curriculum-picker">
-              <h3><i data-lucide="book-open"></i> CBSE Grade 10 Official Textbooks</h3>
+              <h3><i data-lucide="book-open"></i> CBSE Official Textbooks</h3>
               <div class="syllabus-subject-tabs">
                 <button class="tab-btn active" data-subject="Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Science')">🔬 Science</button>
                 <button class="tab-btn" data-subject="Mathematics" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Mathematics')">📐 Maths</button>
@@ -386,7 +410,7 @@
                 </div>
                 <div>
                   <h2>AI Study Pilot</h2>
-                    <p>CBSE Grade 10 · Official NCERT Science links</p>
+                    <p>CBSE · Official NCERT Science links</p>
                 </div>
               </div>
             </div>
@@ -422,12 +446,12 @@
               <div class="quiz-container-card">
                 <div id="quiz-init-view">
                   <h3>Generate Chapter Quiz</h3>
-                  <p>Test your knowledge with 5 interactive questions based on the official Grade 10 NCERT Science chapters.</p>
+                  <p>Test your knowledge with 5 interactive questions based on the official NCERT Science chapters for your selected grade.</p>
                   
                   <div class="input-group">
                     <label for="quiz-subject-select">Subject</label>
                      <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
-                      <option value="Science">🔬 Science - Official NCERT Grade 10</option>
+                      <option value="Science">🔬 Science - Official NCERT</option>
                     </select>
                   </div>
                   <div class="input-group">
@@ -652,7 +676,7 @@
 
                 <div class="ocr-results hidden" id="ocr-results">
                   <div class="ocr-results-header">
-                    <h4><i data-lucide="file-check"></i> Extracted Summary: Grade 10 Science Chapter 11 (Electricity)</h4>
+                    <h4><i data-lucide="file-check"></i> Extracted Summary: Science Chapter 11 (Electricity)</h4>
                     <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
                   </div>
                   <div class="ocr-results-body">
@@ -705,7 +729,7 @@
             <div class="profile-avatar-large" id="profile-avatar-lg">IS</div>
             <div>
               <h1 id="profile-fullname">Ishaan</h1>
-              <p id="profile-details">Grade 10 Student • CBSE Board</p>
+              <p id="profile-details">CBSE Student • CBSE Board</p>
               <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
             </div>
           </div>
@@ -726,6 +750,9 @@
                   <div class="input-group">
                     <label for="profile-edit-grade">Grade</label>
                     <select id="profile-edit-grade">
+                      <option value="6">Grade 6</option>
+                      <option value="7">Grade 7</option>
+                      <option value="8">Grade 8</option>
                       <option value="9">Grade 9</option>
                       <option value="10" selected>Grade 10</option>
                     </select>
@@ -794,6 +821,21 @@
       </button>
     </nav>
 
+    <div id="overdue-alarm-overlay" class="alarm-overlay hidden" role="dialog" aria-modal="true" aria-live="assertive">
+      <div class="alarm-card">
+        <div class="alarm-pulse"></div>
+        <div class="alarm-header">
+          <span class="badge badge-red">Overdue Alert</span>
+          <h2 id="alarm-title">Task overdue</h2>
+        </div>
+        <p id="alarm-message">You have something due right now. Finish it before it slips further.</p>
+        <div class="alarm-actions">
+          <button class="btn btn-outline" id="alarm-snooze-btn" type="button">Snooze 10 Minutes</button>
+          <button class="btn btn-primary" id="alarm-stop-btn" type="button">Stop Alarm</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ======================================================== -->
@@ -853,7 +895,7 @@
         </div>
         <div class="input-group">
           <label for="exam-input-topic">Topic/Chapter Summary</label>
-          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Grade 10 Science Chapters 2, 9, 11">
+          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Science Chapters 2, 9, 11">
         </div>
         <div class="input-group">
           <label for="exam-input-date">Exam Date</label>
@@ -992,6 +1034,7 @@
   <script src="js/planner.js"></script>
   <script src="js/tutor.js"></script>
   <script src="js/toolbox.js"></script>
+  <script src="js/reminders.js"></script>
   <script src="js/app.js"></script>
 
 </body>

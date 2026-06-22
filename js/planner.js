@@ -40,7 +40,7 @@
       const chapters = curriculum ? curriculum.getChapters(this.selectedSubject) : [];
 
       if (!chapters || chapters.length === 0) {
-        container.innerHTML = `<p style="padding:12px;opacity:0.6;">No official Grade 10 chapters are wired for ${escapeHTML(this.selectedSubject)} yet.</p>`;
+        container.innerHTML = `<p style="padding:12px;opacity:0.6;">No official chapters are wired for ${escapeHTML(this.selectedSubject)} in the selected grade yet.</p>`;
         return;
       }
 
@@ -236,7 +236,7 @@
 
       if (added > 0) {
         window.StudyPilotDB.addNotification(
-          `AI Planner: Generated ${added} revision blocks for the official Grade 10 NCERT Science chapters.`,
+          `AI Planner: Generated ${added} revision blocks for the official NCERT Science chapters in your selected grade.`,
           "success"
         );
         this.renderGrid();

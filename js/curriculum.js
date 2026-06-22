@@ -239,7 +239,8 @@
   }
 
   function buildFlashcardsForGrade(grade) {
-    const gradeSpecs = GRADE_FLASHCARD_SPECS[grade] || GRADE_FLASHCARD_SPECS[10];
+    const gradeSpecs = GRADE_FLASHCARD_SPECS[grade];
+    if (!gradeSpecs) return [];
     const sourceBySubject = OFFICIAL_SOURCE_URLS;
     const cards = [];
 
@@ -264,6 +265,8 @@
   const GRADE_FLASHCARDS = {
     9: buildFlashcardsForGrade(9),
     10: buildFlashcardsForGrade(10),
+    7: buildFlashcardsForGrade(7),
+    8: buildFlashcardsForGrade(8),
   };
 
   function cleanText(value) {
@@ -283,7 +286,8 @@
   }
 
   function getScienceChapters(grade = 10) {
-    const chapters = SCIENCE_CHAPTERS_BY_GRADE[grade] || SCIENCE_CHAPTERS_BY_GRADE[10];
+    const chapters = SCIENCE_CHAPTERS_BY_GRADE[grade];
+    if (!chapters) return [];
     return chapters.map(chapter => ({ ...chapter }));
   }
 
@@ -336,13 +340,19 @@
   }
 
   function getSubjectsForGrade(grade = 10) {
-    const cards = GRADE_FLASHCARDS[grade] || GRADE_FLASHCARDS[10];
-    return [...new Set(cards.map(card => card.subject))];
+    const cards = GRADE_FLASHCARDS[grade];
+    if (cards && cards.length > 0) {
+      return [...new Set(cards.map(card => card.subject))];
+    }
+
+    return Object.keys(OFFICIAL_SOURCE_URLS);
   }
 
   function getQuizChapters(subject, grade = 10) {
     if (normalize(subject) !== "science") return [];
-    return getScienceChapters(grade).map(chapter => ({
+    const chapters = getScienceChapters(grade);
+    if (!chapters.length) return [];
+    return chapters.map(chapter => ({
       key: chapter.key,
       label: `Ch ${chapter.num}: ${chapter.title}`,
       officialUrl: chapter.textbookUrl,
@@ -351,12 +361,14 @@
   }
 
   function getQuizBank(grade = 10) {
-    const quizBank = QUIZ_BANK_BY_GRADE[grade] || QUIZ_BANK_BY_GRADE[10];
+    const quizBank = QUIZ_BANK_BY_GRADE[grade];
+    if (!quizBank) return {};
     return JSON.parse(JSON.stringify(quizBank));
   }
 
   function getFlashcardsForGrade(grade = 10, subject = "") {
-    const deck = GRADE_FLASHCARDS[grade] || GRADE_FLASHCARDS[10];
+    const deck = GRADE_FLASHCARDS[grade];
+    if (!deck) return [];
     const cards = Object.values(deck).flat();
     if (!subject) return JSON.parse(JSON.stringify(cards));
     return JSON.parse(JSON.stringify(cards.filter(card => card.subject === subject)));
@@ -368,7 +380,7 @@
       return buildKnowledgeHtml(chapter);
     }
 
-    if (/grade\s*(9|10)|class\s*(ix|x)|cbse|ncert/.test(normalize(query))) {
+    if (/grade\s*(6|7|8|9|10)|class\s*(vi|vii|viii|ix|x)|cbse|ncert/.test(normalize(query))) {
       const chapters = getScienceChapters(grade);
       return `
         <div class="official-knowledge-card">
@@ -397,7 +409,7 @@
     subject: "Science",
     textbookPage: "https://ncert.nic.in/textbook.php?jesc1=1-16",
     getBoards: () => ["CBSE"],
-    getGrades: () => [9, 10],
+    getGrades: () => [7, 8, 9, 10],
     getSubjects,
     getSubjectsForGrade,
     getChapters: (subject) => {

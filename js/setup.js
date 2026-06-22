@@ -109,7 +109,13 @@
   };
 
   // Run init when DOM is loaded
-  document.addEventListener("DOMContentLoaded", () => {
+  const bootSetup = () => {
     window.StudyPilotSetup.init();
-  });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootSetup, { once: true });
+  } else {
+    bootSetup();
+  }
 })();

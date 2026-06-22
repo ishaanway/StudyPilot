@@ -30,7 +30,7 @@ from backend.scheduler import build_daily_plan, rebalance_missed_sessions
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=str(PROJECT_ROOT), static_url_path="")
 
 
 def _json_error(message: str, status_code: int = 400):
@@ -66,8 +66,24 @@ def _looks_like_greeting(question: str) -> bool:
         "good morning",
         "good afternoon",
         "good evening",
-      }
+    }
     return text in greetings or text.startswith(tuple(greetings))
+
+
+def _looks_like_prompt_echo(answer: str) -> bool:
+    text = (answer or "").strip().lower()
+    if not text:
+        return True
+    echo_markers = (
+        "student:",
+        "subject:",
+        "question:",
+        "context:",
+        "related cbse/ncert syllabus context",
+        "greetings!",
+        "please let me know",
+    )
+    return any(marker in text for marker in echo_markers)
 
 
 def _student_from_row(row: dict | None) -> dict | None:
@@ -264,6 +280,11 @@ def _handle_preflight():
 def health():
     db_exists = (PROJECT_ROOT / "database" / "studypilot.db").exists()
     return jsonify({"ok": True, "service": "StudyPilot", "database_ready": db_exists})
+
+
+@app.get("/")
+def index():
+    return app.send_static_file("index.html")
 
 
 @app.get("/api/bootstrap")
@@ -705,6 +726,8 @@ def tutor_respond():
 
     matches = [] if greeting_mode else search_knowledge(question, grade=grade, subject=subject, limit=4)
     syllabus_matches = [] if greeting_mode else search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
+    if not greeting_mode and not matches and not syllabus_matches:
+        syllabus_matches = search_syllabus_nodes(question, grade=None, subject=subject, limit=6)
     context = format_knowledge_context(matches) if matches else ""
     if syllabus_matches:
         syllabus_lines = ["Imported syllabus matches:"]
@@ -716,18 +739,19 @@ def tutor_respond():
             )
         context = f"{context}\n\n" + "\n".join(syllabus_lines) if context else "\n".join(syllabus_lines)
     system_prompt = (
-        "You are StudyPilot, a calm and honest school tutor for Grades 6-10. "
-        "Use only the provided CBSE syllabus context and the student's details. "
-        "If the context is not enough, say so clearly and suggest the closest textbook chapter. "
-        "Never invent syllabus facts or pretend to know something you do not know. "
-        "Keep the explanation concise, friendly, and appropriate for a school exhibition demo."
+        "You are StudyPilot, a warm, highly capable school tutor for Grades 6-10. "
+        "Use the provided CBSE/NCERT syllabus context as grounding, but explain concepts in a teaching style with examples, hints, and short steps. "
+        "Adapt your explanation to the student's grade and subject. "
+        "Never invent syllabus facts or chapter names that conflict with the official curriculum. "
+        "If the question is unclear, ask one short clarifying question. "
+        "Otherwise, answer directly and helpfully in school-friendly language."
     )
     if greeting_mode:
         system_prompt = (
             "You are StudyPilot, a friendly school tutor and study companion. "
             "The student is greeting you, so respond warmly in one short paragraph. "
-            "Do not mention syllabus context unless the student asks a study question. "
-            "Then ask what grade or subject they want help with."
+            "Then ask what grade, subject, or chapter they want help with. "
+            "Keep the tone encouraging and energetic."
         )
 
     if greeting_mode:
@@ -738,15 +762,43 @@ def tutor_respond():
         )
     else:
         user_prompt = (
-            f"Student grade: {grade}\n"
+            f"Grade: {grade}\n"
             f"Subject hint: {subject or 'not specified'}\n"
             f"Question: {question}\n\n"
-            f"{context}\n\n"
+            f"Context:\n{context}\n\n"
             "Answer the student's question in simple language. "
+            "Keep the response to 4-6 short sentences or 4-5 bullets. "
+            "Do not repeat the labels above. "
             "If helpful, end with one short follow-up question."
         )
 
     response_text, llm_mode = generate_tutor_response(system_prompt, user_prompt)
+
+    if llm_mode == "ollama" and _looks_like_prompt_echo(response_text):
+        if greeting_mode:
+            retry_system_prompt = (
+                "You are StudyPilot, a warm school tutor. "
+                "Reply with exactly one short friendly paragraph. "
+                "Do not repeat the user's words or any labels."
+            )
+            retry_user_prompt = "Write a short greeting and ask what grade, subject, or chapter they need help with."
+        else:
+            retry_system_prompt = (
+                "You are StudyPilot, a helpful school tutor. "
+                "Answer directly with no labels, no context recap, and no quoted prompt text. "
+                "Use a natural teaching style."
+            )
+            retry_user_prompt = (
+                f"Grade: {grade}\n"
+                f"Question: {question}\n"
+                f"Context: {context}\n\n"
+                "Write only the final answer in simple school language. "
+                "Use 3-5 short sentences or 4 concise bullets."
+            )
+        retry_text, retry_mode = generate_tutor_response(retry_system_prompt, retry_user_prompt)
+        if retry_text and not _looks_like_prompt_echo(retry_text):
+            response_text = retry_text
+            llm_mode = retry_mode
 
     if not response_text:
         response_text = offline_answer(question, matches)

@@ -20,24 +20,24 @@
     },
 
     tasks: [
-      { id: "t1", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t2", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: "2026-06-22" },
-      { id: "t3", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: "2026-06-22" },
-      { id: "t4", title: "Complete one mixed practice quiz", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t5", title: "Review class notes and mark doubts", subject: "Science", duration: 20, completed: false, date: "2026-06-23" }
+      { id: "t1", grade: "10", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: "2026-06-22" },
+      { id: "t2", grade: "10", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: "2026-06-22" },
+      { id: "t3", grade: "10", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: "2026-06-22" },
+      { id: "t4", grade: "10", title: "Complete one mixed practice quiz", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t5", grade: "10", title: "Review class notes and mark doubts", subject: "Science", duration: 20, completed: false, date: "2026-06-23" }
     ],
 
     exams: [
-      { id: "e1", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: "2026-06-25" },
-      { id: "e2", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: "2026-06-29" },
-      { id: "e3", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: "2026-07-03" }
+      { id: "e1", grade: "10", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: "2026-06-25" },
+      { id: "e2", grade: "10", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: "2026-06-29" },
+      { id: "e3", grade: "10", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: "2026-07-03" }
     ],
 
     calendar: [
-      { id: "c1", title: "Science Class", day: "Monday", type: "class", start: "09:00", end: "10:00" },
-      { id: "c2", title: "AI Study Block: Science Ch 2 Revision", day: "Monday", type: "study", start: "18:00", end: "19:00" },
-      { id: "c3", title: "AI Study Block: Science Ch 9 Practice", day: "Wednesday", type: "study", start: "17:00", end: "18:00" },
-      { id: "c4", title: "AI Study Block: Science Ch 11 Problem Solving", day: "Friday", type: "study", start: "17:00", end: "18:00" }
+      { id: "c1", grade: "10", title: "Science Class", day: "Monday", type: "class", start: "09:00", end: "10:00" },
+      { id: "c2", grade: "10", title: "AI Study Block: Science Ch 2 Revision", day: "Monday", type: "study", start: "18:00", end: "19:00" },
+      { id: "c3", grade: "10", title: "AI Study Block: Science Ch 9 Practice", day: "Wednesday", type: "study", start: "17:00", end: "18:00" },
+      { id: "c4", grade: "10", title: "AI Study Block: Science Ch 11 Problem Solving", day: "Friday", type: "study", start: "17:00", end: "18:00" }
     ],
 
     notes: [
@@ -140,12 +140,6 @@
     },
 
     migrateLegacyDemoData: function () {
-      const profile = this.getProfile();
-      if (profile && String(profile.board || '').toUpperCase() === 'CBSE' && String(profile.grade || '') === '7') {
-        profile.grade = '10';
-        this.saveProfile(profile);
-      }
-
       const legacyPattern = /(Curiosity|Ganita Prakash|Poorvi|Exploring Society|Three Questions|Mughal Empire|Grade 7)/i;
       const sectionHasLegacyContent = (items, fields) => Array.isArray(items) && items.some(item =>
         fields.some(field => legacyPattern.test(String(item && item[field] ? item[field] : '')))
@@ -189,19 +183,26 @@
       window.dispatchEvent(new CustomEvent("studypilot_profile_updated", {
         detail: profileData
       }));
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
 
     // Tasks API
-    getTasks: function () {
-      return get("tasks");
+    getTasks: function (gradeOverride) {
+      const profile = this.getProfile();
+      const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
+      const tasks = Array.isArray(get("tasks")) ? get("tasks") : [];
+      return tasks.filter(task => String(task && task.grade ? task.grade : "10") === grade);
     },
     saveTasks: function (tasks) {
       set("tasks", tasks);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addTask: function (title, subject, duration) {
-      const tasks = this.getTasks();
+      const tasks = Array.isArray(get("tasks")) ? get("tasks") : [];
+      const profile = this.getProfile();
       const newTask = {
         id: "task_" + Date.now(),
+        grade: String(profile && profile.grade ? profile.grade : "10"),
         title: title,
         subject: subject,
         duration: parseInt(duration),
@@ -228,16 +229,22 @@
     },
 
     // Exams API
-    getExams: function () {
-      return get("exams");
+    getExams: function (gradeOverride) {
+      const profile = this.getProfile();
+      const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
+      const exams = Array.isArray(get("exams")) ? get("exams") : [];
+      return exams.filter(exam => String(exam && exam.grade ? exam.grade : "10") === grade);
     },
     saveExams: function (exams) {
       set("exams", exams);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addExam: function (subject, topic, date) {
-      const exams = this.getExams();
+      const exams = Array.isArray(get("exams")) ? get("exams") : [];
+      const profile = this.getProfile();
       const newExam = {
         id: "exam_" + Date.now(),
+        grade: String(profile && profile.grade ? profile.grade : "10"),
         subject: subject,
         topic: topic,
         date: date
@@ -256,16 +263,22 @@
     },
 
     // Calendar API
-    getCalendarEvents: function () {
-      return get("calendar");
+    getCalendarEvents: function (gradeOverride) {
+      const profile = this.getProfile();
+      const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
+      const events = Array.isArray(get("calendar")) ? get("calendar") : [];
+      return events.filter(event => String(event && event.grade ? event.grade : "10") === grade);
     },
     saveCalendarEvents: function (events) {
       set("calendar", events);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addCalendarEvent: function (title, day, type, start, end) {
-      const events = this.getCalendarEvents();
+      const events = Array.isArray(get("calendar")) ? get("calendar") : [];
+      const profile = this.getProfile();
       const newEvent = {
         id: "event_" + Date.now(),
+        grade: String(profile && profile.grade ? profile.grade : "10"),
         title: title,
         day: day,
         type: type,
@@ -363,6 +376,7 @@
     },
     saveNotes: function (notes) {
       set("notes", notes);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addNote: function (title, body, color, gradeOverride) {
       const profile = this.getProfile();
@@ -401,6 +415,7 @@
     },
     saveFlashcards: function (cards) {
       set("flashcards", cards);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addFlashcard: function (subject, question, answer) {
       const cards = Array.isArray(get("flashcards")) ? get("flashcards") : [];
@@ -425,6 +440,7 @@
     },
     saveNotifications: function (notifs) {
       set("notifications", notifs);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
     },
     addNotification: function (message, type = "info") {
       const notifs = this.getNotifications();

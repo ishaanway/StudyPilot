@@ -458,7 +458,7 @@ def offline_answer(query: str, entries: list[dict]) -> str:
     if not entries:
         return (
             "I do not have enough local syllabus detail for that yet. "
-            "Try asking about the official Grade 10 Science chapters that have been imported, "
+            "Try asking about the official NCERT chapters that have been imported, "
             "or connect the local LLM for broader answers."
         )
 

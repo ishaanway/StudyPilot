@@ -17,7 +17,7 @@ The current workspace already contains a polished browser prototype in the proje
 
 ## Local LLM
 
-StudyPilot now supports a local LLM tutor path through [Ollama](https://ollama.com/) or a locally fine-tuned Hugging Face model. The backend will try the configured local model first and otherwise fall back to Ollama and the offline CBSE knowledge base.
+StudyPilot now uses an Ollama-first local LLM tutor path through [Ollama](https://ollama.com/) by default. A locally fine-tuned Hugging Face model can still be enabled for experiments, but the primary production path is Ollama so the tutor stays consistent across grades.
 
 Default model:
 
@@ -51,11 +51,13 @@ That prototype remains usable on its own while we phase in the backend and later
 
 ## Run the backend
 
-Install Flask if needed, then start the API:
+Install Flask if needed, then start the Flask app:
 
 ```bash
 python -m backend.app
 ```
+
+That command now serves both the frontend and the API from the same origin, which is the recommended way to use the local Ollama tutor.
 
 Health check:
 

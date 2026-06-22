@@ -20,15 +20,14 @@
     filteredCards: [],
     activeFlashcardSubject: "all",
     activeFlashcardGrade: "10",
+    lastSyncedGrade: "10",
     profileListenerBound: false,
 
     init: function () {
       this.initTabs();
       this.initChat();
       this.bindProfileListener();
-      this.renderFlashcardSubjectFilters();
-      this.updateQuizChapters();
-      this.loadFlashcards();
+      this.syncGradeState(true);
     },
 
     bindProfileListener: function () {
@@ -36,12 +35,38 @@
       this.profileListenerBound = true;
 
       window.addEventListener("studypilot_profile_updated", () => {
-        this.activeFlashcardSubject = "all";
-        this.currentFlashcardIndex = 0;
-        this.renderFlashcardSubjectFilters();
-        this.loadFlashcards();
-        this.updateQuizChapters();
+        this.syncGradeState(false);
       });
+    },
+
+    syncGradeState: function (forceResetQuiz) {
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? String(profile.grade || "10") : "10";
+      const gradeChanged = this.lastSyncedGrade !== grade;
+
+      this.lastSyncedGrade = grade;
+      this.activeQuizGrade = grade;
+      this.activeFlashcardGrade = grade;
+      this.activeFlashcardSubject = "all";
+      this.currentFlashcardIndex = 0;
+
+      if (forceResetQuiz || gradeChanged) {
+        this.currentQuestionIndex = 0;
+        this.quizScore = 0;
+        this.quizTimeSeconds = 0;
+        clearInterval(this.quizTimerInterval);
+
+        const quizInitView = document.getElementById("quiz-init-view");
+        const quizActiveView = document.getElementById("quiz-active-view");
+        const quizResultView = document.getElementById("quiz-result-view");
+        if (quizInitView) quizInitView.classList.remove("hidden");
+        if (quizActiveView) quizActiveView.classList.add("hidden");
+        if (quizResultView) quizResultView.classList.add("hidden");
+      }
+
+      this.renderFlashcardSubjectFilters();
+      this.loadFlashcards();
+      this.updateQuizChapters();
     },
 
     /* ─────────────────────────────────────────────
@@ -196,7 +221,6 @@
 
     buildOfflineFallback: function (msg) {
       const lowerMsg = msg.toLowerCase();
-      const curriculum = window.StudyPilotCurriculum;
       const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
       const grade = profile ? String(profile.grade || "10") : "10";
 
@@ -205,32 +229,19 @@
         return `<p>${escapeHTML(arithmetic)}</p>`;
       }
 
-      // Try the central knowledge base
-      const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg, profile ? profile.grade : "10") : null;
-      if (knowledge) return knowledge;
-
-      const scienceChapters = curriculum && typeof curriculum.getScienceChapters === "function"
-        ? curriculum.getScienceChapters(grade)
-        : [];
-      const chapterNames = scienceChapters.map(chapter => `<strong>${escapeHTML(chapter.title)}</strong>`).join("<br>");
-
       // Fallbacks for common patterns
       if (/quiz|test me|practice/.test(lowerMsg)) {
-        return `<p>Sure! Head to the <strong>Practice Quizzes</strong> tab on the right, choose the official Grade ${escapeHTML(grade)} Science chapter, then click <strong>Start Quiz</strong>.</p>`;
+        return `<p>The full Ollama tutor is not connected right now. Start the backend with Ollama and I will generate detailed quizzes for Grade ${escapeHTML(grade)}.</p>`;
       }
       if (/flashcard/.test(lowerMsg)) {
-        return `<p>Go to the <strong>Flashcards</strong> tab to review quick Q&A across all subjects. Click a card to flip it and rate your confidence!</p>`;
+        return `<p>The full Ollama tutor is not connected right now. Start the backend with Ollama and I will generate detailed flashcards for Grade ${escapeHTML(grade)}.</p>`;
       }
       if (/hello|hi|hey|namaste/.test(lowerMsg)) {
         const name = profile ? escapeHTML(profile.name || "Scholar") : "Scholar";
-        return `<p>Hello, <strong>${name}</strong>! 👋 I'm your AI Study Pilot for CBSE Grade ${escapeHTML(grade)}. I can open the official NCERT chapters for:<br>
-          ${chapterNames || "⚗️ <strong>official chapters</strong><br>"}
-          What are we studying today?</p>`;
+        return `<p>Hello, <strong>${name}</strong>! 👋 I am waiting for the full Ollama tutor connection. Once the backend is running, I can answer Grade ${escapeHTML(grade)} questions in detail.</p>`;
       }
 
-      return `<p>Interesting question! My offline knowledge currently covers the official Grade ${escapeHTML(grade)} NCERT Science chapters only. Try asking about:
-        ${chapterNames ? `<br>${chapterNames}` : ""}
-        <br>You can also ask me to open the official textbook link for a chapter.</p>`;
+      return `<p>I am not connected to the full Ollama tutor right now. Start the StudyPilot backend with Ollama, then ask again for a detailed Grade ${escapeHTML(grade)} answer.</p>`;
     },
 
     appendMessage: function (htmlContent, type) {
@@ -404,6 +415,9 @@
       const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
       this.activeFlashcardGrade = profile ? String(profile.grade || "10") : "10";
       this.flashcardList = window.StudyPilotDB.getFlashcards(this.activeFlashcardGrade);
+      if (this.activeFlashcardSubject !== "all" && !this.flashcardList.some(card => card.subject === this.activeFlashcardSubject)) {
+        this.activeFlashcardSubject = "all";
+      }
       this.filterFlashcards(this.activeFlashcardSubject || "all");
       this.renderFlashcardSubjectFilters();
     },

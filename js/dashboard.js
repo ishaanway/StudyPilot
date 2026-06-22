@@ -208,7 +208,7 @@
 
       if (hasScienceExamSoon && uncompletedTasks.some(t => t.subject === "Science")) {
         html = `
-          <p>Your <strong>CBSE Grade 10 Science exam</strong> is in <strong>3 days</strong>! You still have the Electricity revision task incomplete. I suggest revising the official NCERT chapters now.</p>
+          <p>Your <strong>CBSE Science exam</strong> is coming up soon. You still have a Science revision task incomplete, so I suggest revising the official NCERT chapters now.</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Start Science Quiz</button>
           </div>
@@ -232,7 +232,7 @@
         `;
       } else {
         html = `
-          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> if you want to explore the official Grade 10 NCERT Science chapters!</p>
+          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> if you want to explore the official NCERT chapters for your current grade!</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Ask Tutor</button>
           </div>
