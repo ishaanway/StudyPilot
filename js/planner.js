@@ -36,7 +36,7 @@
       const container = document.getElementById("syllabus-chapters-list");
       if (!container) return;
 
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const chapters = curriculum ? curriculum.getChapters(this.selectedSubject) : [];
 
       if (!chapters || chapters.length === 0) {
@@ -220,12 +220,9 @@
       const events = window.StudyPilotDB.getCalendarEvents();
 
       const slots = [
-        { title: "AI Block: Science — Electricity (Ch 3)",            day: "Monday",    start: "19:00", end: "20:00" },
-        { title: "AI Block: Maths — Simple Equations (Ch 7)",          day: "Tuesday",   start: "16:00", end: "17:30" },
-        { title: "AI Block: Social Science — Delhi Sultans (H-3)",     day: "Wednesday", start: "15:00", end: "16:00" },
-        { title: "AI Block: English — Poorvi Ch 1 & 5 Revision",       day: "Thursday",  start: "17:00", end: "18:00" },
-        { title: "AI Block: Tamil — திருக்குறள் & இலக்கணம் மீட்டல்", day: "Friday",    start: "16:00", end: "17:00" },
-        { title: "AI Block: Computer Science — Excel & Internet",       day: "Saturday",  start: "10:00", end: "11:00" }
+        { title: "AI Block: Science - Acids, Bases and Salts (Ch 2)", day: "Monday", start: "19:00", end: "20:00" },
+        { title: "AI Block: Science - Light, Reflection and Refraction (Ch 9)", day: "Wednesday", start: "17:00", end: "18:00" },
+        { title: "AI Block: Science - Electricity (Ch 11)", day: "Friday", start: "16:00", end: "17:00" }
       ];
 
       let added = 0;

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,7 @@ from backend.database import execute, fetch_all, fetch_one
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+NCERT_MANIFEST_PATH = PROJECT_ROOT / "docs" / "syllabus_sources" / "ncert_manifest.json"
 
 
 SEED_ENTRIES: list[dict[str, Any]] = [
@@ -48,6 +50,10 @@ SEED_ENTRIES: list[dict[str, Any]] = [
         "source_type": "NCERT Official",
     },
 ]
+
+
+def clean_text(value: object) -> str:
+    return " ".join(str(value or "").split()).strip()
 
 
 def seed_knowledge_base() -> None:
@@ -91,19 +97,27 @@ def seed_knowledge_base() -> None:
 
 
 def seed_official_curriculum_catalog() -> None:
-    """Seed a tiny official-textbook syllabus tree for the Grade 10 demo."""
+    """Seed an official-textbook syllabus tree from the NCERT manifest."""
 
-    row = fetch_one(
+    if not NCERT_MANIFEST_PATH.exists():
+        return
+
+    existing = fetch_one(
         """
         SELECT COUNT(*) AS total
         FROM syllabus_nodes
         WHERE source_provider = 'NCERT Official'
-          AND grade = 10
-          AND subject = 'Science'
         """
     )
-    if row and int(row["total"]) > 0:
+    if existing and int(existing["total"]) > 0:
         return
+
+    manifest = json.loads(NCERT_MANIFEST_PATH.read_text(encoding="utf-8"))
+    classes = manifest.get("classes", [])
+    if not classes:
+        return
+
+    execute("DELETE FROM syllabus_nodes WHERE source_provider = 'NCERT Official'")
 
     board_id = execute(
         """
@@ -111,75 +125,187 @@ def seed_official_curriculum_catalog() -> None:
             node_type, source_provider, board, title, content, source_url, order_index
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
-        ("board", "NCERT Official", "CBSE", "CBSE", "Official Grade 10 NCERT Science catalog", "", 1),
-    )
-    grade_id = execute(
-        """
-        INSERT INTO syllabus_nodes (
-            parent_id, node_type, source_provider, board, grade, title, content, source_url, order_index
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (board_id, "grade", "NCERT Official", "CBSE", 10, "Grade 10", "Official NCERT Science chapters only.", "", 1),
-    )
-    subject_id = execute(
-        """
-        INSERT INTO syllabus_nodes (
-            parent_id, node_type, source_provider, board, grade, subject, title, content, source_url, order_index
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (grade_id, "subject", "NCERT Official", "CBSE", 10, "Science", "Science", "Official Grade 10 Science textbook links.", "", 1),
-    )
-    book_id = execute(
-        """
-        INSERT INTO syllabus_nodes (
-            parent_id, node_type, source_provider, board, grade, subject, book_title, title, content, source_url, order_index
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            subject_id,
-            "book",
-            "NCERT Official",
-            "CBSE",
-            10,
-            "Science",
-            "Science",
-            "NCERT Science",
-            "Official textbook page for Grade 10 Science.",
-            "https://ncert.nic.in/textbook.php?jesc1=1-16",
-            1,
-        ),
+        ("board", "NCERT Official", "CBSE", "CBSE", "Official NCERT textbook catalog metadata.", manifest.get("source", ""), 1),
     )
 
-    chapters = [
-        (2, "Acids, Bases and Salts", "https://ncert.nic.in/textbook/pdf/jesc102.pdf", "Study acids, bases, indicators, pH, and neutralisation from the official chapter."),
-        (9, "Light - Reflection and Refraction", "https://ncert.nic.in/textbook/pdf/jesc109.pdf", "Study reflection, refraction, mirrors, lenses, and dispersion from the official chapter."),
-        (11, "Electricity", "https://ncert.nic.in/textbook/pdf/jesc111.pdf", "Study current, circuits, Ohm's law, resistance, and safety from the official chapter."),
-    ]
+    for class_entry in classes:
+        grade = class_entry.get("grade")
+        if grade is None or int(grade) < 6 or int(grade) > 10:
+            continue
 
-    for index, (chapter_number, title, source_url, content) in enumerate(chapters, start=1):
-        execute(
+        grade_id = execute(
             """
             INSERT INTO syllabus_nodes (
-                parent_id, node_type, source_provider, board, grade, subject, book_title,
-                chapter_number, title, content, source_url, pdf_url, order_index
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                parent_id, node_type, source_provider, board, grade, title, content, source_url, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                book_id,
-                "chapter",
+                board_id,
+                "grade",
                 "NCERT Official",
+                "CBSE",
+                int(grade),
+                f"Grade {grade}",
+                class_entry.get("label", ""),
+                manifest.get("source", ""),
+                int(grade),
+            ),
+        )
+
+        for subject_index, subject_entry in enumerate(class_entry.get("subjects", []), start=1):
+            subject_name = subject_entry.get("subject", "")
+            if int(grade) == 10 and subject_name.lower() == "science":
+                continue
+
+            subject_id = execute(
+                """
+                INSERT INTO syllabus_nodes (
+                    parent_id, node_type, source_provider, board, grade, subject, title, content, source_url, order_index
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    grade_id,
+                    "subject",
+                    "NCERT Official",
+                    "CBSE",
+                    int(grade),
+                    subject_name,
+                    subject_name,
+                    "",
+                    manifest.get("source", ""),
+                    subject_index,
+                ),
+            )
+
+            for book_index, book_entry in enumerate(subject_entry.get("books", []), start=1):
+                book_title = book_entry.get("title", "")
+                book_id = execute(
+                    """
+                    INSERT INTO syllabus_nodes (
+                        parent_id, node_type, source_provider, board, grade, subject, book_title, title,
+                        content, source_url, order_index
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        subject_id,
+                        "book",
+                        "NCERT Official",
+                        "CBSE",
+                        int(grade),
+                        subject_name,
+                        book_title,
+                        book_title,
+                        "Official textbook metadata only.",
+                        book_entry.get("page_url", ""),
+                        book_index,
+                    ),
+                )
+
+                for chapter_index, chapter_entry in enumerate(book_entry.get("chapters", []), start=1):
+                    chapter_label = clean_text(chapter_entry.get("label", f"Chapter {chapter_index}"))
+                    execute(
+                        """
+                        INSERT INTO syllabus_nodes (
+                            parent_id, node_type, source_provider, board, grade, subject, book_title,
+                            chapter_number, title, content, source_url, pdf_url, order_index
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (
+                            book_id,
+                            "chapter",
+                            "NCERT Official",
+                            "CBSE",
+                            int(grade),
+                            subject_name,
+                            book_title,
+                            chapter_index,
+                            chapter_label,
+                            f"Official NCERT chapter link for {subject_name} {book_title}.",
+                            chapter_entry.get("page_url", ""),
+                            chapter_entry.get("pdf_url", ""),
+                            chapter_index,
+                        ),
+                    )
+
+    # Keep the Grade 10 Science demo chapters with real chapter names and official links.
+    manual_science = fetch_one(
+        """
+        SELECT COUNT(*) AS total
+        FROM syllabus_nodes
+        WHERE source_provider = 'NCERT Official Science'
+          AND grade = 10
+          AND subject = 'Science'
+        """
+    )
+    if manual_science and int(manual_science["total"]) == 0:
+        board_id = fetch_one("SELECT id FROM syllabus_nodes WHERE source_provider = 'NCERT Official' AND node_type = 'board' LIMIT 1")
+        board_ref = board_id["id"] if board_id else None
+        grade_ref = execute(
+            """
+            INSERT INTO syllabus_nodes (
+                parent_id, node_type, source_provider, board, grade, title, content, source_url, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (board_ref, "grade", "NCERT Official Science", "CBSE", 10, "Grade 10", "Official NCERT Science chapters only.", "", 10),
+        )
+        subject_ref = execute(
+            """
+            INSERT INTO syllabus_nodes (
+                parent_id, node_type, source_provider, board, grade, subject, title, content, source_url, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (grade_ref, "subject", "NCERT Official Science", "CBSE", 10, "Science", "Science", "Official Grade 10 Science textbook links.", "", 1),
+        )
+        book_ref = execute(
+            """
+            INSERT INTO syllabus_nodes (
+                parent_id, node_type, source_provider, board, grade, subject, book_title, title, content, source_url, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                subject_ref,
+                "book",
+                "NCERT Official Science",
                 "CBSE",
                 10,
                 "Science",
                 "Science",
-                chapter_number,
-                title,
-                content,
-                source_url,
-                source_url,
-                index,
+                "NCERT Science",
+                "Official textbook page for Grade 10 Science.",
+                "https://ncert.nic.in/textbook.php?jesc1=1-16",
+                1,
             ),
         )
+
+        chapters = [
+            (2, "Acids, Bases and Salts", "https://ncert.nic.in/textbook/pdf/jesc102.pdf"),
+            (9, "Light - Reflection and Refraction", "https://ncert.nic.in/textbook/pdf/jesc109.pdf"),
+            (11, "Electricity", "https://ncert.nic.in/textbook/pdf/jesc111.pdf"),
+        ]
+        for index, (chapter_number, title, source_url) in enumerate(chapters, start=1):
+            execute(
+                """
+                INSERT INTO syllabus_nodes (
+                    parent_id, node_type, source_provider, board, grade, subject, book_title,
+                    chapter_number, title, content, source_url, pdf_url, order_index
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    book_ref,
+                    "chapter",
+                    "NCERT Official Science",
+                    "CBSE",
+                    10,
+                    "Science",
+                    "Science",
+                    chapter_number,
+                    title,
+                    f"Official NCERT chapter link for Grade 10 Science chapter {chapter_number}.",
+                    source_url,
+                    source_url,
+                    index,
+                ),
+            )
 
 
 def _tokenize(text: str) -> set[str]:

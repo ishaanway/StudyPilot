@@ -77,13 +77,15 @@
     fetchTutorResponse: function (msg) {
       const profile     = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
       const subjectHint = this.inferSubjectHint(msg);
+      const apiBase = this.getApiBaseUrl();
 
-      return fetch("/api/tutor/respond", {
+      return fetch(`${apiBase}/api/tutor/respond`, {
         method: "POST",
+        mode: "cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: msg,
-          grade: profile ? profile.grade : "7",
+          grade: profile ? profile.grade : "10",
           subject: subjectHint,
           student_id: profile && profile.id ? profile.id : undefined
         })
@@ -96,6 +98,18 @@
           if (!data || !data.ok || !data.answer) throw new Error("Empty tutor response");
           return { answer: data.answer, mode: data.mode || "offline_knowledge" };
         });
+    },
+
+    getApiBaseUrl: function () {
+      if (window.STUDYPILOT_API_BASE && String(window.STUDYPILOT_API_BASE).trim()) {
+        return String(window.STUDYPILOT_API_BASE).replace(/\/+$/, "");
+      }
+
+      if (window.location && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+        return window.location.origin;
+      }
+
+      return "http://127.0.0.1:5000";
     },
 
     inferSubjectHint: function (msg) {
@@ -151,7 +165,7 @@
       }
 
       // Try the central knowledge base
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg) : null;
       if (knowledge) return knowledge;
 
@@ -211,7 +225,7 @@
       if (!subjEl || !chapEl) return;
 
       const subj    = subjEl.value;
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const chapters = curriculum ? curriculum.getQuizChapters(subj) : [];
 
       chapEl.innerHTML = chapters.length > 0
@@ -226,7 +240,7 @@
       this.quizScore = 0;
       this.quizTimeSeconds = 0;
 
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const quizBank = curriculum ? curriculum.getQuizBank() : {};
       const subjectBank = quizBank[this.activeQuizSubject];
       if (!subjectBank || !subjectBank[this.activeQuizChapter]) {
@@ -253,7 +267,7 @@
     },
 
     loadQuizQuestion: function () {
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
@@ -273,7 +287,7 @@
     },
 
     submitAnswer: function (selectedIdx) {
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
@@ -300,7 +314,7 @@
     },
 
     nextQuizQuestion: function () {
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const quizBank  = curriculum ? curriculum.getQuizBank() : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const total     = Math.min(questions.length, 5);
@@ -422,7 +436,7 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      const curriculum = window.StudyPilotCurriculum || window.CBSE7Syllabus;
+      const curriculum = window.StudyPilotCurriculum;
       const subjects = curriculum ? curriculum.getSubjects() : [];
       select.innerHTML = subjects.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("");
 

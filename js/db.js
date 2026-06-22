@@ -20,96 +20,57 @@
     },
 
     tasks: [
-      { id: "t1",  title: "Read Curiosity Ch 3 — Electricity summary",                        subject: "Science",          duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t2",  title: "Solve Arithmetic Expressions — Ganita Prakash Ch 2 (BODMAS)",     subject: "Mathematics",      duration: 45, completed: true,  date: "2026-06-22" },
-      { id: "t3",  title: "Revise Parallel Lines & Transversal Angles — Ganita Prakash Ch 5", subject: "Mathematics",      duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t4",  title: "Read Poorvi Ch 1 — Three Questions (Leo Tolstoy)",                subject: "English",          duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t5",  title: "Social Science — Delhi Sultans notes (Exploring Society H-3)",    subject: "Social Science",   duration: 40, completed: false, date: "2026-06-22" },
-      { id: "t6",  title: "Tamil — திருக்குறள் அன்பு அதிகாரம் பாடல் மனப்பாடம்",           subject: "Tamil",            duration: 20, completed: false, date: "2026-06-23" },
-      { id: "t7",  title: "Computer Science — Excel formulas practice (Ch 5)",               subject: "Computer Science", duration: 30, completed: false, date: "2026-06-23" },
-      { id: "t8",  title: "Science — Acids & Bases lab questions (Curiosity Ch 2)",          subject: "Science",          duration: 35, completed: false, date: "2026-06-23" }
+      { id: "t1", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: "2026-06-22" },
+      { id: "t2", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: "2026-06-22" },
+      { id: "t3", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: "2026-06-22" },
+      { id: "t4", title: "Complete one mixed practice quiz", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
+      { id: "t5", title: "Review class notes and mark doubts", subject: "Science", duration: 20, completed: false, date: "2026-06-23" }
     ],
 
     exams: [
-      { id: "e1", subject: "Science",        topic: "Periodic Test: Curiosity Ch 1-3 (Science, Acids, Electricity)", date: "2026-06-25" },
-      { id: "e2", subject: "Mathematics",    topic: "Class Test: Ganita Prakash Ch 1-2 (Large Numbers, BODMAS)",      date: "2026-06-29" },
-      { id: "e3", subject: "Social Science", topic: "Unit Test: Exploring Society History Strand H-3 & H-4",          date: "2026-07-03" },
-      { id: "e4", subject: "Tamil",          topic: "Term I Tamil — இலக்கணம் & திருக்குறள் Exam",                   date: "2026-07-10" }
+      { id: "e1", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: "2026-06-25" },
+      { id: "e2", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: "2026-06-29" },
+      { id: "e3", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: "2026-07-03" }
     ],
 
     calendar: [
-      { id: "c1",  title: "Maths: Ganita Prakash",                             day: "Monday",    type: "class", start: "09:00", end: "10:00" },
-      { id: "c2",  title: "Science: Curiosity",                                 day: "Monday",    type: "class", start: "11:00", end: "12:00" },
-      { id: "c3",  title: "AI Study Block: Electricity & Circuits",             day: "Monday",    type: "study", start: "18:00", end: "19:00" },
-      { id: "c4",  title: "English: Poorvi",                                     day: "Tuesday",   type: "class", start: "09:00", end: "10:00" },
-      { id: "c5",  title: "Tamil Language Class",                                day: "Tuesday",   type: "class", start: "10:00", end: "11:00" },
-      { id: "c6",  title: "AI Study Block: BODMAS Arithmetic Expressions",      day: "Wednesday", type: "study", start: "17:00", end: "18:30" },
-      { id: "c7",  title: "Social Science: Exploring Society",                   day: "Wednesday", type: "class", start: "11:00", end: "12:00" },
-      { id: "c8",  title: "AI Study Block: Delhi Sultans Revision",              day: "Thursday",  type: "study", start: "16:00", end: "17:00" },
-      { id: "c9",  title: "Computer Science Class",                              day: "Thursday",  type: "class", start: "14:00", end: "15:00" },
-      { id: "c10", title: "AI Study Block: Maths Exam Revision",                day: "Friday",    type: "study", start: "15:00", end: "16:30" },
-      { id: "c11", title: "AI Study Block: Tamil — திருக்குறள் மீட்டல்",       day: "Friday",    type: "study", start: "17:00", end: "18:00" }
+      { id: "c1", title: "Science Class", day: "Monday", type: "class", start: "09:00", end: "10:00" },
+      { id: "c2", title: "AI Study Block: Science Ch 2 Revision", day: "Monday", type: "study", start: "18:00", end: "19:00" },
+      { id: "c3", title: "AI Study Block: Science Ch 9 Practice", day: "Wednesday", type: "study", start: "17:00", end: "18:00" },
+      { id: "c4", title: "AI Study Block: Science Ch 11 Problem Solving", day: "Friday", type: "study", start: "17:00", end: "18:00" }
     ],
 
     notes: [
       {
         id: "n1",
-        title: "Science: Curiosity Ch 3 — Electricity Circuits",
-        body: "Key Points (CBSE 2026-27):\n1. Battery = 2+ cells connected +ve to -ve.\n2. Heating Effect: fuse wire melts on overload → breaks circuit safely.\n3. Magnetic Effect: Oersted (1820) found current near wire deflects compass.\n4. Electromagnet: coil + iron core + current = temporary magnet.",
+        title: "Science Ch 2 - Acids, Bases and Salts",
+        body: "Use the official NCERT chapter for indicators, pH, and neutralisation. Keep one page for examples from daily life.",
         color: "blue",
         updatedAt: "2026-06-22 10:15"
       },
       {
         id: "n2",
-        title: "Maths: Ganita Prakash Ch 7 — Simple Equations",
-        body: "Solving Linear Equations (Transposition Method):\n- Move terms across = sign (change sign: +→-, ×→÷)\n- Example: 2x + 5 = 13 → 2x = 8 → x = 4\n- Always verify: substitute x back in original equation.",
+        title: "Science Ch 9 - Light, Reflection and Refraction",
+        body: "Revise mirror formulas, refraction, and ray diagrams. Open the textbook page before the quiz.",
         color: "yellow",
         updatedAt: "2026-06-21 15:40"
       },
       {
         id: "n3",
-        title: "Social Science: Exploring Society — Mughal Empire (H-4)",
-        body: "Mughal Emperors: Babur (1526, First Battle of Panipat) → Humayun → Akbar (Mansabdari, Din-i-Ilahi) → Jahangir → Shah Jahan (Taj Mahal 1632-53) → Aurangzeb (Jizya reimposed).\nMansabdari System: hierarchical rank for nobles (mansabdars) — pay + troops based on rank.",
+        title: "Science Ch 11 - Electricity",
+        body: "Focus on current, potential difference, resistance, Ohm's law, and circuit safety.",
         color: "purple",
         updatedAt: "2026-06-22 09:00"
-      },
-      {
-        id: "n4",
-        title: "Tamil — திருக்குறள் முக்கிய குறள்கள்",
-        body: "ஆசிரியர்: திருவள்ளுவர் | 133 அதிகாரங்கள் | 1330 குறள்கள்\n\nமுக்கிய குறள்கள்:\n• அன்பிற்கும் உண்டோ அடைக்கும் தாழ்? (அன்பு)\n• கற்றதனால் ஆய பயன் என்கொல்? (கல்வி)\n• இன்சொலால் ஈரம் அளைஇப் படிறுஇலவாம் (இன்சொல்)",
-        color: "green",
-        updatedAt: "2026-06-22 11:00"
       }
     ],
 
-    flashcards: [
-      { id: "f_s1",  subject: "Science",          question: "What does blue litmus turn to in an acid?",           answer: "Red. Acids turn blue litmus red; bases turn red litmus blue.",                                    ease: 0, nextReview: "" },
-      { id: "f_s2",  subject: "Science",          question: "What is an electromagnet?",                           answer: "A temporary magnet made by passing current through a coil wound around an iron core.",            ease: 0, nextReview: "" },
-      { id: "f_s3",  subject: "Science",          question: "Difference between physical and chemical change?",    answer: "Physical: no new substance, often reversible. Chemical: new substance formed, usually irreversible.",ease: 0, nextReview: "" },
-      { id: "f_s4",  subject: "Science",          question: "What is the Law of Reflection?",                     answer: "Angle of incidence = Angle of reflection (both measured from the normal).",                         ease: 0, nextReview: "" },
-      { id: "f_s5",  subject: "Science",          question: "Write the photosynthesis word equation.",             answer: "CO₂ + H₂O + Sunlight (Chlorophyll) → Glucose + O₂.",                                             ease: 0, nextReview: "" },
-      { id: "f_m1",  subject: "Mathematics",      question: "What does BODMAS stand for?",                        answer: "Brackets, Of, Division, Multiplication, Addition, Subtraction — the order of operations.",          ease: 0, nextReview: "" },
-      { id: "f_m2",  subject: "Mathematics",      question: "Solve: 2x + 5 = 13",                                 answer: "x = 4. Transpose 5: 2x = 8. Divide by 2: x = 4.",                                                 ease: 0, nextReview: "" },
-      { id: "f_m3",  subject: "Mathematics",      question: "State the Angle Sum Property of triangles.",         answer: "The sum of all interior angles in any triangle is always 180°.",                                    ease: 0, nextReview: "" },
-      { id: "f_m4",  subject: "Mathematics",      question: "State the Pythagoras theorem.",                      answer: "Hypotenuse² = Base² + Perpendicular². (e.g., 3²+4²=5²)",                                          ease: 0, nextReview: "" },
-      { id: "f_h1",  subject: "Social Science",   question: "Who was the first Sultan of Delhi?",                 answer: "Qutb-ud-din Aibak (1206) — founded the Slave Dynasty.",                                            ease: 0, nextReview: "" },
-      { id: "f_h2",  subject: "Social Science",   question: "Who built the Taj Mahal and why?",                   answer: "Shah Jahan built it (1632-53) as a mausoleum for his wife Mumtaz Mahal.",                           ease: 0, nextReview: "" },
-      { id: "f_g1",  subject: "Social Science",   question: "Earth's three main layers?",                         answer: "Crust (outermost), Mantle (thickest), Core (innermost).",                                          ease: 0, nextReview: "" },
-      { id: "f_c1",  subject: "Social Science",   question: "What is Universal Adult Franchise?",                 answer: "All citizens aged 18+ can vote regardless of caste, religion, or gender.",                          ease: 0, nextReview: "" },
-      { id: "f_e1",  subject: "English",           question: "What are Tolstoy's Three Questions?",               answer: "(1) Who is the most important person? (2) What is the right time? (3) What is the right action?",  ease: 0, nextReview: "" },
-      { id: "f_e2",  subject: "English",           question: "What is the moral of 'Quality' (Galsworthy)?",      answer: "True craftsmanship and dedication are admirable even if they lead to financial ruin.",               ease: 0, nextReview: "" },
-      { id: "f_ta1", subject: "Tamil",             question: "திருக்குறளின் ஆசிரியர் யார்?",                   answer: "திருவள்ளுவர் — 133 அதிகாரங்கள், 1330 குறள்கள், 3 பால்கள்.",                                    ease: 0, nextReview: "" },
-      { id: "f_ta2", subject: "Tamil",             question: "சிலப்பதிகாரம் யார் எழுதியது?",                   answer: "இளங்கோவடிகள் — கண்ணகி கதாநாயகி. ஐம்பெருங்காப்பியங்களில் ஒன்று.",                             ease: 0, nextReview: "" },
-      { id: "f_cs1", subject: "Computer Science", question: "What does HTTP stand for?",                          answer: "HyperText Transfer Protocol — the foundation protocol for the World Wide Web.",                       ease: 0, nextReview: "" },
-      { id: "f_cs2", subject: "Computer Science", question: "Excel formula for average of A1:A10?",               answer: "=AVERAGE(A1:A10)",                                                                               ease: 0, nextReview: "" }
+    notifications: [
+      { id: "no1", message: "Science periodic test is coming up on 25 June. Revise NCERT Ch 2, 9 and 11.", read: false, type: "exam" },
+      { id: "no2", message: "AI Coach: Your Science revision block is scheduled for Monday evening.", read: false, type: "info" },
+      { id: "no3", message: "Open the official NCERT textbook links before starting quiz practice.", read: false, type: "info" },
+      { id: "no4", message: "Mark completed chapters to update readiness and spaced revision automatically.", read: false, type: "info" }
     ],
 
-    notifications: [
-      { id: "no1", message: "📅 Science Periodic Test on 25 June — Curiosity Ch 1-3 (Electricity, Acids, Science Methods).", read: false, type: "exam" },
-      { id: "no2", message: "🤖 AI Coach: Study session for BODMAS & Simple Equations scheduled for Wednesday 5 PM.",          read: false, type: "info" },
-      { id: "no3", message: "📅 Social Science Unit Test on 3 July — Delhi Sultans & Mughal Empire.",                         read: false, type: "exam" },
-      { id: "no4", message: "🌺 Tamil Term I Exam on 10 July — திருக்குறள் & இலக்கணம் (Grammar) chapters.",                 read: false, type: "exam" }
-    ],
     curriculumProgress: {
       "cbse10_science_ch2": { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] },
       "cbse10_science_ch9": { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] },
