@@ -43,20 +43,47 @@
     notes: [
       {
         id: "n1",
+        grade: "9",
+        title: "Matter in Our Surroundings",
+        body: "Track state changes, diffusion, evaporation, and condensation from the chapter summary.",
+        color: "blue",
+        updatedAt: "2026-06-22 10:15"
+      },
+      {
+        id: "n2",
+        grade: "9",
+        title: "Atoms and Molecules",
+        body: "Keep the law of conservation of mass, formula writing, and atomic mass in one place.",
+        color: "yellow",
+        updatedAt: "2026-06-21 15:40"
+      },
+      {
+        id: "n3",
+        grade: "9",
+        title: "Force and Laws of Motion",
+        body: "Revise inertia, momentum, and Newton's laws with one worked example per law.",
+        color: "purple",
+        updatedAt: "2026-06-22 09:00"
+      },
+      {
+        id: "n4",
+        grade: "10",
         title: "Science Ch 2 - Acids, Bases and Salts",
         body: "Use the official NCERT chapter for indicators, pH, and neutralisation. Keep one page for examples from daily life.",
         color: "blue",
         updatedAt: "2026-06-22 10:15"
       },
       {
-        id: "n2",
+        id: "n5",
+        grade: "10",
         title: "Science Ch 9 - Light, Reflection and Refraction",
         body: "Revise mirror formulas, refraction, and ray diagrams. Open the textbook page before the quiz.",
         color: "yellow",
         updatedAt: "2026-06-21 15:40"
       },
       {
-        id: "n3",
+        id: "n6",
+        grade: "10",
         title: "Science Ch 11 - Electricity",
         body: "Focus on current, potential difference, resistance, Ohm's law, and circuit safety.",
         color: "purple",
@@ -137,8 +164,10 @@
         this.saveCalendarEvents(cloneDefaults('calendar'));
       }
 
-      if (sectionHasLegacyContent(this.getNotes(), ['title', 'body'])) {
-        this.saveNotes(cloneDefaults('notes'));
+      const storedNotes = get("notes");
+      if (Array.isArray(storedNotes) && storedNotes.some(note => !note || !note.grade || sectionHasLegacyContent([note], ['title', 'body']))) {
+        const normalizedNotes = cloneDefaults('notes');
+        this.saveNotes(normalizedNotes);
       }
 
       const storedFlashcards = get("flashcards");
@@ -326,29 +355,34 @@
     },
 
     // Notes API
-    getNotes: function () {
-      return get("notes");
+    getNotes: function (gradeOverride) {
+      const profile = this.getProfile();
+      const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
+      const notes = Array.isArray(get("notes")) ? get("notes") : [];
+      return notes.filter(note => String(note && note.grade ? note.grade : "10") === grade);
     },
     saveNotes: function (notes) {
       set("notes", notes);
     },
-    addNote: function (title, body, color) {
-      const notes = this.getNotes();
+    addNote: function (title, body, color, gradeOverride) {
+      const profile = this.getProfile();
       const newNote = {
         id: "note_" + Date.now(),
+        grade: String(gradeOverride || (profile && profile.grade ? profile.grade : "10")),
         title: title || "Untitled Note",
         body: body || "",
         color: color || "default",
         updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
       };
-      notes.unshift(newNote); // Put at front
-      this.saveNotes(notes);
+      const allNotes = Array.isArray(get("notes")) ? get("notes") : [];
+      allNotes.unshift(newNote);
+      this.saveNotes(allNotes);
       return newNote;
     },
     deleteNote: function (id) {
-      let notes = this.getNotes();
-      notes = notes.filter(n => n.id !== id);
-      this.saveNotes(notes);
+      const notes = Array.isArray(get("notes")) ? get("notes") : [];
+      const filtered = notes.filter(n => n.id !== id);
+      this.saveNotes(filtered);
     },
 
     // Flashcards API

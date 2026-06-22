@@ -57,12 +57,23 @@
 
     // 3. OCR Simulation State
     ocrProgressInterval: null,
+    profileListenerBound: false,
 
     init: function () {
+      this.bindProfileListener();
       this.initToolNavigation();
       this.renderNotes();
       this.resetPomodoro();
       this.syncCareerGoalInfo();
+    },
+
+    bindProfileListener: function () {
+      if (this.profileListenerBound) return;
+      this.profileListenerBound = true;
+
+      window.addEventListener("studypilot_profile_updated", () => {
+        this.renderNotes();
+      });
     },
 
     // Switch between tools in toolbox
@@ -227,9 +238,11 @@
       const container = document.getElementById("notes-grid-container");
       if (!container) return;
 
-      const notes = window.StudyPilotDB.getNotes();
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? String(profile.grade || "10") : "10";
+      const notes = window.StudyPilotDB.getNotes(grade);
       if (notes.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-light); font-size: 0.85rem;">No notes saved yet. Compose one above!</div>';
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-light); font-size: 0.85rem;">No notes saved yet for Grade ${escapeHTML(grade)}. Compose one above!</div>`;
         return;
       }
 
@@ -242,6 +255,7 @@
                 <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
               </button>
             </div>
+            <div class="note-grade">Grade ${escapeHTML(n.grade || grade)}</div>
             <div class="note-desc">${escapeHTML(n.body)}</div>
             <div class="note-footer">
               <span class="note-time">${n.updatedAt}</span>
