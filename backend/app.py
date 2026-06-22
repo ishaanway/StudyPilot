@@ -54,6 +54,22 @@ def _clamp_grade(value: Any) -> int:
     return max(6, min(10, grade))
 
 
+def _looks_like_greeting(question: str) -> bool:
+    text = question.strip().lower()
+    if not text:
+        return False
+    greetings = {
+        "hi",
+        "hello",
+        "hey",
+        "namaste",
+        "good morning",
+        "good afternoon",
+        "good evening",
+      }
+    return text in greetings or text.startswith(tuple(greetings))
+
+
 def _student_from_row(row: dict | None) -> dict | None:
     if not row:
         return None
@@ -674,6 +690,7 @@ def tutor_respond():
     profile = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)) if student_id else None
     grade = _clamp_grade(payload.get("grade") or (profile.get("grade") if profile else 10))
     subject = (payload.get("subject") or "").strip()
+    greeting_mode = _looks_like_greeting(question)
 
     arithmetic_answer = solve_simple_arithmetic(question)
     if arithmetic_answer:
@@ -686,9 +703,9 @@ def tutor_respond():
             }
         )
 
-    matches = search_knowledge(question, grade=grade, subject=subject, limit=4)
-    syllabus_matches = search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
-    context = format_knowledge_context(matches)
+    matches = [] if greeting_mode else search_knowledge(question, grade=grade, subject=subject, limit=4)
+    syllabus_matches = [] if greeting_mode else search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
+    context = format_knowledge_context(matches) if matches else ""
     if syllabus_matches:
         syllabus_lines = ["Imported syllabus matches:"]
         for row in syllabus_matches:
@@ -697,7 +714,7 @@ def tutor_respond():
                 + (f" | {row.get('book_title')}" if row.get('book_title') else "")
                 + (f" | Chapter {row.get('chapter_number')}" if row.get('chapter_number') else "")
             )
-        context = f"{context}\n\n" + "\n".join(syllabus_lines)
+        context = f"{context}\n\n" + "\n".join(syllabus_lines) if context else "\n".join(syllabus_lines)
     system_prompt = (
         "You are StudyPilot, a calm and honest school tutor for Grades 6-10. "
         "Use only the provided CBSE syllabus context and the student's details. "
@@ -705,15 +722,29 @@ def tutor_respond():
         "Never invent syllabus facts or pretend to know something you do not know. "
         "Keep the explanation concise, friendly, and appropriate for a school exhibition demo."
     )
+    if greeting_mode:
+        system_prompt = (
+            "You are StudyPilot, a friendly school tutor and study companion. "
+            "The student is greeting you, so respond warmly in one short paragraph. "
+            "Do not mention syllabus context unless the student asks a study question. "
+            "Then ask what grade or subject they want help with."
+        )
 
-    user_prompt = (
-        f"Student grade: {grade}\n"
-        f"Subject hint: {subject or 'not specified'}\n"
-        f"Question: {question}\n\n"
-        f"{context}\n\n"
-        "Answer the student's question in simple language. "
-        "If helpful, end with one short follow-up question."
-    )
+    if greeting_mode:
+        user_prompt = (
+            f"The student said: {question}\n"
+            "Reply with a warm greeting in one short paragraph. "
+            "Ask what subject or chapter they want help with."
+        )
+    else:
+        user_prompt = (
+            f"Student grade: {grade}\n"
+            f"Subject hint: {subject or 'not specified'}\n"
+            f"Question: {question}\n\n"
+            f"{context}\n\n"
+            "Answer the student's question in simple language. "
+            "If helpful, end with one short follow-up question."
+        )
 
     response_text, llm_mode = generate_tutor_response(system_prompt, user_prompt)
 
