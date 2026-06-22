@@ -119,6 +119,8 @@
         window.StudyPilotDashboard.init();
       } else if (screenId === "planner") {
         window.StudyPilotPlanner.init();
+      } else if (screenId === "books") {
+        window.StudyPilotBooks.init();
       } else if (screenId === "tutor") {
         window.StudyPilotTutor.init();
       } else if (screenId === "toolbox") {

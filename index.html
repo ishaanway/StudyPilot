@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="styles/planner.css">
   <link rel="stylesheet" href="styles/tutor.css">
   <link rel="stylesheet" href="styles/toolbox.css">
+  <link rel="stylesheet" href="styles/books.css">
 </head>
 <body>
 
@@ -170,6 +171,10 @@
           <i data-lucide="calendar"></i>
           <span>Planner</span>
         </button>
+        <button class="nav-item" data-screen="books">
+          <i data-lucide="book-open"></i>
+          <span>NCERT Books</span>
+        </button>
         <button class="nav-item" data-screen="tutor">
           <i data-lucide="graduation-cap"></i>
           <span>AI Tutor</span>
@@ -312,6 +317,17 @@
               </div>
             </div>
 
+            <div class="card card-books-shortcut">
+              <div class="card-header">
+                <h2><i data-lucide="book-open"></i> NCERT Books</h2>
+                <span class="badge badge-indigo">Official portals</span>
+              </div>
+              <p>Open the official NCERT, CBSE, or Tamil Nadu textbook portals from one shortcut, with grade-aware chapter links where available.</p>
+              <div class="books-shortcut-actions">
+                <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.switchScreen('books')">Open NCERT Books</button>
+              </div>
+            </div>
+
             <!-- Upcoming Exams and Major Deadlines -->
             <div class="card card-upcoming">
               <div class="card-header">
@@ -394,6 +410,39 @@
                 <!-- Dynamic Header and Time Grid -->
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: NCERT BOOKS -->
+      <section id="screen-books" class="screen-view hidden">
+        <div class="books-header">
+          <div>
+            <h1>NCERT Books</h1>
+            <p>Official textbook shortcuts for NCERT, CBSE, and Tamil Nadu. No copied textbook content is stored inside StudyPilot.</p>
+          </div>
+          <div class="books-header-actions">
+            <button class="btn btn-outline" onclick="window.open('https://ncert.nic.in/textbook.php', '_blank', 'noopener,noreferrer')">Open NCERT</button>
+            <button class="btn btn-secondary" onclick="window.open('https://cbseacademic.nic.in/publication_ebooks.html', '_blank', 'noopener,noreferrer')">Open CBSE Books</button>
+            <button class="btn btn-primary" onclick="window.open('https://www.textbooksonline.tn.gov.in/', '_blank', 'noopener,noreferrer')">Open Tamil Nadu</button>
+          </div>
+        </div>
+
+        <div class="books-grid">
+          <div class="card books-picker-card">
+            <div class="card-header">
+              <h2><i data-lucide="sliders-horizontal"></i> Choose Board, Grade, Subject</h2>
+              <span class="badge badge-indigo" id="books-grade-pill">Grade 10</span>
+            </div>
+            <div id="books-selector-root"></div>
+          </div>
+
+          <div class="card books-links-card">
+            <div class="card-header">
+              <h2><i data-lucide="link-2"></i> Official Links</h2>
+              <span class="badge badge-accent">Portal only</span>
+            </div>
+            <div id="books-link-root"></div>
           </div>
         </div>
       </section>
@@ -1032,6 +1081,7 @@
   <script src="js/setup.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/planner.js"></script>
+  <script src="js/books.js"></script>
   <script src="js/tutor.js"></script>
   <script src="js/toolbox.js"></script>
   <script src="js/reminders.js"></script>
