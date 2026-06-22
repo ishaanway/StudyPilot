@@ -18,12 +18,30 @@
     flashcardList: [],
     currentFlashcardIndex: 0,
     filteredCards: [],
+    activeFlashcardSubject: "all",
+    activeFlashcardGrade: "10",
+    profileListenerBound: false,
 
     init: function () {
       this.initTabs();
       this.initChat();
+      this.bindProfileListener();
+      this.renderFlashcardSubjectFilters();
       this.updateQuizChapters();
       this.loadFlashcards();
+    },
+
+    bindProfileListener: function () {
+      if (this.profileListenerBound) return;
+      this.profileListenerBound = true;
+
+      window.addEventListener("studypilot_profile_updated", () => {
+        this.activeFlashcardSubject = "all";
+        this.currentFlashcardIndex = 0;
+        this.renderFlashcardSubjectFilters();
+        this.loadFlashcards();
+        this.updateQuizChapters();
+      });
     },
 
     /* ─────────────────────────────────────────────
@@ -45,6 +63,26 @@
     /* ─────────────────────────────────────────────
        AI CHAT
     ───────────────────────────────────────────── */
+    renderFlashcardSubjectFilters: function () {
+      const container = document.querySelector('.flashcard-subject-filters');
+      if (!container) return;
+
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade = profile ? profile.grade : '10';
+      const curriculum = window.StudyPilotCurriculum;
+      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === 'function'
+        ? curriculum.getSubjectsForGrade(grade)
+        : (curriculum ? curriculum.getSubjects() : []);
+
+      const chips = [
+        '<button class="filter-chip ' + (this.activeFlashcardSubject === 'all' ? 'active' : '') + '" data-filter="all" onclick="window.StudyPilotTutor.filterFlashcards(\'all\')">All</button>',
+        ...subjects.map(subject => '<button class="filter-chip ' + (this.activeFlashcardSubject === subject ? 'active' : '') + '" data-filter="' + escapeHTML(subject) + '" onclick="window.StudyPilotTutor.filterFlashcards(\'' + escapeHTML(subject) + '\')">' + escapeHTML(subject) + '</button>')
+      ];
+
+      container.innerHTML = chips.join('');
+      if (window.lucide) window.lucide.createIcons();
+    },
+
     initChat: function () {
       const input = document.getElementById("tutor-chat-input");
       const btn   = document.getElementById("tutor-chat-send-btn");
@@ -166,7 +204,8 @@
 
       // Try the central knowledge base
       const curriculum = window.StudyPilotCurriculum;
-      const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg) : null;
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const knowledge = curriculum ? curriculum.findKnowledge(lowerMsg, profile ? profile.grade : "10") : null;
       if (knowledge) return knowledge;
 
       // Fallbacks for common patterns
@@ -225,8 +264,10 @@
       if (!subjEl || !chapEl) return;
 
       const subj    = subjEl.value;
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const grade   = profile ? profile.grade : "10";
       const curriculum = window.StudyPilotCurriculum;
-      const chapters = curriculum ? curriculum.getQuizChapters(subj) : [];
+      const chapters = curriculum ? curriculum.getQuizChapters(subj, grade) : [];
 
       chapEl.innerHTML = chapters.length > 0
         ? chapters.map(ch => `<option value="${escapeHTML(ch.key)}">${escapeHTML(ch.label)}</option>`).join("")
@@ -234,6 +275,8 @@
     },
 
     startQuiz: function () {
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      this.activeQuizGrade = profile ? profile.grade : "10";
       this.activeQuizSubject = document.getElementById("quiz-subject-select").value;
       this.activeQuizChapter = document.getElementById("quiz-chapter-select").value;
       this.currentQuestionIndex = 0;
@@ -241,7 +284,7 @@
       this.quizTimeSeconds = 0;
 
       const curriculum = window.StudyPilotCurriculum;
-      const quizBank = curriculum ? curriculum.getQuizBank() : {};
+      const quizBank = curriculum ? curriculum.getQuizBank(this.activeQuizGrade) : {};
       const subjectBank = quizBank[this.activeQuizSubject];
       if (!subjectBank || !subjectBank[this.activeQuizChapter]) {
         alert("No quiz questions available for this chapter yet. Please try another chapter.");
@@ -268,7 +311,7 @@
 
     loadQuizQuestion: function () {
       const curriculum = window.StudyPilotCurriculum;
-      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
+      const quizBank  = curriculum ? curriculum.getQuizBank(this.activeQuizGrade) : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
       const total     = Math.min(questions.length, 5);
@@ -288,7 +331,7 @@
 
     submitAnswer: function (selectedIdx) {
       const curriculum = window.StudyPilotCurriculum;
-      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
+      const quizBank  = curriculum ? curriculum.getQuizBank(this.activeQuizGrade) : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const qData     = questions[this.currentQuestionIndex];
       const buttons   = document.querySelectorAll(".quiz-options .quiz-opt-btn");
@@ -315,7 +358,7 @@
 
     nextQuizQuestion: function () {
       const curriculum = window.StudyPilotCurriculum;
-      const quizBank  = curriculum ? curriculum.getQuizBank() : {};
+      const quizBank  = curriculum ? curriculum.getQuizBank(this.activeQuizGrade) : {};
       const questions = quizBank[this.activeQuizSubject][this.activeQuizChapter];
       const total     = Math.min(questions.length, 5);
 
@@ -357,11 +400,15 @@
        FLASHCARDS
     ───────────────────────────────────────────── */
     loadFlashcards: function () {
-      this.flashcardList = window.StudyPilotDB.getFlashcards();
-      this.filterFlashcards("all");
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      this.activeFlashcardGrade = profile ? String(profile.grade || "10") : "10";
+      this.flashcardList = window.StudyPilotDB.getFlashcards(this.activeFlashcardGrade);
+      this.filterFlashcards(this.activeFlashcardSubject || "all");
+      this.renderFlashcardSubjectFilters();
     },
 
     filterFlashcards: function (subj) {
+      this.activeFlashcardSubject = subj;
       document.querySelectorAll(".flashcard-subject-filters .filter-chip").forEach(c => {
         const chipSubj = c.getAttribute("data-filter");
         c.classList.toggle("active", chipSubj === subj || (subj === "all" && chipSubj === "all"));
@@ -435,9 +482,11 @@
       const select = document.getElementById("card-input-subject");
       if (!modal || !select) return;
 
-      const profile = window.StudyPilotDB.getProfile();
       const curriculum = window.StudyPilotCurriculum;
-      const subjects = curriculum ? curriculum.getSubjects() : [];
+      const profile = window.StudyPilotDB.getProfile();
+      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === "function"
+        ? curriculum.getSubjectsForGrade(profile ? profile.grade : "10")
+        : (curriculum ? curriculum.getSubjects() : []);
       select.innerHTML = subjects.map(s => `<option value="${escapeHTML(s)}">${escapeHTML(s)}</option>`).join("");
 
       modal.classList.remove("hidden");

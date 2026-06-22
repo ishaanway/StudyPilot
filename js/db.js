@@ -64,6 +64,8 @@
       }
     ],
 
+    flashcards: [],
+
     notifications: [
       { id: "no1", message: "Science periodic test is coming up on 25 June. Revise NCERT Ch 2, 9 and 11.", read: false, type: "exam" },
       { id: "no2", message: "AI Coach: Your Science revision block is scheduled for Monday evening.", read: false, type: "info" },
@@ -139,7 +141,8 @@
         this.saveNotes(cloneDefaults('notes'));
       }
 
-      if (sectionHasLegacyContent(this.getFlashcards(), ['question', 'answer'])) {
+      const storedFlashcards = get("flashcards");
+      if (Array.isArray(storedFlashcards) && storedFlashcards.some(card => !card || !card.grade || sectionHasLegacyContent([card], ['question', 'answer', 'subject']))) {
         this.saveFlashcards(cloneDefaults('flashcards'));
       }
 
@@ -154,6 +157,9 @@
     },
     saveProfile: function (profileData) {
       set("profile", profileData);
+      window.dispatchEvent(new CustomEvent("studypilot_profile_updated", {
+        detail: profileData
+      }));
     },
 
     // Tasks API
@@ -346,16 +352,28 @@
     },
 
     // Flashcards API
-    getFlashcards: function () {
-      return get("flashcards");
+    getFlashcards: function (gradeOverride) {
+      const profile = this.getProfile();
+      const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
+      const curriculum = window.StudyPilotCurriculum;
+      const official = curriculum && typeof curriculum.getFlashcardsForGrade === "function"
+        ? curriculum.getFlashcardsForGrade(grade)
+        : [];
+      const stored = get("flashcards");
+      const custom = Array.isArray(stored)
+        ? stored.filter(card => String(card && card.grade ? card.grade : "") === grade)
+        : [];
+      return [...official, ...custom];
     },
     saveFlashcards: function (cards) {
       set("flashcards", cards);
     },
     addFlashcard: function (subject, question, answer) {
-      const cards = this.getFlashcards();
+      const cards = Array.isArray(get("flashcards")) ? get("flashcards") : [];
+      const profile = this.getProfile();
       const newCard = {
         id: "fc_" + Date.now(),
+        grade: String(profile && profile.grade ? profile.grade : "10"),
         subject: subject,
         question: question,
         answer: answer,

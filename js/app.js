@@ -17,6 +17,10 @@
       
       // Load user profile details initially
       this.loadUserProfile();
+
+      window.addEventListener("studypilot_profile_updated", () => {
+        this.loadUserProfile();
+      });
       
       // Listen to database notification changes to redraw badge
       window.addEventListener("studypilot_notification", () => {
