@@ -112,47 +112,40 @@
 
     migrateLegacyDemoData: function () {
       const profile = this.getProfile();
-      if (profile && String(profile.board || "").toUpperCase() === "CBSE" && String(profile.grade || "") === "7") {
-        profile.grade = "10";
+      if (profile && String(profile.board || '').toUpperCase() === 'CBSE' && String(profile.grade || '') === '7') {
+        profile.grade = '10';
         this.saveProfile(profile);
       }
 
-      const replaceText = (value) => String(value || "")
-        .replace(/Curiosity Ch 1-3 \(Electricity, Acids, Science Methods\)/g, "Grade 10 Science Ch 2, 9, 11")
-        .replace(/Curiosity Ch 3 — Electricity summary/g, "Grade 10 Science Ch 11 — Electricity")
-        .replace(/Curiosity Ch 2/g, "Grade 10 Science Ch 2")
-        .replace(/Curiosity Ch 1-3/g, "Grade 10 Science Ch 2, 9, 11")
-        .replace(/Curiosity/g, "Grade 10 Science")
-        .replace(/Ganita Prakash Ch 1-2 \(Large Numbers, BODMAS\)/g, "BODMAS practice")
-        .replace(/Ganita Prakash Ch 7 — Simple Equations/g, "BODMAS practice")
-        .replace(/Ganita Prakash/g, "Grade 10 Science")
-        .replace(/Poorvi/g, "official Grade 10 Science")
-        .replace(/Exploring Society/g, "Grade 10 Science");
+      const legacyPattern = /(Curiosity|Ganita Prakash|Poorvi|Exploring Society|Three Questions|Mughal Empire|Grade 7)/i;
+      const sectionHasLegacyContent = (items, fields) => Array.isArray(items) && items.some(item =>
+        fields.some(field => legacyPattern.test(String(item && item[field] ? item[field] : '')))
+      );
+      const cloneDefaults = (key) => JSON.parse(JSON.stringify(DEFAULTS[key]));
 
-      const tasks = this.getTasks().map(task => ({
-        ...task,
-        title: replaceText(task.title),
-      }));
-      this.saveTasks(tasks);
+      if (sectionHasLegacyContent(this.getTasks(), ['title', 'subject'])) {
+        this.saveTasks(cloneDefaults('tasks'));
+      }
 
-      const exams = this.getExams().map(exam => ({
-        ...exam,
-        topic: replaceText(exam.topic),
-      }));
-      this.saveExams(exams);
+      if (sectionHasLegacyContent(this.getExams(), ['topic', 'subject'])) {
+        this.saveExams(cloneDefaults('exams'));
+      }
 
-      const calendar = this.getCalendarEvents().map(event => ({
-        ...event,
-        title: replaceText(event.title),
-      }));
-      this.saveCalendarEvents(calendar);
+      if (sectionHasLegacyContent(this.getCalendarEvents(), ['title'])) {
+        this.saveCalendarEvents(cloneDefaults('calendar'));
+      }
 
-      const notes = this.getNotes().map(note => ({
-        ...note,
-        title: replaceText(note.title),
-        body: replaceText(note.body),
-      }));
-      this.saveNotes(notes);
+      if (sectionHasLegacyContent(this.getNotes(), ['title', 'body'])) {
+        this.saveNotes(cloneDefaults('notes'));
+      }
+
+      if (sectionHasLegacyContent(this.getFlashcards(), ['question', 'answer'])) {
+        this.saveFlashcards(cloneDefaults('flashcards'));
+      }
+
+      if (sectionHasLegacyContent(this.getNotifications(), ['message'])) {
+        this.saveNotifications(cloneDefaults('notifications'));
+      }
     },
 
     // Profile API
