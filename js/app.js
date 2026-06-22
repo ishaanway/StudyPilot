@@ -7,33 +7,102 @@
     activeScreen: "dashboard",
     currentTheme: "light",
     themePickerBound: false,
+    navigationBound: false,
+    authStateBound: false,
+    profileListenerBound: false,
 
     init: function () {
       this.loadTheme();
       this.initThemePicker();
-      this.checkOnboarding();
-      this.initNavigation();
       this.initThemeToggle();
       this.initNotifications();
       this.initGlobalSearch();
+      this.bindAuthStateListener();
+
       if (window.StudyPilotReminderService && typeof window.StudyPilotReminderService.init === "function") {
         window.StudyPilotReminderService.init();
       }
-      
-      // Load user profile details initially
+
+      window.addEventListener("studypilot_notification", () => {
+        this.updateNotificationBadge();
+      });
+
+      if (!this.checkAuthentication()) {
+        return;
+      }
+
+      this.initNavigation();
+      this.bindProfileListener();
+      this.checkOnboarding();
       this.loadUserProfile();
+    },
+
+    bindAuthStateListener: function () {
+      if (this.authStateBound) return;
+      this.authStateBound = true;
+
+      window.addEventListener("studypilot_auth_changed", () => {
+        if (this.checkAuthentication()) {
+          this.afterAuthSuccess();
+        } else {
+          this.showAuthModal();
+        }
+      });
+    },
+
+    checkAuthentication: function () {
+      const isAuthed = window.StudyPilotAuth && typeof window.StudyPilotAuth.isAuthenticated === "function"
+        ? window.StudyPilotAuth.isAuthenticated()
+        : true;
+
+      const authModal = document.getElementById("auth-wizard");
+      const setupWizard = document.getElementById("setup-wizard");
+
+      if (!isAuthed) {
+        if (authModal) authModal.classList.remove("hidden");
+        if (setupWizard) setupWizard.classList.add("hidden");
+        document.body.classList.add("auth-locked");
+        return false;
+      }
+
+      if (authModal) authModal.classList.add("hidden");
+      document.body.classList.remove("auth-locked");
+      return true;
+    },
+
+    showAuthModal: function () {
+      const authModal = document.getElementById("auth-wizard");
+      const setupWizard = document.getElementById("setup-wizard");
+      if (authModal) authModal.classList.remove("hidden");
+      if (setupWizard) setupWizard.classList.add("hidden");
+      document.body.classList.add("auth-locked");
+    },
+
+    afterAuthSuccess: function () {
+      this.checkAuthentication();
+      this.initNavigation();
+      this.bindProfileListener();
+      this.checkOnboarding();
+      this.loadUserProfile();
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    },
+
+    bindProfileListener: function () {
+      if (this.profileListenerBound) return;
+      this.profileListenerBound = true;
 
       window.addEventListener("studypilot_profile_updated", () => {
         this.loadUserProfile();
       });
-      
-      // Listen to database notification changes to redraw badge
-      window.addEventListener("studypilot_notification", () => {
-        this.updateNotificationBadge();
-      });
     },
 
     checkOnboarding: function () {
+      if (!window.StudyPilotAuth || !window.StudyPilotAuth.isAuthenticated || !window.StudyPilotAuth.isAuthenticated()) {
+        return;
+      }
+
       const profile = window.StudyPilotDB.getProfile();
       const setupWizard = document.getElementById("setup-wizard");
       
@@ -49,7 +118,7 @@
 
     loadUserProfile: function () {
       const profile = window.StudyPilotDB.getProfile();
-      if (!profile.setupComplete) return;
+      if (!profile || !profile.setupComplete) return;
 
       // Update Dashboard Header greeting
       const greetEl = document.getElementById("dashboard-welcome");
@@ -85,6 +154,9 @@
 
     // Navigation (Sidebar and Mobile Navigation)
     initNavigation: function () {
+      if (this.navigationBound) return;
+      this.navigationBound = true;
+
       const navItems = document.querySelectorAll(".nav-item, .mobile-nav-item");
       navItems.forEach(item => {
         item.addEventListener("click", () => {
@@ -321,6 +393,11 @@
 
     // Profile updates
     saveProfileEdits: function () {
+      if (!window.StudyPilotAuth || !window.StudyPilotAuth.isAuthenticated || !window.StudyPilotAuth.isAuthenticated()) {
+        alert("Please log in first.");
+        return;
+      }
+
       const name = document.getElementById("profile-edit-name").value.trim();
       const grade = document.getElementById("profile-edit-grade").value;
       const board = document.getElementById("profile-edit-board").value;
@@ -338,6 +415,13 @@
       profile.goal = goal;
 
       window.StudyPilotDB.saveProfile(profile);
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.getAuth === "function" && typeof window.StudyPilotDB.saveAuth === "function") {
+        const auth = window.StudyPilotDB.getAuth();
+        if (auth && auth.user) {
+          auth.user.name = name;
+          window.StudyPilotDB.saveAuth(auth);
+        }
+      }
       this.loadUserProfile();
       
       window.StudyPilotDB.addNotification("Profile settings updated successfully.", "success");

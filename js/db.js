@@ -6,6 +6,14 @@
   const DB_PREFIX = "studypilot_";
 
   const DEFAULTS = {
+    auth: {
+      user: null,
+      session: {
+        signedIn: false,
+        userId: ""
+      }
+    },
+
     profile: {
       name: "",
       grade: "10",
@@ -232,6 +240,126 @@
         detail: profileData
       }));
       window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
+    },
+
+    // Authentication API
+    getAuth: function () {
+      return get("auth");
+    },
+    saveAuth: function (authData) {
+      set("auth", authData);
+      window.dispatchEvent(new CustomEvent("studypilot_auth_changed", {
+        detail: authData
+      }));
+    },
+    isAuthenticated: function () {
+      const auth = this.getAuth();
+      return !!(auth && auth.session && auth.session.signedIn && auth.user && auth.user.id);
+    },
+    getCurrentUser: function () {
+      const auth = this.getAuth();
+      return auth && auth.session && auth.session.signedIn ? auth.user : null;
+    },
+    hashPassword: async function (password) {
+      const text = String(password || "");
+      if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+        const bytes = new TextEncoder().encode(text);
+        const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
+      }
+
+      return btoa(unescape(encodeURIComponent(text)));
+    },
+    signUp: async function ({ name, email, password }) {
+      const auth = this.getAuth();
+      const safeName = String(name || "").trim();
+      const safeEmail = String(email || "").trim().toLowerCase();
+      const safePassword = String(password || "");
+
+      if (!safeName || !safeEmail || !safePassword) {
+        throw new Error("Please fill in your name, email, and password.");
+      }
+
+      if (auth && auth.user) {
+        throw new Error("An account already exists on this device. Please log in or reset the app to create a new one.");
+      }
+
+      const passwordHash = await this.hashPassword(safePassword);
+      const user = {
+        id: "user_" + Date.now(),
+        name: safeName,
+        email: safeEmail,
+        passwordHash,
+        createdAt: new Date().toISOString(),
+      };
+
+      const nextAuth = {
+        user,
+        session: {
+          signedIn: true,
+          userId: user.id,
+        },
+      };
+
+      set("auth", nextAuth);
+
+      const profile = this.getProfile() || JSON.parse(JSON.stringify(DEFAULTS.profile));
+      if (!profile.name) profile.name = safeName;
+      if (!profile.setupComplete) profile.setupComplete = false;
+      this.saveProfile(profile);
+
+      window.dispatchEvent(new CustomEvent("studypilot_auth_changed", {
+        detail: nextAuth
+      }));
+
+      return user;
+    },
+    signIn: async function ({ email, password }) {
+      const auth = this.getAuth();
+      const safeEmail = String(email || "").trim().toLowerCase();
+      const safePassword = String(password || "");
+
+      if (!auth || !auth.user) {
+        throw new Error("No account found on this device. Please sign up first.");
+      }
+
+      if (safeEmail !== String(auth.user.email || "").toLowerCase()) {
+        throw new Error("Email not found. Please check your login details.");
+      }
+
+      const passwordHash = await this.hashPassword(safePassword);
+      if (passwordHash !== auth.user.passwordHash) {
+        throw new Error("Incorrect password. Please try again.");
+      }
+
+      const nextAuth = {
+        user: auth.user,
+        session: {
+          signedIn: true,
+          userId: auth.user.id,
+        },
+      };
+
+      set("auth", nextAuth);
+      window.dispatchEvent(new CustomEvent("studypilot_auth_changed", {
+        detail: nextAuth
+      }));
+
+      return auth.user;
+    },
+    signOut: function () {
+      const auth = this.getAuth();
+      const nextAuth = {
+        user: auth && auth.user ? auth.user : null,
+        session: {
+          signedIn: false,
+          userId: "",
+        },
+      };
+      set("auth", nextAuth);
+      window.dispatchEvent(new CustomEvent("studypilot_auth_changed", {
+        detail: nextAuth
+      }));
     },
 
     // Tasks API

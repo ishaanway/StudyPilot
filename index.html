@@ -24,8 +24,71 @@
   <link rel="stylesheet" href="styles/tutor.css">
   <link rel="stylesheet" href="styles/toolbox.css">
   <link rel="stylesheet" href="styles/books.css">
+  <link rel="stylesheet" href="styles/auth.css">
 </head>
 <body>
+
+  <!-- ======================================================== -->
+  <!-- AUTH GATE                                                -->
+  <!-- ======================================================== -->
+  <div id="auth-wizard" class="modal-overlay hidden">
+    <div class="auth-card animate-fade-in">
+      <div class="auth-hero">
+        <img src="assets/logo.svg" alt="StudyPilot Logo" class="auth-logo">
+        <h2>Welcome back to StudyPilot</h2>
+        <p>Create a local account or log in to keep your notes, progress, reminders, and study plans on this device.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button id="auth-tab-signup" class="auth-tab active" type="button">Sign Up</button>
+        <button id="auth-tab-login" class="auth-tab" type="button">Log In</button>
+      </div>
+
+      <div class="auth-panels">
+        <form id="auth-panel-signup" class="auth-panel">
+          <div class="input-group">
+            <label for="auth-signup-name">Full Name</label>
+            <input type="text" id="auth-signup-name" placeholder="e.g., Ishaan">
+          </div>
+          <div class="input-group">
+            <label for="auth-signup-email">Email</label>
+            <input type="email" id="auth-signup-email" placeholder="e.g., you@example.com">
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label for="auth-signup-password">Password</label>
+              <input type="password" id="auth-signup-password" placeholder="Create a password">
+            </div>
+            <div class="input-group">
+              <label for="auth-signup-confirm">Confirm Password</label>
+              <input type="password" id="auth-signup-confirm" placeholder="Repeat password">
+            </div>
+          </div>
+          <p class="auth-note">Your login is stored locally in this browser. Use a password you will remember on this device.</p>
+          <div class="auth-status" id="auth-signup-status"></div>
+          <div class="btn-row justify-end">
+            <button class="btn btn-primary" type="submit">Create Account</button>
+          </div>
+        </form>
+
+        <form id="auth-panel-login" class="auth-panel hidden">
+          <div class="input-group">
+            <label for="auth-login-email">Email</label>
+            <input type="email" id="auth-login-email" placeholder="e.g., you@example.com">
+          </div>
+          <div class="input-group">
+            <label for="auth-login-password">Password</label>
+            <input type="password" id="auth-login-password" placeholder="Enter your password">
+          </div>
+          <p class="auth-note">If you already signed up on this browser, log in here to reopen your StudyPilot data.</p>
+          <div class="auth-status" id="auth-login-status"></div>
+          <div class="btn-row justify-end">
+            <button class="btn btn-primary" type="submit">Log In</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- ======================================================== -->
   <!-- SETUP WIZARD (ONBOARDING)                                -->
@@ -838,6 +901,7 @@
               <div class="card-body">
                 <p>Need to reset the application and run the first setup wizard again? All local progress will be cleared.</p>
                 <button class="btn btn-danger btn-outline mt-md" onclick="window.StudyPilotApp.resetApp()">Reset All Data</button>
+                <button class="btn btn-secondary btn-outline mt-md" onclick="window.StudyPilotAuth.signOut()">Sign Out</button>
               </div>
             </div>
           </div>
@@ -1078,6 +1142,7 @@
   <!-- Application Modules -->
   <script src="js/curriculum.js"></script>
   <script src="js/db.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/setup.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/planner.js"></script>

@@ -73,6 +73,15 @@
     return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
   }
 
+  function escapeHTML(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function buildReminderFeed() {
     const profile = getProfile();
     const reminderTime = parseTimeToMinutes(profile && profile.reminder_time ? profile.reminder_time : "18:00", "18:00");
