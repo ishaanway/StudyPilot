@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SchoolPilot — CBSE Grades 6-10 Tutor</title>
+  <title>StudyPilot — Plan Smarter. Learn Better.</title>
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="StudyPilot is an AI-powered academic operating system that helps students organize school life, prepare for exams, and improve learning.">
@@ -23,72 +23,8 @@
   <link rel="stylesheet" href="styles/planner.css">
   <link rel="stylesheet" href="styles/tutor.css">
   <link rel="stylesheet" href="styles/toolbox.css">
-  <link rel="stylesheet" href="styles/books.css">
-  <link rel="stylesheet" href="styles/auth.css">
 </head>
 <body>
-
-  <!-- ======================================================== -->
-  <!-- AUTH GATE                                                -->
-  <!-- ======================================================== -->
-  <div id="auth-wizard" class="modal-overlay hidden">
-    <div class="auth-card animate-fade-in">
-      <div class="auth-hero">
-        <img src="assets/logo.svg" alt="StudyPilot Logo" class="auth-logo">
-        <h2>Welcome back to StudyPilot</h2>
-        <p>Create a local account or log in to keep your notes, progress, reminders, and study plans on this device.</p>
-      </div>
-
-      <div class="auth-tabs">
-        <button id="auth-tab-signup" class="auth-tab active" type="button">Sign Up</button>
-        <button id="auth-tab-login" class="auth-tab" type="button">Log In</button>
-      </div>
-
-      <div class="auth-panels">
-        <form id="auth-panel-signup" class="auth-panel">
-          <div class="input-group">
-            <label for="auth-signup-name">Full Name</label>
-            <input type="text" id="auth-signup-name" placeholder="e.g., Ishaan or Neeraj">
-          </div>
-          <div class="input-group">
-            <label for="auth-signup-email">Email</label>
-            <input type="email" id="auth-signup-email" placeholder="e.g., you@example.com">
-          </div>
-          <div class="input-row">
-            <div class="input-group">
-              <label for="auth-signup-password">Password</label>
-              <input type="password" id="auth-signup-password" placeholder="Create a password">
-            </div>
-            <div class="input-group">
-              <label for="auth-signup-confirm">Confirm Password</label>
-              <input type="password" id="auth-signup-confirm" placeholder="Repeat password">
-            </div>
-          </div>
-          <p class="auth-note">Your login is stored locally in this browser. Use a password you will remember on this device.</p>
-          <div class="auth-status" id="auth-signup-status"></div>
-          <div class="btn-row justify-end">
-            <button class="btn btn-primary" type="submit">Create Account</button>
-          </div>
-        </form>
-
-        <form id="auth-panel-login" class="auth-panel hidden">
-          <div class="input-group">
-            <label for="auth-login-email">Email</label>
-            <input type="email" id="auth-login-email" placeholder="e.g., you@example.com">
-          </div>
-          <div class="input-group">
-            <label for="auth-login-password">Password</label>
-            <input type="password" id="auth-login-password" placeholder="Enter your password">
-          </div>
-          <p class="auth-note">If you already signed up on this browser, log in here to reopen your StudyPilot data.</p>
-          <div class="auth-status" id="auth-login-status"></div>
-          <div class="btn-row justify-end">
-            <button class="btn btn-primary" type="submit">Log In</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <!-- ======================================================== -->
   <!-- SETUP WIZARD (ONBOARDING)                                -->
@@ -105,17 +41,35 @@
       <div class="setup-step" id="setup-step-1">
         <div class="input-group">
           <label for="setup-name">What is your first name?</label>
-          <input type="text" id="setup-name" placeholder="e.g., Ishaan or Neeraj" required>
+          <input type="text" id="setup-name" placeholder="e.g., Ishaan" required>
         </div>
         <div class="input-row">
           <div class="input-group">
             <label for="setup-grade">Grade</label>
-            <select id="setup-grade">
+            <select id="setup-grade" onchange="window.StudyPilotSetup.handleGradeChange(this.value)">
+              <option value="prekg">Pre-KG</option>
+              <option value="lkg">LKG</option>
+              <option value="ukg">UKG</option>
+              <option value="1">Grade 1</option>
+              <option value="2">Grade 2</option>
+              <option value="3">Grade 3</option>
+              <option value="4">Grade 4</option>
+              <option value="5">Grade 5</option>
               <option value="6">Grade 6</option>
-              <option value="7">Grade 7</option>
+              <option value="7" selected>Grade 7</option>
               <option value="8">Grade 8</option>
               <option value="9">Grade 9</option>
-              <option value="10" selected>Grade 10</option>
+              <option value="10">Grade 10</option>
+              <option value="11">Grade 11</option>
+              <option value="12">Grade 12</option>
+            </select>
+          </div>
+          <div class="input-group hidden" id="setup-stream-group">
+            <label for="setup-stream">Stream</label>
+            <select id="setup-stream">
+              <option value="Science">Science</option>
+              <option value="Commerce">Commerce</option>
+              <option value="Humanities">Humanities</option>
             </select>
           </div>
           <div class="input-group">
@@ -135,25 +89,8 @@
       <div class="setup-step hidden" id="setup-step-2">
         <div class="input-group">
           <label>Select your subjects</label>
-          <div class="subjects-grid">
-            <label class="subject-chip checked">
-              <input type="checkbox" value="Mathematics" checked> Mathematics
-            </label>
-            <label class="subject-chip checked">
-              <input type="checkbox" value="Science" checked> Science
-            </label>
-            <label class="subject-chip checked">
-              <input type="checkbox" value="Social Science" checked> Social Science
-            </label>
-            <label class="subject-chip checked">
-              <input type="checkbox" value="English" checked> English
-            </label>
-            <label class="subject-chip">
-              <input type="checkbox" value="Hindi"> Hindi / Local Language
-            </label>
-            <label class="subject-chip">
-              <input type="checkbox" value="Computer Science"> Computer Science
-            </label>
+          <div class="subjects-grid" id="setup-subjects-grid">
+            <!-- Populated dynamically based on grade in setup.js -->
           </div>
         </div>
         <div class="input-group">
@@ -206,10 +143,6 @@
             </label>
           </div>
         </div>
-        <div class="input-group">
-          <label for="setup-dream-career">Dream career or role</label>
-          <input type="text" id="setup-dream-career" placeholder="e.g., doctor, AI engineer, architect">
-        </div>
         <div class="btn-row">
           <button type="button" class="btn btn-secondary" onclick="window.StudyPilotSetup.nextStep(2)">Back</button>
           <button type="button" class="btn btn-primary" onclick="window.StudyPilotSetup.completeSetup()">Get Started <i data-lucide="sparkles"></i></button>
@@ -238,10 +171,6 @@
           <i data-lucide="calendar"></i>
           <span>Planner</span>
         </button>
-        <button class="nav-item" data-screen="books">
-          <i data-lucide="book-open"></i>
-          <span>NCERT Books</span>
-        </button>
         <button class="nav-item" data-screen="tutor">
           <i data-lucide="graduation-cap"></i>
           <span>AI Tutor</span>
@@ -256,22 +185,11 @@
         </button>
       </nav>
       <div class="sidebar-footer">
-        <div class="theme-picker-wrap">
-          <button id="theme-toggle-btn" class="theme-toggle" type="button">
-            <i data-lucide="sun" class="sun-icon"></i>
-            <i data-lucide="moon" class="moon-icon hidden"></i>
-            <span>Light Mode</span>
-            <i data-lucide="chevron-up" class="theme-caret"></i>
-          </button>
-          <div id="theme-picker-menu" class="theme-picker-menu hidden">
-            <button class="theme-option" data-theme="light" type="button">Light</button>
-            <button class="theme-option" data-theme="midnight" type="button">Midnight</button>
-            <button class="theme-option" data-theme="ocean" type="button">Ocean</button>
-            <button class="theme-option" data-theme="forest" type="button">Forest</button>
-            <button class="theme-option" data-theme="sunset" type="button">Sunset</button>
-            <button class="theme-option" data-theme="aurora" type="button">Aurora</button>
-          </div>
-        </div>
+        <button id="theme-toggle-btn" class="theme-toggle">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon hidden"></i>
+          <span>Light Mode</span>
+        </button>
       </div>
     </aside>
 
@@ -288,6 +206,11 @@
         </div>
       </div>
       <div class="header-right">
+        <!-- Parent Report Button (Parent Progress check) -->
+        <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.showParentReportModal()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
+          <i data-lucide="award"></i> <span>Report for Parents</span>
+        </button>
+        
         <!-- Notification Bell -->
         <div class="notification-bell" id="notification-bell">
           <i data-lucide="bell"></i>
@@ -315,9 +238,15 @@
       
       <!-- SCREEN: DASHBOARD -->
       <section id="screen-dashboard" class="screen-view">
-        <div class="dashboard-greeting">
-          <h1 id="dashboard-welcome">Hello, Scholar!</h1>
-          <p id="dashboard-date">Today</p>
+        <div class="dashboard-greeting" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h1 id="dashboard-welcome">Hello, Scholar!</h1>
+            <p id="dashboard-date">Monday, 22 June 2026</p>
+          </div>
+          <!-- Quick Access Report for Parents -->
+          <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.showParentReportModal()">
+            <i data-lucide="award"></i> Report for Parents
+          </button>
         </div>
 
         <div class="dashboard-grid">
@@ -373,16 +302,6 @@
               </div>
             </div>
 
-            <div class="card card-analytics">
-              <div class="card-header">
-                <h2><i data-lucide="bar-chart-3"></i> Progress Analytics</h2>
-                <span class="badge badge-accent">Live data</span>
-              </div>
-              <div id="dashboard-analytics-panel" class="analytics-panel">
-                <!-- Populated by JS -->
-              </div>
-            </div>
-
             <!-- AI Suggestions Box -->
             <div class="card card-ai-tips">
               <div class="ai-tips-header">
@@ -391,17 +310,6 @@
               </div>
               <div class="ai-tips-content" id="dashboard-ai-suggestions">
                 <!-- Dynamically populated -->
-              </div>
-            </div>
-
-            <div class="card card-books-shortcut">
-              <div class="card-header">
-                <h2><i data-lucide="book-open"></i> Local NCERT Library</h2>
-                <span class="badge badge-indigo">Offline PDFs + portals</span>
-              </div>
-              <p>Open local NCERT textbooks inside the app, or jump to the official textbook portals whenever you want the source site.</p>
-              <div class="books-shortcut-actions">
-                <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.switchScreen('books')">Open Library</button>
               </div>
             </div>
 
@@ -415,16 +323,6 @@
                 <!-- Dynamically populated -->
               </div>
             </div>
-
-            <div class="card card-upcoming">
-              <div class="card-header">
-                <h2><i data-lucide="alarm-clock"></i> Overdue Reminders</h2>
-                <span class="badge badge-red">Loud Alert</span>
-              </div>
-              <div class="upcoming-list" id="dashboard-reminders">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -434,7 +332,7 @@
         <div class="planner-header">
           <div class="planner-title-block">
             <h1>Academic Planner & Calendar</h1>
-            <p>Organize classes, exam revisions, and study blocks aligned with CBSE 2026 syllabus.</p>
+            <p>Organize classes, exam revisions, and study blocks aligned with CBSE syllabus.</p>
           </div>
           <div class="planner-controls">
             <button class="btn btn-outline" onclick="window.StudyPilotPlanner.autoGeneratePlan()">
@@ -447,22 +345,28 @@
         </div>
 
         <div class="planner-grid-container">
-          <!-- Sidebar: Curriculum explorer and Drag-to-schedule list -->
+          <!-- Sidebar: Curriculum explorer and Lesson Preparation tracker (Parent Progress) -->
           <div class="planner-sidebar">
-            <div class="curriculum-picker">
-              <h3><i data-lucide="book-open"></i> CBSE Official Textbooks</h3>
+            <div class="curriculum-picker" style="display:flex; flex-direction:column; height:100%;">
+              <h3><i data-lucide="book-open"></i> CBSE Syllabus Tracker</h3>
+              
+              <!-- Textbook Progress Bar -->
+              <div class="textbook-overall-progress" style="margin-bottom: 0.75rem; background: var(--bg-app); padding:0.65rem; border-radius: var(--radius-sm); border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; font-size: 0.75rem; font-weight:600; margin-bottom: 0.25rem;">
+                  <span id="textbook-subject-lbl">Science Prep</span>
+                  <span id="textbook-pct-lbl">35%</span>
+                </div>
+                <div class="quiz-progress-bar" style="height: 5px;">
+                  <div class="quiz-progress-fill" id="textbook-progress-fill" style="width: 35%; background: var(--accent);"></div>
+                </div>
+              </div>
+
               <div class="syllabus-subject-tabs">
-                <button class="tab-btn active" data-subject="Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Science')">🔬 Science</button>
-                <button class="tab-btn" data-subject="Mathematics" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Mathematics')">📐 Maths</button>
-                <button class="tab-btn" data-subject="Social Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Social Science')">🌍 Soc. Sci.</button>
-                <button class="tab-btn" data-subject="English" onclick="window.StudyPilotPlanner.selectSyllabusSubject('English')">📖 English</button>
-                <button class="tab-btn" data-subject="Tamil" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Tamil')">🌺 Tamil</button>
-                <button class="tab-btn" data-subject="Hindi" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Hindi')">🔤 Hindi</button>
-                <button class="tab-btn" data-subject="Computer Science" onclick="window.StudyPilotPlanner.selectSyllabusSubject('Computer Science')">💻 CS</button>
+                <!-- Subject tabs loaded dynamically based on grade in planner.js -->
               </div>
               
               <div class="chapters-accordion" id="syllabus-chapters-list">
-                <!-- Dynamically populated with official NCERT chapter links -->
+                <!-- Dynamically populated with NCERT Chapters containing Read, Revised, Quiz checkbox progress trackers -->
               </div>
             </div>
           </div>
@@ -491,39 +395,6 @@
         </div>
       </section>
 
-      <!-- SCREEN: NCERT BOOKS -->
-      <section id="screen-books" class="screen-view hidden">
-        <div class="books-header">
-          <div>
-            <h1>NCERT Library</h1>
-            <p>Open the locally cached NCERT textbooks inside StudyPilot, or jump out to the official NCERT and CBSE portals when you want the source site.</p>
-          </div>
-          <div class="books-header-actions">
-            <button class="btn btn-outline" onclick="window.open('https://ncert.nic.in/textbook.php', '_blank', 'noopener,noreferrer')">Open NCERT Portal</button>
-            <button class="btn btn-secondary" onclick="window.open('https://cbseacademic.nic.in/publication_ebooks.html', '_blank', 'noopener,noreferrer')">Open CBSE Portal</button>
-            <button class="btn btn-primary" onclick="window.StudyPilotApp.switchScreen('dashboard')">Back to Dashboard</button>
-          </div>
-        </div>
-
-        <div class="books-grid">
-          <div class="card books-picker-card">
-            <div class="card-header">
-              <h2><i data-lucide="sliders-horizontal"></i> Choose Board, Grade, Subject</h2>
-              <span class="badge badge-indigo" id="books-grade-pill">Grade 10</span>
-            </div>
-            <div id="books-selector-root"></div>
-          </div>
-
-          <div class="card books-links-card">
-            <div class="card-header">
-              <h2><i data-lucide="link-2"></i> Local Library and Portals</h2>
-              <span class="badge badge-accent">Offline ready</span>
-            </div>
-            <div id="books-link-root"></div>
-          </div>
-        </div>
-      </section>
-
       <!-- SCREEN: AI TUTOR -->
       <section id="screen-tutor" class="screen-view hidden">
         <div class="tutor-layout">
@@ -535,44 +406,17 @@
                   <i data-lucide="sparkles"></i>
                 </div>
                 <div>
-                  <h2>AI Study Pilot</h2>
-                  <p>CBSE · NCERT study companion</p>
+                  <h2 id="tutor-bot-title">AI Study Pilot</h2>
+                  <p id="tutor-bot-grade-lbl">Grade 7 CBSE Coach</p>
                 </div>
-              </div>
-              <div class="tutor-model-controls">
-                <div class="input-group tutor-model-group">
-                  <label for="tutor-model-select">Ollama model</label>
-                  <select id="tutor-model-select" onchange="window.StudyPilotTutor.setModelPreferenceFromSelect(this.value)">
-                    <option value="auto::">Auto</option>
-                  </select>
-                </div>
-                <div class="input-group tutor-model-group">
-                  <label for="tutor-mode-select">Tutor mode</label>
-                  <select id="tutor-mode-select" onchange="window.StudyPilotTutor.setStudyModeFromSelect(this.value)">
-                    <option value="learn">Learn</option>
-                    <option value="homework">Homework</option>
-                    <option value="revision">Revision</option>
-                    <option value="exam">Exam</option>
-                    <option value="doubt">Doubt</option>
-                  </select>
-                </div>
-                <button class="btn-icon btn-icon-only tutor-model-refresh" type="button" title="Refresh model list" aria-label="Refresh model list" onclick="window.StudyPilotTutor.refreshModelCatalog()">
-                  <i data-lucide="refresh-cw"></i>
-                </button>
               </div>
             </div>
-            <div class="tutor-backend-status" id="tutor-backend-status">Checking tutor connection...</div>
             <div class="tutor-chat-messages" id="tutor-chat-messages">
               <div class="chat-message bot">
-                <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from the official NCERT Science chapters for your selected grade, open the textbook, or generate quizzes. What are we studying today?</p>
-                  <div class="chat-suggestions">
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain acids, bases and salts')">⚗️ Acids & Bases</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain reflection and refraction')">💡 Light & Reflection</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain electricity and Ohms law')">🔋 Electricity</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('திருக்குறளின் ஆசிரியர் யார்? சிலப்பதிகாரம் பற்றி கூறு')">🌺 Tamil — திருக்குறள்</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('What is the official NCERT chapter for electricity?')">📖 Open Chapter</button>
-                    <button onclick="window.StudyPilotTutor.askQuestion('Explain the official NCERT Science textbook links')">📘 Official Textbook</button>
-                  </div>
+                <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from your CBSE textbooks, summarize chapters, or generate quizzes. What are we studying today?</p>
+                <div class="chat-suggestions" id="tutor-chat-quick-prompts">
+                  <!-- Loaded dynamically based on grade in tutor.js -->
+                </div>
               </div>
             </div>
             <div class="tutor-chat-input-bar">
@@ -594,20 +438,12 @@
               <div class="quiz-container-card">
                 <div id="quiz-init-view">
                   <h3>Generate Chapter Quiz</h3>
-                  <p>Test your knowledge with 5 interactive questions based on the official NCERT Science chapters for your selected grade.</p>
+                  <p>Test your knowledge with 5 interactive questions based on your active CBSE syllabus.</p>
                   
                   <div class="input-group">
                     <label for="quiz-subject-select">Subject</label>
-                     <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
-                      <option value="Science">🔬 Science - Official NCERT</option>
-                    </select>
-                  </div>
-                  <div class="input-group">
-                    <label for="quiz-difficulty-select">Difficulty</label>
-                    <select id="quiz-difficulty-select">
-                      <option value="easy">Easy</option>
-                      <option value="medium" selected>Medium</option>
-                      <option value="hard">Hard</option>
+                    <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
+                      <!-- Loaded dynamically -->
                     </select>
                   </div>
                   <div class="input-group">
@@ -616,7 +452,7 @@
                       <!-- Dynamically populated -->
                     </select>
                   </div>
-                  <button class="btn btn-primary w-full" onclick="window.StudyPilotTutor.startQuiz()">Generate AI Quiz</button>
+                  <button class="btn btn-primary w-full" onclick="window.StudyPilotTutor.startQuiz()">Start Quiz</button>
                 </div>
 
                 <div id="quiz-active-view" class="hidden">
@@ -656,14 +492,8 @@
                   <button class="btn btn-outline btn-xs" onclick="window.StudyPilotTutor.showAddFlashcardModal()">+ New Card</button>
                 </div>
                 
-                <div class="flashcard-subject-filters">
-                  <button class="filter-chip active" data-filter="all" onclick="window.StudyPilotTutor.filterFlashcards('all')">All</button>
-                  <button class="filter-chip" data-filter="Science" onclick="window.StudyPilotTutor.filterFlashcards('Science')">🔬 Science</button>
-                  <button class="filter-chip" data-filter="Mathematics" onclick="window.StudyPilotTutor.filterFlashcards('Mathematics')">📐 Maths</button>
-                  <button class="filter-chip" data-filter="Social Science" onclick="window.StudyPilotTutor.filterFlashcards('Social Science')">🌍 Soc. Sci.</button>
-                  <button class="filter-chip" data-filter="English" onclick="window.StudyPilotTutor.filterFlashcards('English')">📖 English</button>
-                  <button class="filter-chip" data-filter="Tamil" onclick="window.StudyPilotTutor.filterFlashcards('Tamil')">🌺 Tamil</button>
-                  <button class="filter-chip" data-filter="Computer Science" onclick="window.StudyPilotTutor.filterFlashcards('Computer Science')">💻 CS</button>
+                <div class="flashcard-subject-filters" id="tutor-flashcard-filters">
+                  <!-- Loaded dynamically -->
                 </div>
 
                 <!-- Flashcard Widget -->
@@ -734,6 +564,13 @@
                 <p>Google Keep / Notion notes board</p>
               </div>
             </button>
+            <button class="tool-menu-btn" data-tool="ocr">
+              <i data-lucide="scan"></i>
+              <div>
+                <h3>Document Summarizer</h3>
+                <p>Mock OCR textbook scanner</p>
+              </div>
+            </button>
             <button class="tool-menu-btn" data-tool="career" id="toolbox-menu-career">
               <i data-lucide="compass"></i>
               <div>
@@ -791,11 +628,6 @@
                       <button class="color-dot color-purple" data-color="purple" onclick="window.StudyPilotToolbox.selectNoteColor('purple')"></button>
                       <button class="color-dot color-yellow" data-color="yellow" onclick="window.StudyPilotToolbox.selectNoteColor('yellow')"></button>
                     </div>
-                    <div class="notes-ai-actions">
-                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiNotes()">AI Notes</button>
-                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiSummary()">AI Summary</button>
-                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiPracticeQuestions()">Practice</button>
-                    </div>
                     <button class="btn btn-primary btn-sm" onclick="window.StudyPilotToolbox.saveNote()">Save Note</button>
                   </div>
                 </div>
@@ -806,13 +638,47 @@
               </div>
             </div>
 
+            <!-- TOOL: OCR SCANNER & SUMMARIZER -->
+            <div class="tool-panel hidden" id="tool-panel-ocr">
+              <div class="ocr-wrapper">
+                <h3>Document Summarizer (Mock OCR Scanner)</h3>
+                <p>Drag and drop a PDF chapter or image page of your textbook to extract summary & key formulas instantly.</p>
+                
+                <div class="ocr-drag-zone" id="ocr-drag-zone" onclick="window.StudyPilotToolbox.triggerMockOCR()">
+                  <i data-lucide="file-text" class="drag-icon"></i>
+                  <p>Click here to simulate uploading a textbook chapter</p>
+                  <span class="text-muted text-xs">Supports PDF, PNG, JPG up to 10MB</span>
+                </div>
+                
+                <div class="ocr-progress-container hidden" id="ocr-progress-container">
+                  <div class="ocr-progress-row">
+                    <span>Extracting text & formulas...</span>
+                    <span id="ocr-progress-pct">45%</span>
+                  </div>
+                  <div class="ocr-progress-track">
+                    <div class="ocr-progress-fill" id="ocr-progress-fill" style="width: 45%;"></div>
+                  </div>
+                </div>
+
+                <div class="ocr-results hidden" id="ocr-results">
+                  <div class="ocr-results-header">
+                    <h4 id="ocr-summary-chapter-title"><i data-lucide="file-check"></i> Extracted Summary: Curiosity Chapter 3 (Electricity)</h4>
+                    <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
+                  </div>
+                  <div class="ocr-results-body" id="ocr-summary-results-body">
+                    <!-- Populated in toolbox.js based on grade -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- TOOL: CAREER GUIDANCE -->
             <div class="tool-panel hidden" id="tool-panel-career">
               <div class="career-wrapper" id="career-opt-in-view">
                 <div class="career-promo-card">
                   <i data-lucide="compass" class="career-promo-icon"></i>
                   <h2>Career suggestions are ready!</h2>
-                  <p>Our AI Coach can read your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and dream role (<strong><span id="career-user-dream"></span></strong>) to build a personalized career map.</p>
+                  <p>Our AI Coach has analyzed your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and learning history. Would you like personalized career roadmap suggestions?</p>
                   <button class="btn btn-primary" onclick="window.StudyPilotToolbox.unlockCareerMode()">Show Career Suggestions</button>
                 </div>
               </div>
@@ -820,15 +686,9 @@
               <div class="career-wrapper hidden" id="career-active-view">
                 <div class="career-header-row">
                   <h3>AI Recommended Career Pathways</h3>
-                  <div class="career-status-row">
-                    <span class="badge badge-accent" id="career-status-badge">Waiting</span>
-                    <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
-                  </div>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
                 </div>
-                <div class="career-summary-card">
-                  <p id="career-summary-copy">Unlock the coach to generate a personalized path.</p>
-                  <ul class="career-action-list" id="career-action-list"></ul>
-                </div>
+                
                 <div class="career-grid" id="career-cards-grid">
                   <!-- Loaded dynamically based on user goals/subjects -->
                 </div>
@@ -846,15 +706,15 @@
             <div class="profile-avatar-large" id="profile-avatar-lg">IS</div>
             <div>
               <h1 id="profile-fullname">Ishaan</h1>
-              <p id="profile-details">CBSE Student · CBSE Board</p>
+              <p id="profile-details">Grade 7 Student • CBSE Board</p>
               <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
-              <span class="badge badge-accent" id="profile-dream-badge">Dream: Not set</span>
             </div>
           </div>
         </div>
 
         <div class="profile-layout-grid">
           <div class="profile-column">
+            <!-- Edit Card -->
             <div class="card">
               <div class="card-header">
                 <h2><i data-lucide="user-cog"></i> Edit Academic Details</h2>
@@ -867,12 +727,30 @@
                 <div class="input-row">
                   <div class="input-group">
                     <label for="profile-edit-grade">Grade</label>
-                    <select id="profile-edit-grade">
+                    <select id="profile-edit-grade" onchange="window.StudyPilotApp.handleProfileGradeChange(this.value)">
+                      <option value="prekg">Pre-KG</option>
+                      <option value="lkg">LKG</option>
+                      <option value="ukg">UKG</option>
+                      <option value="1">Grade 1</option>
+                      <option value="2">Grade 2</option>
+                      <option value="3">Grade 3</option>
+                      <option value="4">Grade 4</option>
+                      <option value="5">Grade 5</option>
                       <option value="6">Grade 6</option>
                       <option value="7">Grade 7</option>
                       <option value="8">Grade 8</option>
                       <option value="9">Grade 9</option>
-                      <option value="10" selected>Grade 10</option>
+                      <option value="10">Grade 10</option>
+                      <option value="11">Grade 11</option>
+                      <option value="12">Grade 12</option>
+                    </select>
+                  </div>
+                  <div class="input-group hidden" id="profile-edit-stream-group">
+                    <label for="profile-edit-stream">Select Stream</label>
+                    <select id="profile-edit-stream">
+                      <option value="Science">Science</option>
+                      <option value="Commerce">Commerce</option>
+                      <option value="Humanities">Humanities</option>
                     </select>
                   </div>
                   <div class="input-group">
@@ -893,45 +771,38 @@
                     <option value="Build structured daily study habits">Build structured daily study habits</option>
                   </select>
                 </div>
-                <div class="input-group">
-                  <label for="profile-edit-dream-career">Dream career or role</label>
-                  <input type="text" id="profile-edit-dream-career" placeholder="e.g., doctor, designer, software engineer">
-                </div>
-                <div class="input-group">
-                  <label for="profile-edit-favorite-subjects">Favourite subjects</label>
-                  <textarea id="profile-edit-favorite-subjects" placeholder="Science, Mathematics"></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="profile-edit-weak-subjects">Weak subjects</label>
-                  <textarea id="profile-edit-weak-subjects" placeholder="English, Social Science"></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="profile-edit-interests">Interests</label>
-                  <textarea id="profile-edit-interests" placeholder="Robotics, painting, chess"></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="profile-edit-hobbies">Hobbies</label>
-                  <textarea id="profile-edit-hobbies" placeholder="Reading, coding, cricket"></textarea>
-                </div>
-                <div class="input-group">
-                  <label for="profile-edit-learning-goals">Learning goals</label>
-                  <textarea id="profile-edit-learning-goals" placeholder="Improve math speed, revise science daily"></textarea>
-                </div>
                 <button class="btn btn-primary" onclick="window.StudyPilotApp.saveProfileEdits()">Save Settings</button>
               </div>
             </div>
           </div>
 
           <div class="profile-column">
-            <!-- Reset Card -->
+            <!-- Connect Gemini Key Card -->
             <div class="card">
+              <div class="card-header">
+                <h2><i data-lucide="key"></i> Connect Live AI Coach</h2>
+              </div>
+              <div class="card-body">
+                <p class="text-muted text-xs" style="margin-bottom: 0.75rem; line-height: 1.4;">
+                  Enter a Gemini API Key to let the AI Coach answer any CBSE study question from Pre-KG to Grade 12. 
+                  <a href="https://aistudio.google.com/" target="_blank" style="color:var(--primary);text-decoration:underline;font-weight:600;">Get a free API key here</a>.
+                </p>
+                <div class="input-group" style="margin-bottom:0.75rem;">
+                  <label for="profile-api-key">Gemini API Key</label>
+                  <input type="text" id="profile-api-key" placeholder="AIzaSy...">
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.saveApiKey()">Save API Key</button>
+              </div>
+            </div>
+
+            <!-- Reset Card -->
+            <div class="card mt-md">
               <div class="card-header">
                 <h2><i data-lucide="settings"></i> Application Controls</h2>
               </div>
               <div class="card-body">
                 <p>Need to reset the application and run the first setup wizard again? All local progress will be cleared.</p>
                 <button class="btn btn-danger btn-outline mt-md" onclick="window.StudyPilotApp.resetApp()">Reset All Data</button>
-                <button class="btn btn-secondary btn-outline mt-md" onclick="window.StudyPilotAuth.signOut()">Sign Out</button>
               </div>
             </div>
           </div>
@@ -964,27 +835,29 @@
       </button>
     </nav>
 
-    <div id="overdue-alarm-overlay" class="alarm-overlay hidden" role="dialog" aria-modal="true" aria-live="assertive">
-      <div class="alarm-card">
-        <div class="alarm-pulse"></div>
-        <div class="alarm-header">
-          <span class="badge badge-red">Overdue Alert</span>
-          <h2 id="alarm-title">Task overdue</h2>
-        </div>
-        <p id="alarm-message">You have something due right now. Finish it before it slips further.</p>
-        <div class="alarm-actions">
-          <button class="btn btn-outline" id="alarm-snooze-btn" type="button">Snooze 10 Minutes</button>
-          <button class="btn btn-primary" id="alarm-stop-btn" type="button">Stop Alarm</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 
   <!-- ======================================================== -->
   <!-- MODALS                                                   -->
   <!-- ======================================================== -->
   
+  <!-- Parent Report Modal (Parent Progress feature) -->
+  <div id="modal-parent-report" class="modal-overlay hidden">
+    <div class="modal-card animate-fade-in" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 style="display:flex;align-items:center;gap:0.5rem;"><i data-lucide="award" style="color:var(--primary);"></i> Science Preparation Parent Report</h3>
+        <button class="modal-close" onclick="window.StudyPilotApp.hideParentReportModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" id="parent-report-body" style="max-height: 450px; overflow-y: auto;">
+        <!-- Rendered dynamically in app.js -->
+      </div>
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button class="btn btn-secondary btn-sm" onclick="window.print()"><i data-lucide="printer"></i> Print Report</button>
+        <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.hideParentReportModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Add Task Modal -->
   <div id="modal-add-task" class="modal-overlay hidden">
     <div class="modal-card animate-fade-in">
@@ -1038,7 +911,7 @@
         </div>
         <div class="input-group">
           <label for="exam-input-topic">Topic/Chapter Summary</label>
-          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Science Chapters 2, 9, 11">
+          <input type="text" id="exam-input-topic" placeholder="e.g. Periodic Test - Curiosity Chapters 1-3">
         </div>
         <div class="input-group">
           <label for="exam-input-date">Exam Date</label>
@@ -1164,42 +1037,19 @@
     </div>
   </div>
 
-  <!-- Book Viewer Modal -->
-  <div id="book-viewer-modal" class="modal-overlay hidden">
-    <div class="modal-card book-viewer-card animate-fade-in">
-      <div class="modal-header book-viewer-header">
-        <div>
-          <h3 id="book-viewer-title">NCERT Book</h3>
-          <p id="book-viewer-subtitle">Local PDF loaded from the StudyPilot library.</p>
-        </div>
-        <div class="book-viewer-actions">
-          <button class="btn btn-outline btn-sm" type="button" id="book-viewer-open-external" onclick="window.StudyPilotBooks.openViewerExternal()">Open official source</button>
-          <button class="modal-close" type="button" onclick="window.StudyPilotBooks.closeViewer()"><i data-lucide="x"></i></button>
-        </div>
-      </div>
-      <div class="book-viewer-body">
-        <iframe id="book-viewer-frame" title="NCERT book viewer"></iframe>
-      </div>
-    </div>
-  </div>
-
   <!-- LaTeX Render Support via KaTeX (Local fallback or light CDN link) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <!-- Application Modules -->
-  <script src="js/curriculum.js?v=20260626-1"></script>
-  <script src="js/db.js?v=20260626-1"></script>
-  <script src="js/auth.js?v=20260626-1"></script>
-  <script src="js/setup.js?v=20260626-1"></script>
-  <script src="js/dashboard.js?v=20260626-1"></script>
-  <script src="js/planner.js?v=20260626-1"></script>
-  <script src="js/books.js?v=20260626-1"></script>
-  <script src="js/tutor.js?v=20260626-1"></script>
-  <script src="js/toolbox.js?v=20260626-1"></script>
-  <script src="js/reminders.js?v=20260626-1"></script>
-  <script src="js/app.js?v=20260626-1"></script>
+  <script src="js/db.js"></script>
+  <script src="js/setup.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/planner.js"></script>
+  <script src="js/tutor.js"></script>
+  <script src="js/toolbox.js"></script>
+  <script src="js/app.js"></script>
 
 </body>
 </html>

@@ -3,11 +3,6 @@
 /* ======================================================== */
 
 (function () {
-  function getLocalISODate(date = new Date()) {
-    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-    return local.toISOString().slice(0, 10);
-  }
-
   window.StudyPilotSetup = {
     currentStep: 1,
 
@@ -20,13 +15,48 @@
           badgeEl.innerText = `${e.target.value} hrs`;
         });
       }
+      
+      // Load default subjects initially for Grade 7
+      this.populateSubjectsList("7", "Science");
+    },
 
-      // Add click listener on subject chips to toggle checked classes
-      const chips = document.querySelectorAll(".subject-chip");
+    handleGradeChange: function (grade) {
+      const streamGroup = document.getElementById("setup-stream-group");
+      if (!streamGroup) return;
+
+      if (grade === "11" || grade === "12") {
+        streamGroup.classList.remove("hidden");
+      } else {
+        streamGroup.classList.add("hidden");
+      }
+      
+      // Re-populate subjects selection step based on selected grade
+      const stream = document.getElementById("setup-stream").value;
+      this.populateSubjectsList(grade, stream);
+    },
+
+    populateSubjectsList: function (grade, stream) {
+      const grid = document.getElementById("setup-subjects-grid");
+      if (!grid) return;
+
+      const curriculum = window.StudyPilotDB.getCurriculum(grade, stream);
+      const subjects = curriculum.subjects;
+
+      grid.innerHTML = subjects.map((sub, i) => {
+        // Pre-check first 4 subjects by default
+        const checked = i < 4 ? "checked" : "";
+        return `
+          <label class="subject-chip ${checked ? 'checked' : ''}">
+            <input type="checkbox" value="${escapeHTML(sub)}" ${checked}> ${escapeHTML(sub)}
+          </label>
+        `;
+      }).join("");
+
+      // Re-add click listener on newly created subject chips
+      const chips = grid.querySelectorAll(".subject-chip");
       chips.forEach(chip => {
         const checkbox = chip.querySelector('input[type="checkbox"]');
         chip.addEventListener("click", (e) => {
-          // If they clicked the chip label itself, toggle checkbox
           if (e.target !== checkbox) {
             checkbox.checked = !checkbox.checked;
           }
@@ -56,7 +86,6 @@
       document.getElementById(`setup-step-${stepNum}`).classList.remove("hidden");
       this.currentStep = stepNum;
       
-      // Trigger Lucide icons reload for arrows inside steps
       if (window.lucide) {
         window.lucide.createIcons();
       }
@@ -65,11 +94,12 @@
     completeSetup: function () {
       const name = document.getElementById("setup-name").value.trim();
       const grade = document.getElementById("setup-grade").value;
+      const stream = (grade === "11" || grade === "12") ? document.getElementById("setup-stream").value : "Science";
       const board = document.getElementById("setup-board").value;
       
       // Gather selected subjects
       const subjects = [];
-      const checkboxes = document.querySelectorAll('.subjects-grid input[type="checkbox"]:checked');
+      const checkboxes = document.querySelectorAll('#setup-subjects-grid input[type="checkbox"]:checked');
       checkboxes.forEach(cb => {
         subjects.push(cb.value);
       });
@@ -80,25 +110,21 @@
       }
 
       const dailyHours = parseFloat(document.getElementById("setup-hours").value);
-      
-      // Gather selected goal
       const goalRadio = document.querySelector('input[name="setup-goal"]:checked');
       const goal = goalRadio ? goalRadio.value : "Improve overall grades";
-      const dreamCareerInput = document.getElementById("setup-dream-career");
-      const dreamCareer = dreamCareerInput ? dreamCareerInput.value.trim() : "";
 
       // Save to Database
       const profile = window.StudyPilotDB.getProfile();
       profile.name = name;
       profile.grade = grade;
+      profile.stream = stream;
       profile.board = board;
       profile.subjects = subjects;
       profile.dailyHours = dailyHours;
       profile.goal = goal;
-      profile.dreamCareer = dreamCareer;
       profile.setupComplete = true;
       profile.streak = 1;
-      profile.lastActive = getLocalISODate();
+      profile.lastActive = "2026-06-22";
 
       window.StudyPilotDB.saveProfile(profile);
 
@@ -106,7 +132,7 @@
       document.getElementById("setup-wizard").classList.add("hidden");
 
       // Notify user
-      window.StudyPilotDB.addNotification(`Welcome to StudyPilot, ${name}! Your Grade ${grade} (${board}) space is ready.`, "info");
+      window.StudyPilotDB.addNotification(`Welcome to StudyPilot, ${name}! Your Grade ${grade === 'prekg' ? 'Pre-KG' : grade} workspace is configured.`, "info");
 
       // Refresh parent app view
       if (window.StudyPilotApp) {
@@ -117,13 +143,11 @@
   };
 
   // Run init when DOM is loaded
-  const bootSetup = () => {
+  document.addEventListener("DOMContentLoaded", () => {
     window.StudyPilotSetup.init();
-  };
+  });
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bootSetup, { once: true });
-  } else {
-    bootSetup();
+  function escapeHTML(str) {
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 })();

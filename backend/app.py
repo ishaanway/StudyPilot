@@ -459,7 +459,15 @@ def _student_from_row(row: dict | None) -> dict | None:
     except json.JSONDecodeError:
         subjects = []
 
-    return {
+    try:
+        profile_json = json.loads(row.get("profile_json") or "{}")
+    except json.JSONDecodeError:
+        profile_json = {}
+
+    if not isinstance(profile_json, dict):
+        profile_json = {}
+
+    student = {
         "id": row.get("id"),
         "name": row.get("name"),
         "grade": row.get("grade"),
@@ -470,6 +478,76 @@ def _student_from_row(row: dict | None) -> dict | None:
         "academic_goal": row.get("academic_goal"),
         "created_at": row.get("created_at"),
         "updated_at": row.get("updated_at"),
+    }
+
+    student.update(profile_json)
+    student["id"] = row.get("id")
+    student["student_id"] = row.get("id")
+    student.setdefault("profile_json", profile_json)
+    return student
+
+
+def _profile_payload_to_student_fields(payload: dict[str, Any], existing_row: dict | None = None) -> dict[str, Any]:
+    existing_row = existing_row or {}
+    payload = payload or {}
+
+    existing_profile = {}
+    try:
+        existing_profile = json.loads(existing_row.get("profile_json") or "{}") if existing_row else {}
+    except json.JSONDecodeError:
+        existing_profile = {}
+    if not isinstance(existing_profile, dict):
+        existing_profile = {}
+
+    merged_profile: dict[str, Any] = {}
+    if isinstance(existing_profile, dict):
+        merged_profile.update(existing_profile)
+    merged_profile.update(payload)
+
+    if "grade" not in merged_profile and existing_row.get("grade") is not None:
+        merged_profile["grade"] = existing_row.get("grade")
+    if "board" not in merged_profile and existing_row.get("school_board") is not None:
+        merged_profile["board"] = existing_row.get("school_board")
+
+    name = str(merged_profile.get("name") or existing_row.get("name") or "Student").strip() or "Student"
+    grade = _clamp_grade(merged_profile.get("grade") or existing_row.get("grade") or 10)
+    section = str(merged_profile.get("section") or existing_row.get("section") or "").strip()
+    board = str(
+        merged_profile.get("board")
+        or merged_profile.get("school_board")
+        or existing_row.get("school_board")
+        or "CBSE"
+    ).strip() or "CBSE"
+    subjects = _normalize_list(merged_profile.get("subjects") or existing_profile.get("subjects") or [])
+    daily_hours = merged_profile.get("dailyHours") or merged_profile.get("daily_study_hours") or existing_row.get("daily_study_hours") or 2
+    goal = str(
+        merged_profile.get("goal")
+        or merged_profile.get("academic_goal")
+        or existing_row.get("academic_goal")
+        or "Improve overall grades"
+    ).strip() or "Improve overall grades"
+
+    merged_profile["name"] = name
+    merged_profile["grade"] = str(grade)
+    merged_profile["section"] = section
+    merged_profile["board"] = board
+    merged_profile["school_board"] = board
+    merged_profile["subjects"] = subjects
+    merged_profile["dailyHours"] = float(daily_hours or 0)
+    merged_profile["goal"] = goal
+    merged_profile["academic_goal"] = goal
+    merged_profile["profileVersion"] = int(merged_profile.get("profileVersion") or 1)
+
+    return {
+        "name": name,
+        "grade": grade,
+        "section": section,
+        "school_board": board,
+        "subjects_json": json.dumps(subjects, ensure_ascii=False),
+        "daily_study_hours": float(daily_hours or 0),
+        "academic_goal": goal,
+        "profile_json": json.dumps(merged_profile, ensure_ascii=False),
+        "profile": merged_profile,
     }
 
 
@@ -770,6 +848,68 @@ def student_detail(student_id: int):
     )
     _upsert_settings(student_id, payload)
     return jsonify({"ok": True, "item": _student_from_row(fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)))})
+
+
+@app.route("/api/profile", methods=["GET", "PUT", "POST"])
+def profile():
+    row = fetch_one("SELECT * FROM students ORDER BY id LIMIT 1")
+
+    if request.method == "GET":
+        return jsonify({"ok": True, "item": _student_from_row(row)})
+
+    payload = _payload()
+    target_row = row
+    target_id = payload.get("student_id") or payload.get("id")
+    if target_id is not None:
+        try:
+            target_row = fetch_one("SELECT * FROM students WHERE id = ?", (int(target_id),))
+        except (TypeError, ValueError):
+            target_row = row
+
+    fields = _profile_payload_to_student_fields(payload, target_row)
+
+    if target_row:
+        execute(
+            """
+            UPDATE students
+            SET name = ?, grade = ?, section = ?, school_board = ?, subjects_json = ?,
+                daily_study_hours = ?, academic_goal = ?, profile_json = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+            """,
+            (
+                fields["name"],
+                fields["grade"],
+                fields["section"],
+                fields["school_board"],
+                fields["subjects_json"],
+                fields["daily_study_hours"],
+                fields["academic_goal"],
+                fields["profile_json"],
+                target_row["id"],
+            ),
+        )
+        student = _student_from_row(fetch_one("SELECT * FROM students WHERE id = ?", (target_row["id"],)))
+        return jsonify({"ok": True, "item": student})
+
+    student_id = execute(
+        """
+        INSERT INTO students (
+            name, grade, section, school_board, subjects_json, daily_study_hours, academic_goal, profile_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            fields["name"],
+            fields["grade"],
+            fields["section"],
+            fields["school_board"],
+            fields["subjects_json"],
+            fields["daily_study_hours"],
+            fields["academic_goal"],
+            fields["profile_json"],
+        ),
+    )
+    student = _student_from_row(fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)))
+    return jsonify({"ok": True, "item": student}), 201
 
 
 @app.route("/api/tasks", methods=["GET", "POST"])
@@ -1776,7 +1916,14 @@ def syllabus_search():
     return jsonify({"ok": True, "items": rows})
 
 
+def _ensure_student_profile_storage() -> None:
+    columns = {row.get("name") for row in fetch_all("PRAGMA table_info(students)") if row.get("name")}
+    if "profile_json" not in columns:
+        execute("ALTER TABLE students ADD COLUMN profile_json TEXT NOT NULL DEFAULT '{}'")
+
+
 init_db()
+_ensure_student_profile_storage()
 seed_knowledge_base()
 seed_official_curriculum_catalog()
 

@@ -3,264 +3,91 @@
 /* ======================================================== */
 
 (function () {
-  function trimApiBase(value) {
-    return String(value || "").trim().replace(/\/+$/, "");
-  }
-
-  function readConfiguredApiBase() {
-    const globalBase = trimApiBase(window.STUDYPILOT_API_BASE);
-    if (globalBase) return globalBase;
-
-    const meta = document.querySelector('meta[name="studypilot-api-base"]');
-    if (meta) {
-      const metaBase = trimApiBase(meta.getAttribute("content"));
-      if (metaBase) return metaBase;
-    }
-
-    try {
-      const params = new URL(window.location.href).searchParams;
-      const queryBase = trimApiBase(params.get("api") || params.get("studypilotApiBase"));
-      if (queryBase) return queryBase;
-    } catch {
-      // Ignore malformed URLs and fall back to the default resolver.
-    }
-
-    return "";
-  }
-
-  window.StudyPilotApi = window.StudyPilotApi || {
-    getBaseUrl: function () {
-      const configuredBase = readConfiguredApiBase();
-      if (configuredBase) return configuredBase;
-
-      if (window.location && window.location.protocol === "file:") {
-        return "http://127.0.0.1:5000";
-      }
-
-      if (
-        window.location &&
-        ["localhost", "127.0.0.1", "::1", "0.0.0.0"].includes(window.location.hostname)
-      ) {
-        return window.location.origin;
-      }
-
-      return "http://127.0.0.1:5000";
-    },
-
-    getDisplayLabel: function (baseUrl) {
-      const resolved = trimApiBase(baseUrl || this.getBaseUrl());
-      if (!resolved) return "the local backend";
-
-      try {
-        const parsed = new URL(resolved);
-        if (["localhost", "127.0.0.1", "::1", "0.0.0.0"].includes(parsed.hostname)) {
-          return `${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}`;
-        }
-        return parsed.host || resolved;
-      } catch {
-        return resolved;
-      }
-    },
-
-    checkHealth: async function (baseUrl, timeoutMs = 2500) {
-      const resolvedBaseUrl = trimApiBase(baseUrl || this.getBaseUrl());
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-      try {
-        const response = await fetch(`${resolvedBaseUrl}/api/health`, {
-          method: "GET",
-          mode: "cors",
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          return { ok: false, status: response.status };
-        }
-        const data = await response.json().catch(() => ({}));
-        return { ok: true, status: response.status, data };
-      } catch (error) {
-        return {
-          ok: false,
-          error: error && error.name === "AbortError" ? "timeout" : "unreachable",
-        };
-      } finally {
-        clearTimeout(timer);
-      }
-    },
-  };
-
   window.StudyPilotApp = {
     activeScreen: "dashboard",
     currentTheme: "light",
-    themePickerBound: false,
-    navigationBound: false,
-    authStateBound: false,
-    profileListenerBound: false,
 
     init: function () {
       this.loadTheme();
-      this.initThemePicker();
+      this.checkOnboarding();
+      this.initNavigation();
       this.initThemeToggle();
       this.initNotifications();
       this.initGlobalSearch();
-      this.bindAuthStateListener();
-
-      if (window.StudyPilotReminderService && typeof window.StudyPilotReminderService.init === "function") {
-        window.StudyPilotReminderService.init();
-      }
-
+      
+      this.loadUserProfile();
+      
       window.addEventListener("studypilot_notification", () => {
         this.updateNotificationBadge();
       });
 
-      if (!this.checkAuthentication()) {
-        return;
-      }
-
-      this.initNavigation();
-      this.bindProfileListener();
-      this.checkOnboarding();
-      this.loadUserProfile();
-    },
-
-    bindAuthStateListener: function () {
-      if (this.authStateBound) return;
-      this.authStateBound = true;
-
-      window.addEventListener("studypilot_auth_changed", () => {
-        if (this.checkAuthentication()) {
-          this.afterAuthSuccess();
-        } else {
-          this.showAuthModal();
+      // Rerender progress when updates trigger
+      window.addEventListener("studypilot_lesson_update", () => {
+        if (this.activeScreen === "dashboard") {
+          window.StudyPilotDashboard.init();
         }
       });
     },
 
-    checkAuthentication: function () {
-      const isAuthed = window.StudyPilotAuth && typeof window.StudyPilotAuth.isAuthenticated === "function"
-        ? window.StudyPilotAuth.isAuthenticated()
-        : true;
-
-      const authModal = document.getElementById("auth-wizard");
-      const setupWizard = document.getElementById("setup-wizard");
-
-      if (!isAuthed) {
-        if (authModal) authModal.classList.remove("hidden");
-        if (setupWizard) setupWizard.classList.add("hidden");
-        document.body.classList.add("auth-locked");
-        return false;
-      }
-
-      if (authModal) authModal.classList.add("hidden");
-      document.body.classList.remove("auth-locked");
-      return true;
-    },
-
-    showAuthModal: function () {
-      const authModal = document.getElementById("auth-wizard");
-      const setupWizard = document.getElementById("setup-wizard");
-      if (authModal) authModal.classList.remove("hidden");
-      if (setupWizard) setupWizard.classList.add("hidden");
-      document.body.classList.add("auth-locked");
-    },
-
-    afterAuthSuccess: function () {
-      this.checkAuthentication();
-      this.initNavigation();
-      this.bindProfileListener();
-      this.checkOnboarding();
-      this.loadUserProfile();
-      if (window.lucide) {
-        window.lucide.createIcons();
-      }
-    },
-
-    bindProfileListener: function () {
-      if (this.profileListenerBound) return;
-      this.profileListenerBound = true;
-
-      window.addEventListener("studypilot_profile_updated", () => {
-        this.loadUserProfile();
-      });
-    },
-
     checkOnboarding: function () {
-      if (!window.StudyPilotAuth || !window.StudyPilotAuth.isAuthenticated || !window.StudyPilotAuth.isAuthenticated()) {
-        return;
-      }
-
       const profile = window.StudyPilotDB.getProfile();
       const setupWizard = document.getElementById("setup-wizard");
       
       if (!profile || !profile.setupComplete) {
-        // Show onboarding wizard overlay
         setupWizard.classList.remove("hidden");
       } else {
         setupWizard.classList.add("hidden");
-        // Initialize dashboard immediately
         window.StudyPilotDashboard.init();
       }
     },
 
     loadUserProfile: function () {
       const profile = window.StudyPilotDB.getProfile();
-      if (!profile || !profile.setupComplete) return;
+      if (!profile.setupComplete) return;
 
-      // Update Dashboard Header greeting
       const greetEl = document.getElementById("dashboard-welcome");
       if (greetEl) {
         greetEl.innerText = `Hello, ${profile.name}!`;
       }
 
-      // Update header avatar fallback initials
       const headerAvatar = document.getElementById("header-avatar");
       if (headerAvatar) {
         headerAvatar.innerText = profile.name.substring(0, 2).toUpperCase();
       }
 
-      // Update Profile screen details
       const profAvatarLg = document.getElementById("profile-avatar-lg");
       if (profAvatarLg) {
         profAvatarLg.innerText = profile.name.substring(0, 2).toUpperCase();
       }
       
       document.getElementById("profile-fullname").innerText = profile.name;
-      document.getElementById("profile-details").innerText = `Grade ${profile.grade} Student • ${profile.board} Board`;
+      
+      const gradeDisplay = profile.grade === "prekg" ? "Pre-KG" : `Grade ${profile.grade}`;
+      const streamDisplay = (profile.grade === "11" || profile.grade === "12") ? ` (${profile.stream} Stream)` : "";
+      
+      document.getElementById("profile-details").innerText = `${gradeDisplay}${streamDisplay} Student • ${profile.board} Board`;
       document.getElementById("profile-goal-badge").innerText = profile.goal;
-      const dreamBadge = document.getElementById("profile-dream-badge");
-      if (dreamBadge) {
-        dreamBadge.innerText = profile.dreamCareer ? `Dream: ${profile.dreamCareer}` : "Dream: Not set";
-      }
 
-      // Populate profile edit form values
+      // Populate edit details values
       document.getElementById("profile-edit-name").value = profile.name;
       document.getElementById("profile-edit-grade").value = profile.grade;
       document.getElementById("profile-edit-board").value = profile.board;
       document.getElementById("profile-edit-goal").value = profile.goal;
-      const dreamInput = document.getElementById("profile-edit-dream-career");
-      if (dreamInput) {
-        dreamInput.value = profile.dreamCareer || "";
-      }
-      this.setProfileListField("profile-edit-favorite-subjects", profile.favoriteSubjects);
-      this.setProfileListField("profile-edit-weak-subjects", profile.weakSubjects);
-      this.setProfileListField("profile-edit-interests", profile.interests);
-      this.setProfileListField("profile-edit-hobbies", profile.hobbies);
-      this.setProfileListField("profile-edit-learning-goals", profile.learningGoals);
 
-      // Set today's date label using the user's local date.
-      document.getElementById("dashboard-date").innerText = new Date().toLocaleDateString("en-GB", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
+      // Handle profile stream box visibility
+      this.handleProfileGradeChange(profile.grade);
+      if (profile.grade === "11" || profile.grade === "12") {
+        document.getElementById("profile-edit-stream").value = profile.stream || "Science";
+      }
+
+      // Populate API Key
+      document.getElementById("profile-api-key").value = profile.geminiApiKey || "";
+
+      document.getElementById("dashboard-date").innerText = "Saturday, 27 June 2026"; // Adjusted to current local demo date
     },
 
-    // Navigation (Sidebar and Mobile Navigation)
+    // Switch screens routing
     initNavigation: function () {
-      if (this.navigationBound) return;
-      this.navigationBound = true;
-
       const navItems = document.querySelectorAll(".nav-item, .mobile-nav-item");
       navItems.forEach(item => {
         item.addEventListener("click", () => {
@@ -273,14 +100,10 @@
     switchScreen: function (screenId) {
       if (this.activeScreen === screenId) return;
 
-      // Hide active screen viewport
       document.getElementById(`screen-${this.activeScreen}`).classList.add("hidden");
-      
-      // Show target screen viewport
       document.getElementById(`screen-${screenId}`).classList.remove("hidden");
       this.activeScreen = screenId;
 
-      // Update active nav button indicators (sidebar and mobile bar)
       const navItems = document.querySelectorAll(".nav-item, .mobile-nav-item");
       navItems.forEach(item => {
         if (item.getAttribute("data-screen") === screenId) {
@@ -290,13 +113,10 @@
         }
       });
 
-      // Trigger redraws for specific screen managers when visited
       if (screenId === "dashboard") {
         window.StudyPilotDashboard.init();
       } else if (screenId === "planner") {
         window.StudyPilotPlanner.init();
-      } else if (screenId === "books") {
-        window.StudyPilotBooks.init();
       } else if (screenId === "tutor") {
         window.StudyPilotTutor.init();
       } else if (screenId === "toolbox") {
@@ -305,111 +125,213 @@
         this.loadUserProfile();
       }
 
-      // Re-run Lucide icons drawer
       if (window.lucide) {
         window.lucide.createIcons();
       }
     },
 
-    // Light/Dark Theme Toggles
-    initThemeToggle: function () {
-      const btn = document.getElementById("theme-toggle-btn");
-      if (!btn) return;
+    // Profiles stream group triggers
+    handleProfileGradeChange: function (grade) {
+      const streamGroup = document.getElementById("profile-edit-stream-group");
+      if (!streamGroup) return;
 
-      btn.addEventListener("click", () => {
-        const menu = document.getElementById("theme-picker-menu");
-        if (menu) {
-          menu.classList.toggle("hidden");
-        }
-      });
-    },
-
-    initThemePicker: function () {
-      if (this.themePickerBound) return;
-      this.themePickerBound = true;
-
-      document.addEventListener("click", (event) => {
-        const wrap = document.querySelector(".theme-picker-wrap");
-        const menu = document.getElementById("theme-picker-menu");
-        if (!wrap || !menu) return;
-        if (!wrap.contains(event.target)) {
-          menu.classList.add("hidden");
-        }
-      });
-
-      document.addEventListener("click", (event) => {
-        const option = event.target.closest ? event.target.closest(".theme-option") : null;
-        if (!option) return;
-        const theme = option.getAttribute("data-theme");
-        if (theme) {
-          this.setTheme(theme);
-          const menu = document.getElementById("theme-picker-menu");
-          if (menu) menu.classList.add("hidden");
-        }
-      });
-    },
-
-    setTheme: function (theme) {
-      this.currentTheme = theme;
-      document.documentElement.setAttribute("data-theme", theme);
-      
-      // Update toggle button contents
-      const sun = document.querySelector("#theme-toggle-btn .sun-icon");
-      const moon = document.querySelector("#theme-toggle-btn .moon-icon");
-      const text = document.querySelector("#theme-toggle-btn span");
-
-      const themeLabels = {
-        light: "Light Mode",
-        dark: "Dark Mode",
-        midnight: "Midnight",
-        ocean: "Ocean",
-        forest: "Forest",
-        sunset: "Sunset",
-        aurora: "Aurora",
-      };
-
-      const darkLikeThemes = new Set(["dark", "midnight"]);
-      if (darkLikeThemes.has(theme)) {
-        sun.classList.add("hidden");
-        moon.classList.remove("hidden");
+      if (grade === "11" || grade === "12") {
+        streamGroup.classList.remove("hidden");
       } else {
-        sun.classList.remove("hidden");
-        moon.classList.add("hidden");
-      }
-      text.innerText = themeLabels[theme] || "Light Mode";
-
-      document.querySelectorAll(".theme-option").forEach(option => {
-        option.classList.toggle("active", option.getAttribute("data-theme") === theme);
-      });
-      
-      localStorage.setItem("studypilot_theme", theme);
-    },
-
-    loadTheme: function () {
-      const savedTheme = localStorage.getItem("studypilot_theme");
-      const allowedThemes = new Set(["light", "dark", "midnight", "ocean", "forest", "sunset", "aurora"]);
-      // Respect OS system preferences if no saved theme
-      if (!savedTheme || !allowedThemes.has(savedTheme)) {
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        this.setTheme(prefersDark ? "dark" : "light");
-      } else {
-        this.setTheme(savedTheme);
+        streamGroup.classList.add("hidden");
       }
     },
 
-    // Header Notification Bell dropdown
+    saveProfileEdits: function () {
+      const name = document.getElementById("profile-edit-name").value.trim();
+      const grade = document.getElementById("profile-edit-grade").value;
+      const board = document.getElementById("profile-edit-board").value;
+      const goal = document.getElementById("profile-edit-goal").value;
+      const stream = (grade === "11" || grade === "12") ? document.getElementById("profile-edit-stream").value : "Science";
+
+      if (!name) {
+        alert("Name cannot be blank!");
+        return;
+      }
+
+      const profile = window.StudyPilotDB.getProfile();
+      
+      // If they changed grade, wipe the old subjects and load the defaults for the new grade
+      if (profile.grade !== grade || profile.stream !== stream) {
+        const curriculum = window.StudyPilotDB.getCurriculum(grade, stream);
+        profile.subjects = curriculum.subjects;
+      }
+
+      profile.name = name;
+      profile.grade = grade;
+      profile.board = board;
+      profile.goal = goal;
+      profile.stream = stream;
+
+      window.StudyPilotDB.saveProfile(profile);
+      this.loadUserProfile();
+      
+      // Force reload other screens
+      if (window.StudyPilotPlanner) window.StudyPilotPlanner.init();
+      if (window.StudyPilotTutor) window.StudyPilotTutor.init();
+      
+      window.StudyPilotDB.addNotification("Profile settings updated successfully.", "success");
+      alert("Settings saved successfully!");
+    },
+
+    saveApiKey: function () {
+      const key = document.getElementById("profile-api-key").value.trim();
+      const profile = window.StudyPilotDB.getProfile();
+      profile.geminiApiKey = key;
+      window.StudyPilotDB.saveProfile(profile);
+
+      window.StudyPilotDB.addNotification("Gemini Live AI Key updated.", "success");
+      alert("Gemini API Key saved! Live AI Tutor mode is now active.");
+      
+      if (window.StudyPilotTutor) {
+        window.StudyPilotTutor.updateTutorWelcomeLabels();
+      }
+    },
+
+    // ========================================================
+    // Parent Report Modal (Parent Progress feature)
+    // ========================================================
+    showParentReportModal: function () {
+      const modal = document.getElementById("modal-parent-report");
+      const body = document.getElementById("parent-report-body");
+      if (!modal || !body) return;
+
+      const profile = window.StudyPilotDB.getProfile();
+      const progress = window.StudyPilotDB.getLessonProgress();
+      const curriculum = window.StudyPilotDB.getCurriculum(profile.grade, profile.stream);
+
+      function getStatusWeight(status) {
+        if (status === "Initial Pass") return 25;
+        if (status === "Studied") return 50;
+        if (status === "Revised") return 75;
+        if (status === "Fully Ready") return 100;
+        return 0;
+      }
+
+      let html = `
+        <div style="background:var(--primary-light); padding:1rem; border-radius:var(--radius-md); border:1px solid var(--border-focus); margin-bottom:1rem; font-size:0.85rem;">
+          <h4 style="color:var(--primary); font-weight:700; margin-bottom:0.25rem;">Student: ${escapeHTML(profile.name)}</h4>
+          <p style="color:var(--text-muted);">Grade: <strong>${profile.grade === 'prekg' ? 'Pre-KG' : 'Class ' + profile.grade}</strong> | Board: <strong>${profile.board}</strong></p>
+          <p style="color:var(--text-muted); margin-top:0.25rem;">Academic Focus Goal: <strong>${profile.goal}</strong></p>
+        </div>
+        <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem;">Textbook Lessons Preparation Breakdown</h4>
+      `;
+
+      profile.subjects.forEach(subj => {
+        const chapters = curriculum.chapters[subj] || [];
+        if (chapters.length === 0) return;
+
+        let totalSectionsCount = 0;
+        let totalProgressWeightSum = 0;
+        
+        let completedChapters = [];
+        let inProgressChapters = [];
+
+        chapters.forEach(ch => {
+          const chSections = ch.sections || [];
+          let chapterProgressSum = 0;
+
+          chSections.forEach(sec => {
+            totalSectionsCount++;
+            const status = progress[sec.id] || "Not Started";
+            const weight = getStatusWeight(status);
+            totalProgressWeightSum += weight;
+            chapterProgressSum += weight;
+          });
+
+          const chapterPct = chSections.length > 0 ? Math.round(chapterProgressSum / chSections.length) : 0;
+          
+          if (chapterPct === 100) {
+            completedChapters.push(ch);
+          } else if (chapterPct > 0) {
+            // Find section states inside this in-progress chapter
+            const sectionStates = chSections.map(sec => {
+              const status = progress[sec.id] || "Not Started";
+              return { num: sec.num, title: sec.title, status: status };
+            });
+            inProgressChapters.push({ ch: ch, pct: chapterPct, sections: sectionStates });
+          }
+        });
+
+        const pct = totalSectionsCount > 0 ? Math.round(totalProgressWeightSum / totalSectionsCount) : 0;
+
+        html += `
+          <div style="margin-bottom:1.25rem; border-bottom:1px solid var(--border-color); padding-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+              <strong style="font-size:0.9rem;">${escapeHTML(subj)} Textbook</strong>
+              <span class="badge ${pct > 75 ? 'badge-accent' : 'badge-indigo'}" style="font-weight:700;">${pct}% Prepared</span>
+            </div>
+            
+            <div class="quiz-progress-bar" style="height:6px; margin-bottom:0.75rem;">
+              <div class="quiz-progress-fill" style="width:${pct}%; background:var(--primary);"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.75rem;">
+              <div>
+                <span style="color:var(--color-success); font-weight:700;">✓ Fully Ready Chapters (${completedChapters.length})</span>
+                <ul style="padding-left:1rem; margin-top:0.25rem; color:var(--text-muted); list-style-type:circle;">
+                  ${completedChapters.length > 0 ? completedChapters.map(c => `<li>Ch ${c.num}: ${escapeHTML(c.title)}</li>`).join("") : "<li>None yet</li>"}
+                </ul>
+              </div>
+              <div style="margin-top:0.25rem;">
+                <span style="color:var(--color-warning); font-weight:700;">◴ In-Progress Chapters (${inProgressChapters.length})</span>
+                <div style="padding-left:0.5rem; margin-top:0.25rem; display:flex; flex-direction:column; gap:0.4rem;">
+                  ${inProgressChapters.length > 0 ? inProgressChapters.map(item => `
+                    <div style="background:var(--bg-app); padding:0.5rem; border-radius:4px; border:1px solid var(--border-color);">
+                      <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:0.25rem;">
+                        <span>Ch ${item.ch.num}: ${escapeHTML(item.ch.title)}</span>
+                        <span>${item.pct}%</span>
+                      </div>
+                      <ul style="padding-left:1rem; color:var(--text-muted); list-style-type:square; font-size:0.7rem;">
+                        ${item.sections.map(s => {
+                          let badgeCol = "var(--text-light)";
+                          if (s.status === "Fully Ready") badgeCol = "var(--color-success)";
+                          else if (s.status === "Revised") badgeCol = "var(--color-warning)";
+                          else if (s.status === "Studied") badgeCol = "var(--primary)";
+                          else if (s.status === "Initial Pass") badgeCol = "var(--accent)";
+                          
+                          return `<li>${s.num} ${escapeHTML(s.title)} — <strong style="color:${badgeCol};">${s.status}</strong></li>`;
+                        }).join("")}
+                      </ul>
+                    </div>
+                  `).join("") : `<span style="color:var(--text-muted); padding-left:0.5rem;">None yet</span>`}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      body.innerHTML = html;
+      modal.classList.remove("hidden");
+
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    },
+
+    hideParentReportModal: function () {
+      const modal = document.getElementById("modal-parent-report");
+      if (modal) modal.classList.add("hidden");
+    },
+
+    // Notifications bell
     initNotifications: function () {
       const bell = document.getElementById("notification-bell");
       const dropdown = document.getElementById("notification-dropdown");
       if (!bell || !dropdown) return;
 
-      bell.addEventListener("click", (e) => {
+      bell.onclick = (e) => {
         e.stopPropagation();
         dropdown.classList.toggle("hidden");
         this.renderNotifications();
-      });
+      };
 
-      // Close dropdown if user clicks elsewhere
       document.addEventListener("click", () => {
         dropdown.classList.add("hidden");
       });
@@ -475,7 +397,6 @@
       this.renderNotifications();
     },
 
-    // Global Search filter
     initGlobalSearch: function () {
       const searchInput = document.getElementById("global-search");
       if (!searchInput) return;
@@ -483,10 +404,7 @@
       searchInput.addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase().trim();
         if (query.length > 2) {
-          // Quick search mock feedback overlay
-          console.log(`Global search querying: ${query}`);
-          // Redirecting query directly to tutor chat helper if it looks like a study question
-          if (query.includes("acid") || query.includes("change") || query.includes("electric") || query.includes("expression")) {
+          if (query.includes("acid") || query.includes("change") || query.includes("electric") || query.includes("expression") || query.includes("kirchhoff")) {
             this.switchScreen("tutor");
             window.StudyPilotTutor.askQuestion(query);
             searchInput.value = "";
@@ -495,96 +413,22 @@
       });
     },
 
-    // Profile updates
-    saveProfileEdits: function () {
-      if (!window.StudyPilotAuth || !window.StudyPilotAuth.isAuthenticated || !window.StudyPilotAuth.isAuthenticated()) {
-        alert("Please log in first.");
-        return;
-      }
-
-      const name = document.getElementById("profile-edit-name").value.trim();
-      const grade = document.getElementById("profile-edit-grade").value;
-      const board = document.getElementById("profile-edit-board").value;
-      const goal = document.getElementById("profile-edit-goal").value;
-      const dreamCareerInput = document.getElementById("profile-edit-dream-career");
-      const dreamCareer = dreamCareerInput ? dreamCareerInput.value.trim() : "";
-      const favoriteSubjects = this.parseProfileListField("profile-edit-favorite-subjects");
-      const weakSubjects = this.parseProfileListField("profile-edit-weak-subjects");
-      const interests = this.parseProfileListField("profile-edit-interests");
-      const hobbies = this.parseProfileListField("profile-edit-hobbies");
-      const learningGoals = this.parseProfileListField("profile-edit-learning-goals");
-
-      if (!name) {
-        alert("Name cannot be blank!");
-        return;
-      }
-
-      const profile = window.StudyPilotDB.getProfile();
-      profile.name = name;
-      profile.grade = grade;
-      profile.board = board;
-      profile.goal = goal;
-      profile.dreamCareer = dreamCareer;
-      profile.favoriteSubjects = favoriteSubjects;
-      profile.weakSubjects = weakSubjects;
-      profile.interests = interests;
-      profile.hobbies = hobbies;
-      profile.learningGoals = learningGoals;
-
-      window.StudyPilotDB.saveProfile(profile);
-      if (window.StudyPilotDB && typeof window.StudyPilotDB.getAuth === "function" && typeof window.StudyPilotDB.saveAuth === "function") {
-        const auth = window.StudyPilotDB.getAuth();
-        if (auth && auth.user) {
-          auth.user.name = name;
-          window.StudyPilotDB.saveAuth(auth);
-        }
-      }
-      this.loadUserProfile();
-      
-      window.StudyPilotDB.addNotification("Profile settings updated successfully.", "success");
-      alert("Settings saved successfully!");
-    },
-
-    // Wipe local storage
     resetApp: function () {
       if (confirm("This will clear all your tasks, notes, calendar events, and profile data. Are you sure?")) {
         window.StudyPilotDB.clearAll();
-        // Reload page to re-trigger wizard onboarding
         window.location.reload();
       }
     }
   };
 
-  // Run automatically when DOM loaded
-  const bootApp = () => {
+  document.addEventListener("DOMContentLoaded", () => {
     window.StudyPilotApp.init();
     if (window.lucide) {
       window.lucide.createIcons();
     }
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bootApp, { once: true });
-  } else {
-    bootApp();
-  }
+  });
 
   function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
-
-  window.StudyPilotApp.parseProfileListField = function (id) {
-    const el = document.getElementById(id);
-    if (!el) return [];
-    return String(el.value || "")
-      .split(/[,;\n]/)
-      .map(item => item.trim())
-      .filter(Boolean);
-  };
-
-  window.StudyPilotApp.setProfileListField = function (id, values) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.value = Array.isArray(values) ? values.join(", ") : "";
-  };
 })();

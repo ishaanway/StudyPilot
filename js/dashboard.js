@@ -3,62 +3,24 @@
 /* ======================================================== */
 
 (function () {
-  function getLocalISODate(date = new Date()) {
-    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
-    return local.toISOString().slice(0, 10);
-  }
-
-  function getLocalDayName(date = new Date()) {
-    return date.toLocaleDateString("en-US", { weekday: "long" });
-  }
-
   window.StudyPilotDashboard = {
-    profileListenerBound: false,
-    dataListenerBound: false,
     
     init: function () {
-      this.bindProfileListener();
-      this.bindDataListener();
       this.renderTimeline();
       this.renderTasks();
       this.renderProgressRing();
-      this.renderStudyAnalytics();
       this.renderUpcomingExams();
       this.renderAISuggestions();
     },
 
-    bindProfileListener: function () {
-      if (this.profileListenerBound) return;
-      this.profileListenerBound = true;
-      window.addEventListener("studypilot_profile_updated", () => {
-        this.init();
-      });
-    },
-
-    bindDataListener: function () {
-      if (this.dataListenerBound) return;
-      this.dataListenerBound = true;
-      window.addEventListener("studypilot_data_updated", () => {
-        this.renderProgressRing();
-        this.renderStudyAnalytics();
-        this.renderAISuggestions();
-      });
-    },
-
-    getCurrentGrade: function () {
-      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
-      return profile ? String(profile.grade || "10") : "10";
-    },
-
+    // 1. Timeline: filter for events on Monday (demo active day)
     renderTimeline: function () {
       const timelineEl = document.getElementById("dashboard-timeline");
       if (!timelineEl) return;
 
-      const grade = this.getCurrentGrade();
-      const events = window.StudyPilotDB.getCalendarEvents(grade);
-      const todayEvents = events.filter(e => e.day === getLocalDayName());
+      const events = window.StudyPilotDB.getCalendarEvents();
+      const todayEvents = events.filter(e => e.day === "Monday");
       
-      // Sort chronologically by start time
       todayEvents.sort((a, b) => a.start.localeCompare(b.start));
 
       if (todayEvents.length === 0) {
@@ -88,8 +50,8 @@
       const listEl = document.getElementById("dashboard-task-list");
       if (!listEl) return;
 
-      const grade = this.getCurrentGrade();
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
+      // Filter tasks for today's date (represented by demo date 2026-06-22)
+      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
 
       if (tasks.length === 0) {
         listEl.innerHTML = '<div class="task-empty">All caught up! Add a new task to get started.</div>';
@@ -121,7 +83,7 @@
       window.StudyPilotDB.toggleTask(id);
       this.renderTasks();
       this.renderProgressRing();
-      this.renderAISuggestions(); // Suggestion might change based on completion
+      this.renderAISuggestions();
     },
 
     deleteTask: function (id) {
@@ -131,7 +93,7 @@
       this.renderAISuggestions();
     },
 
-    // 3. Progress Ring calculation and animation
+    // 3. Progress Ring
     renderProgressRing: function () {
       const ring = document.querySelector(".progress-ring__circle");
       const label = document.getElementById("dashboard-progress-percent");
@@ -139,14 +101,12 @@
       const streakVal = document.getElementById("dashboard-streak-count");
       if (!ring || !label) return;
 
-      const grade = this.getCurrentGrade();
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
+      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
       const total = tasks.length;
       const completed = tasks.filter(t => t.completed).length;
       
       const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
       
-      // Calculate SVG offset
       const radius = ring.r.baseVal.value;
       const circumference = radius * 2 * Math.PI;
       ring.style.strokeDasharray = `${circumference} ${circumference}`;
@@ -155,19 +115,12 @@
       ring.style.strokeDashoffset = offset;
       label.innerText = `${percent}%`;
 
-      // Update Streak and summary text
       const profile = window.StudyPilotDB.getProfile();
       
       if (percent === 100 && total > 0) {
-        summary.innerText = "Fantastic! All tasks completed today. Your study ring is full! 🔥";
-        // If they just completed the last task, ensure streak count is bumped
-        if (profile.streak === 5) {
-          profile.streak = 6;
-          window.StudyPilotDB.saveProfile(profile);
-          streakVal.innerText = "6";
-        }
+        summary.innerText = "Outstanding! Today's tasks are completed and your study ring is full! 🔥";
       } else if (percent > 0) {
-        summary.innerText = `Keep going! You have completed ${completed} out of ${total} tasks today.`;
+        summary.innerText = `You have completed ${completed} out of ${total} tasks today. Keep it up!`;
       } else {
         summary.innerText = total > 0 
           ? "Complete your tasks to fill your study ring today!" 
@@ -177,85 +130,24 @@
       streakVal.innerText = profile.streak;
     },
 
-    renderStudyAnalytics: function () {
-      const container = document.getElementById("dashboard-analytics-panel");
-      if (!container) return;
-
-      const summary = window.StudyPilotDB.getStudyAnalyticsSummary ? window.StudyPilotDB.getStudyAnalyticsSummary() : null;
-      if (!summary) {
-        container.innerHTML = '<div class="analytics-empty">No analytics recorded yet.</div>';
-        return;
-      }
-
-      const renderTopics = (items, emptyLabel) => {
-        const list = Array.isArray(items) ? items : [];
-        if (!list.length) {
-          return `<p class="analytics-empty">${escapeHTML(emptyLabel)}</p>`;
-        }
-        return `<div class="analytics-topic-cloud">${list.map(item => `
-          <span class="badge ${item.count > 1 ? 'badge-indigo' : 'badge-soft'}">${escapeHTML(item.topic)}${item.count > 1 ? ` × ${item.count}` : ""}</span>
-        `).join("")}</div>`;
-      };
-
-      container.innerHTML = `
-        <div class="analytics-metrics-grid">
-          <div class="analytics-metric-card">
-            <div class="analytics-metric-value">${summary.questionsAsked}</div>
-            <div class="analytics-metric-label">Questions asked</div>
-          </div>
-          <div class="analytics-metric-card">
-            <div class="analytics-metric-value">${summary.quizAttempts}</div>
-            <div class="analytics-metric-label">Quiz attempts</div>
-          </div>
-          <div class="analytics-metric-card">
-            <div class="analytics-metric-value">${summary.averageQuizScore}%</div>
-            <div class="analytics-metric-label">Average quiz score</div>
-          </div>
-          <div class="analytics-metric-card">
-            <div class="analytics-metric-value">${summary.revisionSessions}</div>
-            <div class="analytics-metric-label">Revision sessions</div>
-          </div>
-          <div class="analytics-metric-card">
-            <div class="analytics-metric-value">${summary.quizAccuracy}%</div>
-            <div class="analytics-metric-label">Quiz accuracy</div>
-          </div>
-        </div>
-        <div class="analytics-topic-section">
-          <div class="analytics-topic-header">
-            <strong>Strong topics</strong>
-            <span class="badge badge-accent">${summary.strongTopics.length}</span>
-          </div>
-          ${renderTopics(summary.strongTopics, "No strong topics have been detected yet.")}
-        </div>
-        <div class="analytics-topic-section">
-          <div class="analytics-topic-header">
-            <strong>Weak topics</strong>
-            <span class="badge badge-red">${summary.weakTopics.length}</span>
-          </div>
-          ${renderTopics(summary.weakTopics, "No weak topics have been detected yet.")}
-        </div>
-      `;
-    },
-
-    // 4. Upcoming Exams (countdown calculator)
+    // 4. Upcoming Exams
     renderUpcomingExams: function () {
       const container = document.getElementById("dashboard-upcoming-exams");
       if (!container) return;
 
-      const grade = this.getCurrentGrade();
-      const exams = window.StudyPilotDB.getExams(grade);
+      const exams = window.StudyPilotDB.getExams();
       if (exams.length === 0) {
         container.innerHTML = '<div class="upcoming-empty">No upcoming exams scheduled. Click "Add Exam" to prepare.</div>';
         return;
       }
 
-      const currentDate = new Date();
-
+      // Demo current date is June 22
+      const demoDate = new Date("2026-06-22");
       exams.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       container.innerHTML = exams.map(e => {
         const examDate = new Date(e.date);
-        const timeDiff = examDate - currentDate;
+        const timeDiff = examDate - demoDate;
         const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         
         let daysText = "";
@@ -292,22 +184,19 @@
       const container = document.getElementById("dashboard-ai-suggestions");
       if (!container) return;
 
-      const grade = this.getCurrentGrade();
-      const exams = window.StudyPilotDB.getExams(grade);
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
+      const exams = window.StudyPilotDB.getExams();
+      const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
       const uncompletedTasks = tasks.filter(t => !t.completed);
-      const events = window.StudyPilotDB.getCalendarEvents(grade).filter(e => e.day === getLocalDayName());
+      const events = window.StudyPilotDB.getCalendarEvents().filter(e => e.day === "Monday");
       
-      const today = getLocalISODate();
-      const weekFromNow = getLocalISODate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
-      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date >= today && e.date <= weekFromNow);
-      const hasMathStudyBlock = events.some(e => /math/i.test(e.title) && e.type === "study");
+      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date === "2026-06-25");
+      const hasStudyBlock = events.some(e => e.type === "study");
       
       let html = "";
 
       if (hasScienceExamSoon && uncompletedTasks.some(t => t.subject === "Science")) {
         html = `
-          <p>Your <strong>CBSE Grade ${escapeHTML(grade)} Science exam</strong> is coming up soon. You still have a Science revision task incomplete, so I suggest revising the official NCERT chapters now.</p>
+          <p>Your <strong>CBSE Science Exam (Electricity)</strong> is in <strong>3 days</strong>! You still have preparation tasks left. Tapping 'Start Science Quiz' will help you prepare.</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Start Science Quiz</button>
           </div>
@@ -315,23 +204,22 @@
       } else if (uncompletedTasks.length > 0) {
         const topTask = uncompletedTasks[0];
         html = `
-          <p>You have <strong>${uncompletedTasks.length} uncompleted tasks</strong> today. I suggest starting with <strong>"${escapeHTML(topTask.title)}"</strong>. Complete it to boost your study streak!</p>
+          <p>You have <strong>${uncompletedTasks.length} uncompleted tasks</strong> today. I suggest starting with <strong>"${escapeHTML(topTask.title)}"</strong>. Complete it to fill your ring!</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotDashboard.markTaskDone('${topTask.id}')">Start Now</button>
             <button class="btn btn-secondary btn-xs" onclick="window.StudyPilotDashboard.rescheduleTask('${topTask.id}')">Reschedule</button>
           </div>
         `;
-      } else if (!hasMathStudyBlock) {
-        // Suggest scheduling a Math revision block since they have math tasks
+      } else if (!hasStudyBlock) {
         html = `
-          <p>Nice job completing today's tasks! For Grade ${escapeHTML(grade)}, you can lock in a focused revision block for your strongest subjects this evening.</p>
+          <p>Great job! All daily tasks are finished. Let's schedule a 1-hour revision block for this evening to stay ahead of the class.</p>
           <div class="ai-tip-actions">
-            <button class="btn btn-primary btn-xs" onclick="window.StudyPilotDashboard.scheduleStudyBlock('Maths Revision', '19:00', '20:00')">Schedule at 7 PM</button>
+            <button class="btn btn-primary btn-xs" onclick="window.StudyPilotDashboard.scheduleStudyBlock('Revision Focus Block', '19:00', '20:00')">Schedule at 7 PM</button>
           </div>
         `;
       } else {
         html = `
-          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> to explore the official NCERT chapters for Grade ${escapeHTML(grade)}!</p>
+          <p>Outstanding! Your daily academic schedule is perfectly optimized and all tasks are completed. Use the <strong>AI Tutor chat</strong> if you want to explore new chapters!</p>
           <div class="ai-tip-actions">
             <button class="btn btn-primary btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor')">Ask Tutor</button>
           </div>
@@ -341,7 +229,6 @@
       container.innerHTML = html;
     },
 
-    // AI Suggestions Actions
     markTaskDone: function (id) {
       window.StudyPilotDB.toggleTask(id);
       this.init();
@@ -349,10 +236,10 @@
     },
 
     rescheduleTask: function (id) {
-      const tasks = window.StudyPilotDB.getAllTasks ? window.StudyPilotDB.getAllTasks() : window.StudyPilotDB.getTasks();
+      const tasks = window.StudyPilotDB.getTasks();
       const task = tasks.find(t => t.id === id);
       if (task) {
-        task.date = "2026-06-23"; // Push to tomorrow
+        task.date = "2026-06-23";
         window.StudyPilotDB.saveTasks(tasks);
         this.init();
         window.StudyPilotDB.addNotification(`"${task.title}" rescheduled for tomorrow. Daily plans rebalanced.`, "info");
@@ -365,7 +252,6 @@
       this.renderAISuggestions();
       window.StudyPilotDB.addNotification(`Scheduled Study Block: "${title}" for today.`, "success");
       
-      // If planner is open, reload it too
       if (window.StudyPilotPlanner) {
         window.StudyPilotPlanner.renderGrid();
       }
@@ -378,11 +264,7 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      const curriculum = window.StudyPilotCurriculum;
-      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === "function"
-        ? curriculum.getSubjectsForGrade(profile ? profile.grade : "10")
-        : (profile.subjects || []);
-      select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join("");
+      select.innerHTML = profile.subjects.map(s => `<option value="${s}">${s}</option>`).join("");
       modal.classList.remove("hidden");
     },
 
@@ -414,15 +296,9 @@
       if (!modal || !select) return;
 
       const profile = window.StudyPilotDB.getProfile();
-      const curriculum = window.StudyPilotCurriculum;
-      const subjects = curriculum && typeof curriculum.getSubjectsForGrade === "function"
-        ? curriculum.getSubjectsForGrade(profile ? profile.grade : "10")
-        : (profile.subjects || []);
-      select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join("");
+      select.innerHTML = profile.subjects.map(s => `<option value="${s}">${s}</option>`).join("");
       
-      // Set default date to today or tomorrow
       document.getElementById("exam-input-date").value = "2026-06-26";
-      
       modal.classList.remove("hidden");
     },
 
@@ -447,20 +323,18 @@
       
       this.init();
       
-      // Also update planner calendar if open
       if (window.StudyPilotPlanner) {
         window.StudyPilotPlanner.renderGrid();
       }
     }
   };
 
-  // Helper formatting routines
   function formatTime12(time24) {
     const [hStr, mStr] = time24.split(":");
     let h = parseInt(hStr);
     let ampm = h >= 12 ? "PM" : "AM";
     h = h % 12;
-    h = h ? h : 12; // 0 should be 12
+    h = h ? h : 12;
     return `${h}:${mStr} ${ampm}`;
   }
 

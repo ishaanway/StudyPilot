@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS students (
     subjects_json TEXT NOT NULL DEFAULT '[]',
     daily_study_hours REAL NOT NULL DEFAULT 2,
     academic_goal TEXT NOT NULL DEFAULT 'Improve Marks',
+    profile_json TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
