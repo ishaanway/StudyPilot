@@ -17,13 +17,13 @@ The current workspace already contains a polished browser prototype in the proje
 
 ## Local LLM
 
-StudyPilot now uses an Ollama-first local LLM tutor path through [Ollama](https://ollama.com/) by default. A locally fine-tuned Hugging Face model can still be enabled for experiments, but the primary production path is Ollama so the tutor stays consistent across grades.
+StudyPilot now uses a Gemma-first local LLM tutor path through [Ollama](https://ollama.com/) by default. The tutor is tuned to prefer Google's Gemma family first, so the app stays lightweight and school-friendly while still working fully offline once a model is installed.
 
-Default model:
+Preferred Ollama model:
 
-- `tinyllama`
+- `gemma3:4b`
 
-That model is small enough to run locally for a school exhibition and is suitable for retrieval-style tutoring, summaries, and simple explanations.
+If Gemma is not installed yet, StudyPilot automatically falls back to smaller local models such as `gemma3:1b`, `gemma2:2b`, `qwen2.5:1.5b`, and `tinyllama:latest` so the tutor keeps working while the better model finishes downloading.
 
 If you fine-tune a local model, point StudyPilot at it with:
 
@@ -68,7 +68,7 @@ GET http://127.0.0.1:5000/api/health
 Ollama check:
 
 ```text
-GET http://localhost:11434/api/tags
+GET http://127.0.0.1:11434/api/tags
 ```
 
 Tutor endpoint:
@@ -76,6 +76,14 @@ Tutor endpoint:
 ```text
 POST http://127.0.0.1:5000/api/tutor/respond
 ```
+
+If you are opening the static frontend from GitHub Pages or another host, point the app at your running backend with one of these options:
+
+- `window.STUDYPILOT_API_BASE = "http://127.0.0.1:5000"`
+- `?api=http://127.0.0.1:5000` in the URL
+- `<meta name="studypilot-api-base" content="http://127.0.0.1:5000">`
+
+This is the quickest way to keep the deployed frontend talking to your local Flask + Ollama backend.
 
 ## Phase note
 

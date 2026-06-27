@@ -48,7 +48,7 @@
         <form id="auth-panel-signup" class="auth-panel">
           <div class="input-group">
             <label for="auth-signup-name">Full Name</label>
-            <input type="text" id="auth-signup-name" placeholder="e.g., Ishaan">
+            <input type="text" id="auth-signup-name" placeholder="e.g., Ishaan or Neeraj">
           </div>
           <div class="input-group">
             <label for="auth-signup-email">Email</label>
@@ -105,7 +105,7 @@
       <div class="setup-step" id="setup-step-1">
         <div class="input-group">
           <label for="setup-name">What is your first name?</label>
-          <input type="text" id="setup-name" placeholder="e.g., Ishaan" required>
+          <input type="text" id="setup-name" placeholder="e.g., Ishaan or Neeraj" required>
         </div>
         <div class="input-row">
           <div class="input-group">
@@ -205,6 +205,10 @@
               </div>
             </label>
           </div>
+        </div>
+        <div class="input-group">
+          <label for="setup-dream-career">Dream career or role</label>
+          <input type="text" id="setup-dream-career" placeholder="e.g., doctor, AI engineer, architect">
         </div>
         <div class="btn-row">
           <button type="button" class="btn btn-secondary" onclick="window.StudyPilotSetup.nextStep(2)">Back</button>
@@ -313,7 +317,7 @@
       <section id="screen-dashboard" class="screen-view">
         <div class="dashboard-greeting">
           <h1 id="dashboard-welcome">Hello, Scholar!</h1>
-          <p id="dashboard-date">Monday, 22 June 2026</p>
+          <p id="dashboard-date">Today</p>
         </div>
 
         <div class="dashboard-grid">
@@ -369,6 +373,16 @@
               </div>
             </div>
 
+            <div class="card card-analytics">
+              <div class="card-header">
+                <h2><i data-lucide="bar-chart-3"></i> Progress Analytics</h2>
+                <span class="badge badge-accent">Live data</span>
+              </div>
+              <div id="dashboard-analytics-panel" class="analytics-panel">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
             <!-- AI Suggestions Box -->
             <div class="card card-ai-tips">
               <div class="ai-tips-header">
@@ -382,12 +396,12 @@
 
             <div class="card card-books-shortcut">
               <div class="card-header">
-                <h2><i data-lucide="book-open"></i> NCERT Books</h2>
-                <span class="badge badge-indigo">Official portals</span>
+                <h2><i data-lucide="book-open"></i> Local NCERT Library</h2>
+                <span class="badge badge-indigo">Offline PDFs + portals</span>
               </div>
-              <p>Open the official NCERT, CBSE, or Tamil Nadu textbook portals from one shortcut, with grade-aware chapter links where available.</p>
+              <p>Open local NCERT textbooks inside the app, or jump to the official textbook portals whenever you want the source site.</p>
               <div class="books-shortcut-actions">
-                <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.switchScreen('books')">Open NCERT Books</button>
+                <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.switchScreen('books')">Open Library</button>
               </div>
             </div>
 
@@ -481,13 +495,13 @@
       <section id="screen-books" class="screen-view hidden">
         <div class="books-header">
           <div>
-            <h1>NCERT Books</h1>
-            <p>Official textbook shortcuts for NCERT, CBSE, and Tamil Nadu. No copied textbook content is stored inside StudyPilot.</p>
+            <h1>NCERT Library</h1>
+            <p>Open the locally cached NCERT textbooks inside StudyPilot, or jump out to the official NCERT and CBSE portals when you want the source site.</p>
           </div>
           <div class="books-header-actions">
-            <button class="btn btn-outline" onclick="window.open('https://ncert.nic.in/textbook.php', '_blank', 'noopener,noreferrer')">Open NCERT</button>
-            <button class="btn btn-secondary" onclick="window.open('https://cbseacademic.nic.in/publication_ebooks.html', '_blank', 'noopener,noreferrer')">Open CBSE Books</button>
-            <button class="btn btn-primary" onclick="window.open('https://www.textbooksonline.tn.gov.in/', '_blank', 'noopener,noreferrer')">Open Tamil Nadu</button>
+            <button class="btn btn-outline" onclick="window.open('https://ncert.nic.in/textbook.php', '_blank', 'noopener,noreferrer')">Open NCERT Portal</button>
+            <button class="btn btn-secondary" onclick="window.open('https://cbseacademic.nic.in/publication_ebooks.html', '_blank', 'noopener,noreferrer')">Open CBSE Portal</button>
+            <button class="btn btn-primary" onclick="window.StudyPilotApp.switchScreen('dashboard')">Back to Dashboard</button>
           </div>
         </div>
 
@@ -502,8 +516,8 @@
 
           <div class="card books-links-card">
             <div class="card-header">
-              <h2><i data-lucide="link-2"></i> Official Links</h2>
-              <span class="badge badge-accent">Portal only</span>
+              <h2><i data-lucide="link-2"></i> Local Library and Portals</h2>
+              <span class="badge badge-accent">Offline ready</span>
             </div>
             <div id="books-link-root"></div>
           </div>
@@ -522,10 +536,32 @@
                 </div>
                 <div>
                   <h2>AI Study Pilot</h2>
-                    <p>CBSE · Official NCERT Science links</p>
+                  <p>CBSE · NCERT study companion</p>
                 </div>
               </div>
+              <div class="tutor-model-controls">
+                <div class="input-group tutor-model-group">
+                  <label for="tutor-model-select">Ollama model</label>
+                  <select id="tutor-model-select" onchange="window.StudyPilotTutor.setModelPreferenceFromSelect(this.value)">
+                    <option value="auto::">Auto</option>
+                  </select>
+                </div>
+                <div class="input-group tutor-model-group">
+                  <label for="tutor-mode-select">Tutor mode</label>
+                  <select id="tutor-mode-select" onchange="window.StudyPilotTutor.setStudyModeFromSelect(this.value)">
+                    <option value="learn">Learn</option>
+                    <option value="homework">Homework</option>
+                    <option value="revision">Revision</option>
+                    <option value="exam">Exam</option>
+                    <option value="doubt">Doubt</option>
+                  </select>
+                </div>
+                <button class="btn-icon btn-icon-only tutor-model-refresh" type="button" title="Refresh model list" aria-label="Refresh model list" onclick="window.StudyPilotTutor.refreshModelCatalog()">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
             </div>
+            <div class="tutor-backend-status" id="tutor-backend-status">Checking tutor connection...</div>
             <div class="tutor-chat-messages" id="tutor-chat-messages">
               <div class="chat-message bot">
                 <p>Hi there! I am your AI Study Pilot. You can ask me to explain any concept from the official NCERT Science chapters for your selected grade, open the textbook, or generate quizzes. What are we studying today?</p>
@@ -567,12 +603,20 @@
                     </select>
                   </div>
                   <div class="input-group">
+                    <label for="quiz-difficulty-select">Difficulty</label>
+                    <select id="quiz-difficulty-select">
+                      <option value="easy">Easy</option>
+                      <option value="medium" selected>Medium</option>
+                      <option value="hard">Hard</option>
+                    </select>
+                  </div>
+                  <div class="input-group">
                     <label for="quiz-chapter-select">Chapter</label>
                     <select id="quiz-chapter-select">
                       <!-- Dynamically populated -->
                     </select>
                   </div>
-                  <button class="btn btn-primary w-full" onclick="window.StudyPilotTutor.startQuiz()">Start Quiz</button>
+                  <button class="btn btn-primary w-full" onclick="window.StudyPilotTutor.startQuiz()">Generate AI Quiz</button>
                 </div>
 
                 <div id="quiz-active-view" class="hidden">
@@ -690,13 +734,6 @@
                 <p>Google Keep / Notion notes board</p>
               </div>
             </button>
-            <button class="tool-menu-btn" data-tool="ocr">
-              <i data-lucide="scan"></i>
-              <div>
-                <h3>Document Summarizer</h3>
-                <p>Mock OCR textbook scanner</p>
-              </div>
-            </button>
             <button class="tool-menu-btn" data-tool="career" id="toolbox-menu-career">
               <i data-lucide="compass"></i>
               <div>
@@ -754,6 +791,11 @@
                       <button class="color-dot color-purple" data-color="purple" onclick="window.StudyPilotToolbox.selectNoteColor('purple')"></button>
                       <button class="color-dot color-yellow" data-color="yellow" onclick="window.StudyPilotToolbox.selectNoteColor('yellow')"></button>
                     </div>
+                    <div class="notes-ai-actions">
+                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiNotes()">AI Notes</button>
+                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiSummary()">AI Summary</button>
+                      <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.generateAiPracticeQuestions()">Practice</button>
+                    </div>
                     <button class="btn btn-primary btn-sm" onclick="window.StudyPilotToolbox.saveNote()">Save Note</button>
                   </div>
                 </div>
@@ -764,56 +806,13 @@
               </div>
             </div>
 
-            <!-- TOOL: OCR SCANNER & SUMMARIZER -->
-            <div class="tool-panel hidden" id="tool-panel-ocr">
-              <div class="ocr-wrapper">
-                <h3>Document Summarizer (Mock OCR Scanner)</h3>
-                <p>Drag and drop a PDF chapter or image page of your textbook to extract summary & key formulas instantly.</p>
-                
-                <div class="ocr-drag-zone" id="ocr-drag-zone" onclick="window.StudyPilotToolbox.triggerMockOCR()">
-                  <i data-lucide="file-text" class="drag-icon"></i>
-                  <p>Click here to simulate uploading a textbook chapter</p>
-                  <span class="text-muted text-xs">Supports PDF, PNG, JPG up to 10MB</span>
-                </div>
-                
-                <div class="ocr-progress-container hidden" id="ocr-progress-container">
-                  <div class="ocr-progress-row">
-                    <span>Extracting text & formulas...</span>
-                    <span id="ocr-progress-pct">45%</span>
-                  </div>
-                  <div class="ocr-progress-track">
-                    <div class="ocr-progress-fill" id="ocr-progress-fill" style="width: 45%;"></div>
-                  </div>
-                </div>
-
-                <div class="ocr-results hidden" id="ocr-results">
-                  <div class="ocr-results-header">
-                    <h4><i data-lucide="file-check"></i> Extracted Summary: Science Chapter 11 (Electricity)</h4>
-                    <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
-                  </div>
-                  <div class="ocr-results-body">
-                    <h5>Key Concepts</h5>
-                    <ul>
-                      <li><strong>Electric Current:</strong> The flow of electric charge through a conductor (e.g. copper wire).</li>
-                      <li><strong>Electric Circuit:</strong> A closed pathway through which current flows. Requires a cell/battery, conducting wires, a switch, and a load (like a bulb).</li>
-                      <li><strong>Heating Effect:</strong> When current flows, the wire heats up due to resistance. Used in irons, heaters, and safety fuses.</li>
-                      <li><strong>Magnetic Effect:</strong> Current creates a magnetic field around the wire. Discovered by Hans Christian Oersted. Basis for electromagnets.</li>
-                    </ul>
-                    <h5>Important Formulas</h5>
-                    <p class="formula-box">\[\text{Current } (I) = \frac{\text{Charge } (Q)}{\text{Time } (t)}\]</p>
-                    <p class="formula-box">\[\text{Electromagnet strength} \propto \text{Number of turns in wire coil} \times \text{Current}\]</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- TOOL: CAREER GUIDANCE -->
             <div class="tool-panel hidden" id="tool-panel-career">
               <div class="career-wrapper" id="career-opt-in-view">
                 <div class="career-promo-card">
                   <i data-lucide="compass" class="career-promo-icon"></i>
                   <h2>Career suggestions are ready!</h2>
-                  <p>Our AI Coach has analyzed your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and learning history. Would you like personalized career roadmap suggestions?</p>
+                  <p>Our AI Coach can read your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and dream role (<strong><span id="career-user-dream"></span></strong>) to build a personalized career map.</p>
                   <button class="btn btn-primary" onclick="window.StudyPilotToolbox.unlockCareerMode()">Show Career Suggestions</button>
                 </div>
               </div>
@@ -821,9 +820,15 @@
               <div class="career-wrapper hidden" id="career-active-view">
                 <div class="career-header-row">
                   <h3>AI Recommended Career Pathways</h3>
-                  <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
+                  <div class="career-status-row">
+                    <span class="badge badge-accent" id="career-status-badge">Waiting</span>
+                    <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
+                  </div>
                 </div>
-                
+                <div class="career-summary-card">
+                  <p id="career-summary-copy">Unlock the coach to generate a personalized path.</p>
+                  <ul class="career-action-list" id="career-action-list"></ul>
+                </div>
                 <div class="career-grid" id="career-cards-grid">
                   <!-- Loaded dynamically based on user goals/subjects -->
                 </div>
@@ -841,8 +846,9 @@
             <div class="profile-avatar-large" id="profile-avatar-lg">IS</div>
             <div>
               <h1 id="profile-fullname">Ishaan</h1>
-              <p id="profile-details">CBSE Student • CBSE Board</p>
+              <p id="profile-details">CBSE Student · CBSE Board</p>
               <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
+              <span class="badge badge-accent" id="profile-dream-badge">Dream: Not set</span>
             </div>
           </div>
         </div>
@@ -886,6 +892,30 @@
                     <option value="Complete homework and projects on time">Complete homework and projects on time</option>
                     <option value="Build structured daily study habits">Build structured daily study habits</option>
                   </select>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-dream-career">Dream career or role</label>
+                  <input type="text" id="profile-edit-dream-career" placeholder="e.g., doctor, designer, software engineer">
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-favorite-subjects">Favourite subjects</label>
+                  <textarea id="profile-edit-favorite-subjects" placeholder="Science, Mathematics"></textarea>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-weak-subjects">Weak subjects</label>
+                  <textarea id="profile-edit-weak-subjects" placeholder="English, Social Science"></textarea>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-interests">Interests</label>
+                  <textarea id="profile-edit-interests" placeholder="Robotics, painting, chess"></textarea>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-hobbies">Hobbies</label>
+                  <textarea id="profile-edit-hobbies" placeholder="Reading, coding, cricket"></textarea>
+                </div>
+                <div class="input-group">
+                  <label for="profile-edit-learning-goals">Learning goals</label>
+                  <textarea id="profile-edit-learning-goals" placeholder="Improve math speed, revise science daily"></textarea>
                 </div>
                 <button class="btn btn-primary" onclick="window.StudyPilotApp.saveProfileEdits()">Save Settings</button>
               </div>
@@ -1134,23 +1164,42 @@
     </div>
   </div>
 
+  <!-- Book Viewer Modal -->
+  <div id="book-viewer-modal" class="modal-overlay hidden">
+    <div class="modal-card book-viewer-card animate-fade-in">
+      <div class="modal-header book-viewer-header">
+        <div>
+          <h3 id="book-viewer-title">NCERT Book</h3>
+          <p id="book-viewer-subtitle">Local PDF loaded from the StudyPilot library.</p>
+        </div>
+        <div class="book-viewer-actions">
+          <button class="btn btn-outline btn-sm" type="button" id="book-viewer-open-external" onclick="window.StudyPilotBooks.openViewerExternal()">Open official source</button>
+          <button class="modal-close" type="button" onclick="window.StudyPilotBooks.closeViewer()"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="book-viewer-body">
+        <iframe id="book-viewer-frame" title="NCERT book viewer"></iframe>
+      </div>
+    </div>
+  </div>
+
   <!-- LaTeX Render Support via KaTeX (Local fallback or light CDN link) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <!-- Application Modules -->
-  <script src="js/curriculum.js"></script>
-  <script src="js/db.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/setup.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/planner.js"></script>
-  <script src="js/books.js"></script>
-  <script src="js/tutor.js"></script>
-  <script src="js/toolbox.js"></script>
-  <script src="js/reminders.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/curriculum.js?v=20260626-1"></script>
+  <script src="js/db.js?v=20260626-1"></script>
+  <script src="js/auth.js?v=20260626-1"></script>
+  <script src="js/setup.js?v=20260626-1"></script>
+  <script src="js/dashboard.js?v=20260626-1"></script>
+  <script src="js/planner.js?v=20260626-1"></script>
+  <script src="js/books.js?v=20260626-1"></script>
+  <script src="js/tutor.js?v=20260626-1"></script>
+  <script src="js/toolbox.js?v=20260626-1"></script>
+  <script src="js/reminders.js?v=20260626-1"></script>
+  <script src="js/app.js?v=20260626-1"></script>
 
 </body>
 </html>

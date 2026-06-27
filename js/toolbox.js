@@ -1,49 +1,8 @@
 /* ======================================================== */
-/* StudyPilot Toolbox Tools: Pomodoro, Notes, OCR, Career    */
+/* StudyPilot Toolbox Tools: Pomodoro, Notes, Career         */
 /* ======================================================== */
 
 (function () {
-  
-  // Custom Career suggestions database
-  const CAREER_DATABASE = [
-    {
-      title: "AI & Software Systems Engineer",
-      desc: "Design intelligent programs, building search systems and agent systems like StudyPilot.",
-      skills: ["Problem Solving", "Coding (Python/JS)", "Logic"],
-      subjects: ["Mathematics", "Computer Science"],
-      roadmap: [
-        { label: "BODMAS Rules", status: "completed" },
-        { label: "Variables & Algebra", status: "active" },
-        { label: "Basic Coding (Python)", status: "pending" },
-        { label: "College Prep (B.Tech)", status: "pending" }
-      ]
-    },
-    {
-      title: "Medical Specialist / Surgeon",
-      desc: "Study biology, diseases, and cures to help heal patients and save lives.",
-      skills: ["Focus", "Adolescence Anatomy", "Critical Thinking"],
-      subjects: ["Science (Biology)", "Chemistry"],
-      roadmap: [
-        { label: "World of Science", status: "completed" },
-        { label: "Animal/Plant Life", status: "active" },
-        { label: "Pre-Med Entry Prep", status: "pending" },
-        { label: "Medical University", status: "pending" }
-      ]
-    },
-    {
-      title: "Civil & Architectural Engineer",
-      desc: "Create buildings, bridges, and infrastructure using spatial designs and geometric equations.",
-      skills: ["Spatial Thinking", "Constructions", "Physics"],
-      subjects: ["Mathematics", "Science (Physics)"],
-      roadmap: [
-        { label: "Parallel Lines Ch 5", status: "completed" },
-        { label: "Tilings & Shapes", status: "active" },
-        { label: "Structural Physics", status: "pending" },
-        { label: "Engineering Exam", status: "pending" }
-      ]
-    }
-  ];
-
   window.StudyPilotToolbox = {
     // 1. Pomodoro Timer State
     pomodoroInterval: null,
@@ -55,9 +14,14 @@
     // 2. Note Composer State
     selectedNoteColor: "default",
 
-    // 3. OCR Simulation State
-    ocrProgressInterval: null,
     profileListenerBound: false,
+    careerRecommendations: [],
+    careerSummary: "",
+    careerActionPlan: [],
+    careerLoading: false,
+    careerError: "",
+    careerProfileSignature: "",
+    careerRequestPromise: null,
 
     init: function () {
       this.bindProfileListener();
@@ -73,6 +37,7 @@
 
       window.addEventListener("studypilot_profile_updated", () => {
         this.renderNotes();
+        this.syncCareerGoalInfo();
       });
     },
 
@@ -234,6 +199,120 @@
       window.StudyPilotDB.addNotification(`Note "${title || 'Untitled'}" saved successfully!`, "success");
     },
 
+    getApiBaseUrl: function () {
+      if (window.StudyPilotApi && typeof window.StudyPilotApi.getBaseUrl === "function") {
+        return window.StudyPilotApi.getBaseUrl();
+      }
+      if (window.StudyPilotTutor && typeof window.StudyPilotTutor.getApiBaseUrl === "function") {
+        return window.StudyPilotTutor.getApiBaseUrl();
+      }
+      if (window.STUDYPILOT_API_BASE && String(window.STUDYPILOT_API_BASE).trim()) {
+        return String(window.STUDYPILOT_API_BASE).replace(/\/+$/, "");
+      }
+      if (window.location && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+        return window.location.origin;
+      }
+      return "http://127.0.0.1:5000";
+    },
+
+    getStudyToolContext: function () {
+      const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
+      const analytics = window.StudyPilotDB.getStudyAnalytics ? window.StudyPilotDB.getStudyAnalytics() : {};
+      const analyticsSummary = window.StudyPilotDB.getStudyAnalyticsSummary ? window.StudyPilotDB.getStudyAnalyticsSummary() : {};
+      const history = window.StudyPilotDB.getTutorHistory ? window.StudyPilotDB.getTutorHistory(12) : [];
+      const subjects = Array.isArray(profile && profile.subjects) ? profile.subjects : [];
+      return {
+        profile,
+        analytics,
+        analyticsSummary,
+        history,
+        subject: (profile && Array.isArray(profile.favoriteSubjects) && profile.favoriteSubjects[0]) || subjects[0] || "Science",
+        grade: profile ? profile.grade : "10",
+      };
+    },
+
+    requestAiStudyPack: function (tool, extra = {}) {
+      const context = this.getStudyToolContext();
+      const payload = {
+        tool,
+        subject: extra.subject || context.subject,
+        chapter: extra.chapter || "",
+        difficulty: extra.difficulty || "medium",
+        count: extra.count || 5,
+        profile: context.profile,
+        analytics: context.analytics,
+        analytics_summary: context.analyticsSummary,
+        history: context.history,
+        provider: window.StudyPilotTutor ? window.StudyPilotTutor.selectedModelProvider : "auto",
+        model: window.StudyPilotTutor ? window.StudyPilotTutor.selectedModelName : "",
+      };
+
+      return fetch(`${this.getApiBaseUrl()}/api/study-tools/generate`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).then(async res => {
+        if (!res.ok) throw new Error("Study tool unavailable");
+        return res.json();
+      });
+    },
+
+    generateAiNotes: function () {
+      const context = this.getStudyToolContext();
+      this.requestAiStudyPack("notes", { subject: context.subject, count: 1 })
+        .then(data => {
+          const notes = data && data.data ? data.data.notes || data.data.summary || "" : "";
+          const title = `${context.subject} AI Notes`;
+          window.StudyPilotDB.addNote(title, notes || "No notes were returned by the model.", "blue");
+          if (window.StudyPilotDB && typeof window.StudyPilotDB.trackRevisionSession === "function") {
+            window.StudyPilotDB.trackRevisionSession(context.subject, title);
+          }
+          this.renderNotes();
+          window.StudyPilotDB.addNotification("AI notes generated.", "success");
+        })
+        .catch(() => {
+          window.StudyPilotDB.addNotification("AI notes could not be generated right now.", "info");
+        });
+    },
+
+    generateAiSummary: function () {
+      const context = this.getStudyToolContext();
+      this.requestAiStudyPack("summary", { subject: context.subject, count: 1 })
+        .then(data => {
+          const summary = data && data.data ? data.data.revision_summary || data.data.summary || data.data.notes || "" : "";
+          const title = `${context.subject} Summary`;
+          window.StudyPilotDB.addNote(title, summary || "No summary was returned by the model.", "green");
+          if (window.StudyPilotDB && typeof window.StudyPilotDB.trackRevisionSession === "function") {
+            window.StudyPilotDB.trackRevisionSession(context.subject, title);
+          }
+          this.renderNotes();
+          window.StudyPilotDB.addNotification("AI summary generated.", "success");
+        })
+        .catch(() => {
+          window.StudyPilotDB.addNotification("AI summary could not be generated right now.", "info");
+        });
+    },
+
+    generateAiPracticeQuestions: function () {
+      const context = this.getStudyToolContext();
+      this.requestAiStudyPack("practice", { subject: context.subject, count: 5 })
+        .then(data => {
+          const questions = data && data.data ? data.data.practice_questions || [] : [];
+          const body = questions.map((item, index) => `${index + 1}. ${item.question || ""}${item.hint ? `\nHint: ${item.hint}` : ""}`).join("\n\n");
+          const title = `${context.subject} Practice Questions`;
+          window.StudyPilotDB.addNote(title, body || "No practice questions were returned by the model.", "purple");
+          if (window.StudyPilotDB && typeof window.StudyPilotDB.trackRevisionSession === "function") {
+            window.StudyPilotDB.trackRevisionSession(context.subject, title);
+          }
+          this.renderNotes();
+          window.StudyPilotDB.addNotification("Practice questions generated.", "success");
+        })
+        .catch(() => {
+          window.StudyPilotDB.addNotification("Practice questions could not be generated right now.", "info");
+        });
+    },
+
     renderNotes: function () {
       const container = document.getElementById("notes-grid-container");
       if (!container) return;
@@ -277,70 +356,30 @@
     },
 
     // ======================================================== 
-    // Tool: Document Summarizer (OCR Scanner Mock)
-    // ========================================================
-    triggerMockOCR: function () {
-      const dragZone = document.getElementById("ocr-drag-zone");
-      const progressWrap = document.getElementById("ocr-progress-container");
-      const progressFill = document.getElementById("ocr-progress-fill");
-      const progressPct = document.getElementById("ocr-progress-pct");
-      const results = document.getElementById("ocr-results");
-
-      dragZone.classList.add("hidden");
-      progressWrap.classList.remove("hidden");
-      results.classList.add("hidden");
-
-      let pct = 0;
-      clearInterval(this.ocrProgressInterval);
-      
-      this.ocrProgressInterval = setInterval(() => {
-        pct += 10;
-        progressFill.style.width = `${pct}%`;
-        progressPct.innerText = `${pct}%`;
-
-        if (pct >= 100) {
-          clearInterval(this.ocrProgressInterval);
-          progressWrap.classList.add("hidden");
-          results.classList.remove("hidden");
-          
-          window.StudyPilotDB.addNotification("OCR scan complete: Summary & equations generated for Electricity circuits.", "success");
-          
-          // Re-render KaTeX math blocks inside the generated summary
-          if (window.renderMathInElement) {
-            window.renderMathInElement(results);
-          }
-        }
-      }, 150);
-    },
-
-    saveOCRAsNote: function () {
-      const title = "OCR Summary: Electricity (Ch 3)";
-      const body = "Key Concepts Extracted:\n- Electric Current: Flow of electric charge through conductor.\n- Circuit components: bulb, switch, fuse.\n- Heating effect is used in irons and fuses.\n- Electromagnet strength increases with turns.\n\nFormulas:\n- Current (I) = Q / t\n- Strength of Electromagnet is proportional to coil turns.";
-      
-      window.StudyPilotDB.addNote(title, body, "blue");
-      window.StudyPilotDB.addNotification("OCR Summary saved to Quick Notes!", "success");
-      
-      // If notes tab is active, redraw it
-      this.renderNotes();
-    },
-
-    // ======================================================== 
     // Tool: Career Guidance Mode
     // ========================================================
     syncCareerGoalInfo: function () {
       const profile = window.StudyPilotDB.getProfile();
       const goalSpan = document.getElementById("career-user-goal");
-      const menuBtn = document.getElementById("toolbox-menu-career");
+      const dreamSpan = document.getElementById("career-user-dream");
+      const signature = this.buildCareerProfileSignature(profile);
 
       if (goalSpan) {
-        goalSpan.innerText = profile.goal;
+        goalSpan.innerText = profile.goal || "Improve overall grades";
+      }
+      if (dreamSpan) {
+        dreamSpan.innerText = profile.dreamCareer ? profile.dreamCareer : "Not set";
       }
 
-      // Check if unlocked (prompt says: "Only after the AI has learned about the student should it ask... would you like career suggestions?")
+      // Check if unlocked and fetch recommendations only when needed.
       if (profile.careerUnlocked) {
         document.getElementById("career-opt-in-view").classList.add("hidden");
         document.getElementById("career-active-view").classList.remove("hidden");
-        this.renderCareerRoadmaps();
+        if (!this.careerRecommendations.length || this.careerProfileSignature !== signature) {
+          this.loadCareerGuidance();
+        } else {
+          this.renderCareerRecommendations();
+        }
       } else {
         document.getElementById("career-opt-in-view").classList.remove("hidden");
         document.getElementById("career-active-view").classList.add("hidden");
@@ -353,7 +392,8 @@
       window.StudyPilotDB.saveProfile(profile);
       
       this.syncCareerGoalInfo();
-      window.StudyPilotDB.addNotification("Career Guidance Mode unlocked! AI suggestions generated.", "success");
+      this.loadCareerGuidance();
+      window.StudyPilotDB.addNotification("Career Guidance Mode unlocked! Ollama will generate personalised suggestions.", "success");
     },
 
     resetCareerOptIn: function () {
@@ -361,34 +401,210 @@
       profile.careerUnlocked = false;
       window.StudyPilotDB.saveProfile(profile);
       
+      this.careerRecommendations = [];
+      this.careerSummary = "";
+      this.careerActionPlan = [];
+      this.careerError = "";
       this.syncCareerGoalInfo();
     },
 
-    renderCareerRoadmaps: function () {
+    buildCareerProfileSignature: function (profile) {
+      if (!profile) return "none";
+      const subjects = Array.isArray(profile.subjects) ? profile.subjects.join("|") : "";
+      const favoriteSubjects = Array.isArray(profile.favoriteSubjects) ? profile.favoriteSubjects.join("|") : "";
+      const weakSubjects = Array.isArray(profile.weakSubjects) ? profile.weakSubjects.join("|") : "";
+      const interests = Array.isArray(profile.interests) ? profile.interests.join("|") : "";
+      const hobbies = Array.isArray(profile.hobbies) ? profile.hobbies.join("|") : "";
+      const learningGoals = Array.isArray(profile.learningGoals) ? profile.learningGoals.join("|") : "";
+      return [
+        profile.grade || "",
+        profile.goal || "",
+        profile.dreamCareer || "",
+        subjects,
+        favoriteSubjects,
+        weakSubjects,
+        interests,
+        hobbies,
+        learningGoals,
+      ].join("::");
+    },
+
+    buildCareerProgressSnapshot: function () {
+      const profile = window.StudyPilotDB.getProfile();
+      const chapterSummary = window.StudyPilotDB.getChapterCompletionSummary ? window.StudyPilotDB.getChapterCompletionSummary() : null;
+      const tasks = window.StudyPilotDB.getAllTasks ? window.StudyPilotDB.getAllTasks() : [];
+      const exams = window.StudyPilotDB.getAllExams ? window.StudyPilotDB.getAllExams() : [];
+      const grade = profile ? String(profile.grade || "10") : "10";
+
+      return {
+        grade,
+        chapter_summary: chapterSummary || {},
+        task_count: tasks.filter(task => String(task.grade || "10") === grade).length,
+        completed_tasks: tasks.filter(task => String(task.grade || "10") === grade && task.completed).length,
+        exam_count: exams.filter(exam => String(exam.grade || "10") === grade).length,
+        subjects: window.StudyPilotCurriculum && typeof window.StudyPilotCurriculum.getSubjectsForGrade === "function"
+          ? window.StudyPilotCurriculum.getSubjectsForGrade(grade)
+          : [],
+      };
+    },
+
+    getApiBaseUrl: function () {
+      if (window.StudyPilotTutor && typeof window.StudyPilotTutor.getApiBaseUrl === "function") {
+        return window.StudyPilotTutor.getApiBaseUrl();
+      }
+      if (window.STUDYPILOT_API_BASE && String(window.STUDYPILOT_API_BASE).trim()) {
+        return String(window.STUDYPILOT_API_BASE).replace(/\/+$/, "");
+      }
+      if (window.location && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+        return window.location.origin;
+      }
+      return "http://127.0.0.1:5000";
+    },
+
+    loadCareerGuidance: function () {
+      const profile = window.StudyPilotDB.getProfile();
+      if (!profile || !profile.careerUnlocked) return Promise.resolve();
+
+      const signature = this.buildCareerProfileSignature(profile);
+      if (this.careerRequestPromise && this.careerProfileSignature === signature) {
+        return this.careerRequestPromise;
+      }
+
+      this.careerLoading = true;
+      this.careerError = "";
+      this.renderCareerRecommendations();
+
+      const payload = {
+        profile,
+        progress: this.buildCareerProgressSnapshot(),
+        analytics: window.StudyPilotDB.getStudyAnalytics ? window.StudyPilotDB.getStudyAnalytics() : {},
+        analytics_summary: window.StudyPilotDB.getStudyAnalyticsSummary ? window.StudyPilotDB.getStudyAnalyticsSummary() : {},
+        history: window.StudyPilotDB.getTutorHistory ? window.StudyPilotDB.getTutorHistory(12) : [],
+      };
+
+      const request = fetch(`${this.getApiBaseUrl()}/api/career/recommendations`, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(async res => {
+          if (!res.ok) throw new Error("Career API unavailable");
+          return res.json();
+        })
+        .then(data => {
+          this.careerSummary = data && data.summary ? String(data.summary) : "";
+          this.careerRecommendations = Array.isArray(data && data.recommendations) ? data.recommendations : [];
+          this.careerActionPlan = Array.isArray(data && data.action_plan) ? data.action_plan : [];
+          this.careerProfileSignature = signature;
+          this.careerLoading = false;
+          this.careerError = "";
+          this.renderCareerRecommendations();
+        })
+        .catch(error => {
+          this.careerSummary = "";
+          this.careerRecommendations = [];
+          this.careerActionPlan = [];
+          this.careerProfileSignature = signature;
+          this.careerLoading = false;
+          this.careerError = error && error.message ? error.message : "Career coach is temporarily unavailable.";
+          this.renderCareerRecommendations();
+        });
+
+      this.careerRequestPromise = request;
+      return request;
+    },
+
+    buildFallbackCareerRecommendations: function (profile) {
+      return [];
+    },
+
+    renderCareerRecommendations: function () {
       const container = document.getElementById("career-cards-grid");
       if (!container) return;
 
-      container.innerHTML = CAREER_DATABASE.map(c => {
+      const summaryEl = document.getElementById("career-summary-copy");
+      const actionEl = document.getElementById("career-action-list");
+      const statusEl = document.getElementById("career-status-badge");
+
+      if (statusEl) {
+        statusEl.innerText = this.careerLoading ? "Thinking..." : (this.careerRecommendations.length ? "Ready" : "Waiting");
+      }
+
+      if (summaryEl) {
+        summaryEl.innerText = this.careerLoading
+          ? "Ollama is writing your career map now."
+          : (this.careerError
+              ? this.careerError
+              : (this.careerSummary || "Your career map will appear here after the AI reads your profile."));
+      }
+
+      if (actionEl) {
+        actionEl.innerHTML = (this.careerActionPlan || []).map(step => `<li>${escapeHTML(step)}</li>`).join("");
+      }
+
+      if (this.careerLoading) {
+        container.innerHTML = `
+          <div class="career-loading-card">
+            <div class="career-loading-spinner"></div>
+            <p>Ollama is reviewing your profile, subjects, and dream career.</p>
+          </div>
+        `;
+        return;
+      }
+
+      if (this.careerError) {
+        container.innerHTML = `
+          <div class="career-loading-card">
+            <p>${escapeHTML(this.careerError)}</p>
+          </div>
+        `;
+        return;
+      }
+
+      const recommendations = Array.isArray(this.careerRecommendations) ? this.careerRecommendations : [];
+      if (!recommendations.length) {
+        container.innerHTML = `
+          <div class="career-loading-card">
+            <p>Waiting for Ollama to return career recommendations from your profile data.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = recommendations.map(c => {
+        const bestSubjects = Array.isArray(c.required_subjects) ? c.required_subjects : (Array.isArray(c.best_subjects) ? c.best_subjects : []);
+        const skills = Array.isArray(c.skills) ? c.skills : [];
+        const nextSteps = Array.isArray(c.next_steps) ? c.next_steps : [];
         return `
           <div class="career-card">
             <div class="career-title-row">
               <h4>${escapeHTML(c.title)}</h4>
-              <span class="badge badge-indigo">95% Match Match</span>
+              <span class="badge badge-indigo">${escapeHTML(String(c.match_score || c.fit_score || 70))}% Match</span>
             </div>
-            <p class="career-desc">${escapeHTML(c.desc)}</p>
+            <p class="career-desc">${escapeHTML(c.why || c.summary || c.why_it_fits || "")}</p>
             
             <div class="career-skills">
-              <span class="text-muted">Skills:</span>
-              ${c.skills.map(s => `<span class="badge badge-accent">${escapeHTML(s)}</span>`).join("")}
+              <span class="text-muted">Best subjects:</span>
+              ${bestSubjects.map(s => `<span class="badge badge-accent">${escapeHTML(s)}</span>`).join("")}
             </div>
 
+            <div class="career-skills">
+              <span class="text-muted">Skills:</span>
+              ${skills.map(s => `<span class="badge badge-soft">${escapeHTML(s)}</span>`).join("")}
+            </div>
+
+            <p class="career-fit-note">${escapeHTML(c.future_demand ? `Future demand: ${c.future_demand}` : "")}</p>
+            <p class="career-fit-note">${escapeHTML(c.pathway || "")}</p>
+            <p class="career-fit-note">${escapeHTML(c.why_it_fits || "")}</p>
+
             <div class="career-roadmap-timeline">
-              ${c.roadmap.map(step => {
-                let stepClass = step.status === "completed" ? "completed" : (step.status === "active" ? "active" : "");
+              ${nextSteps.map((step, index) => {
+                const stepClass = index === 0 ? "completed" : index === 1 ? "active" : "";
                 return `
                   <div class="career-step ${stepClass}">
                     <div class="step-node"></div>
-                    <div class="step-label">${escapeHTML(step.label)}</div>
+                    <div class="step-label">${escapeHTML(step)}</div>
                   </div>
                 `;
               }).join("")}

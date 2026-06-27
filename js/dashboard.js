@@ -3,14 +3,26 @@
 /* ======================================================== */
 
 (function () {
+  function getLocalISODate(date = new Date()) {
+    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return local.toISOString().slice(0, 10);
+  }
+
+  function getLocalDayName(date = new Date()) {
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+  }
+
   window.StudyPilotDashboard = {
     profileListenerBound: false,
+    dataListenerBound: false,
     
     init: function () {
       this.bindProfileListener();
+      this.bindDataListener();
       this.renderTimeline();
       this.renderTasks();
       this.renderProgressRing();
+      this.renderStudyAnalytics();
       this.renderUpcomingExams();
       this.renderAISuggestions();
     },
@@ -23,20 +35,28 @@
       });
     },
 
+    bindDataListener: function () {
+      if (this.dataListenerBound) return;
+      this.dataListenerBound = true;
+      window.addEventListener("studypilot_data_updated", () => {
+        this.renderProgressRing();
+        this.renderStudyAnalytics();
+        this.renderAISuggestions();
+      });
+    },
+
     getCurrentGrade: function () {
       const profile = window.StudyPilotDB.getProfile ? window.StudyPilotDB.getProfile() : null;
       return profile ? String(profile.grade || "10") : "10";
     },
 
-    // 1. Timeline: filter for events on Monday (demo active day)
     renderTimeline: function () {
       const timelineEl = document.getElementById("dashboard-timeline");
       if (!timelineEl) return;
 
       const grade = this.getCurrentGrade();
       const events = window.StudyPilotDB.getCalendarEvents(grade);
-      // Filter for Monday
-      const todayEvents = events.filter(e => e.day === "Monday");
+      const todayEvents = events.filter(e => e.day === getLocalDayName());
       
       // Sort chronologically by start time
       todayEvents.sort((a, b) => a.start.localeCompare(b.start));
@@ -69,7 +89,7 @@
       if (!listEl) return;
 
       const grade = this.getCurrentGrade();
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
 
       if (tasks.length === 0) {
         listEl.innerHTML = '<div class="task-empty">All caught up! Add a new task to get started.</div>';
@@ -120,7 +140,7 @@
       if (!ring || !label) return;
 
       const grade = this.getCurrentGrade();
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
       const total = tasks.length;
       const completed = tasks.filter(t => t.completed).length;
       
@@ -157,6 +177,66 @@
       streakVal.innerText = profile.streak;
     },
 
+    renderStudyAnalytics: function () {
+      const container = document.getElementById("dashboard-analytics-panel");
+      if (!container) return;
+
+      const summary = window.StudyPilotDB.getStudyAnalyticsSummary ? window.StudyPilotDB.getStudyAnalyticsSummary() : null;
+      if (!summary) {
+        container.innerHTML = '<div class="analytics-empty">No analytics recorded yet.</div>';
+        return;
+      }
+
+      const renderTopics = (items, emptyLabel) => {
+        const list = Array.isArray(items) ? items : [];
+        if (!list.length) {
+          return `<p class="analytics-empty">${escapeHTML(emptyLabel)}</p>`;
+        }
+        return `<div class="analytics-topic-cloud">${list.map(item => `
+          <span class="badge ${item.count > 1 ? 'badge-indigo' : 'badge-soft'}">${escapeHTML(item.topic)}${item.count > 1 ? ` × ${item.count}` : ""}</span>
+        `).join("")}</div>`;
+      };
+
+      container.innerHTML = `
+        <div class="analytics-metrics-grid">
+          <div class="analytics-metric-card">
+            <div class="analytics-metric-value">${summary.questionsAsked}</div>
+            <div class="analytics-metric-label">Questions asked</div>
+          </div>
+          <div class="analytics-metric-card">
+            <div class="analytics-metric-value">${summary.quizAttempts}</div>
+            <div class="analytics-metric-label">Quiz attempts</div>
+          </div>
+          <div class="analytics-metric-card">
+            <div class="analytics-metric-value">${summary.averageQuizScore}%</div>
+            <div class="analytics-metric-label">Average quiz score</div>
+          </div>
+          <div class="analytics-metric-card">
+            <div class="analytics-metric-value">${summary.revisionSessions}</div>
+            <div class="analytics-metric-label">Revision sessions</div>
+          </div>
+          <div class="analytics-metric-card">
+            <div class="analytics-metric-value">${summary.quizAccuracy}%</div>
+            <div class="analytics-metric-label">Quiz accuracy</div>
+          </div>
+        </div>
+        <div class="analytics-topic-section">
+          <div class="analytics-topic-header">
+            <strong>Strong topics</strong>
+            <span class="badge badge-accent">${summary.strongTopics.length}</span>
+          </div>
+          ${renderTopics(summary.strongTopics, "No strong topics have been detected yet.")}
+        </div>
+        <div class="analytics-topic-section">
+          <div class="analytics-topic-header">
+            <strong>Weak topics</strong>
+            <span class="badge badge-red">${summary.weakTopics.length}</span>
+          </div>
+          ${renderTopics(summary.weakTopics, "No weak topics have been detected yet.")}
+        </div>
+      `;
+    },
+
     // 4. Upcoming Exams (countdown calculator)
     renderUpcomingExams: function () {
       const container = document.getElementById("dashboard-upcoming-exams");
@@ -169,15 +249,13 @@
         return;
       }
 
-      // Demo current date: 22 June 2026
-      const demoDateStr = "2026-06-22";
-      const demoDate = new Date(demoDateStr);
+      const currentDate = new Date();
 
       exams.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       container.innerHTML = exams.map(e => {
         const examDate = new Date(e.date);
-        const timeDiff = examDate - demoDate;
+        const timeDiff = examDate - currentDate;
         const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         
         let daysText = "";
@@ -216,11 +294,13 @@
 
       const grade = this.getCurrentGrade();
       const exams = window.StudyPilotDB.getExams(grade);
-      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === "2026-06-22");
+      const tasks = window.StudyPilotDB.getTasks(grade).filter(t => t.date === getLocalISODate());
       const uncompletedTasks = tasks.filter(t => !t.completed);
-      const events = window.StudyPilotDB.getCalendarEvents(grade).filter(e => e.day === "Monday");
+      const events = window.StudyPilotDB.getCalendarEvents(grade).filter(e => e.day === getLocalDayName());
       
-      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date >= "2026-06-22" && e.date <= "2026-06-30");
+      const today = getLocalISODate();
+      const weekFromNow = getLocalISODate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
+      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date >= today && e.date <= weekFromNow);
       const hasMathStudyBlock = events.some(e => /math/i.test(e.title) && e.type === "study");
       
       let html = "";

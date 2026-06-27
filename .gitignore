@@ -1,4 +1,5 @@
 logs/
+studypilot-*.log
 docs/syllabus_sources/
 database/studypilot.db
 *.db

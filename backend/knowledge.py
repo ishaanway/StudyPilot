@@ -454,6 +454,25 @@ def _tokenize(text: str) -> set[str]:
     return {word for word in words if word not in stopwords}
 
 
+def _expand_query_tokens(tokens: set[str]) -> set[str]:
+    aliases = {
+        "photosynthesis": {"photosynthesis", "nutrition", "chlorophyll", "plants"},
+        "respiration": {"respiration", "breathing", "cellular"},
+        "evaporation": {"evaporation", "heat", "water"},
+        "light": {"light", "reflection", "refraction", "mirror", "lens"},
+        "electricity": {"electricity", "current", "circuit", "resistance", "ohm"},
+        "acid": {"acid", "acids", "base", "bases", "salt", "pH"},
+        "acids": {"acid", "acids", "base", "bases", "salt", "pH"},
+        "math": {"math", "mathematics", "algebra", "fraction", "equation"},
+        "mathematics": {"math", "mathematics", "algebra", "fraction", "equation"},
+    }
+
+    expanded = set(tokens)
+    for token in tokens:
+        expanded.update(aliases.get(token, set()))
+    return expanded
+
+
 def _extract_arithmetic_expression(query: str) -> str:
     text = re.sub(r"\s+", " ", query).strip()
     text = text.replace("×", "*").replace("÷", "/").replace("−", "-").replace("–", "-")
@@ -526,7 +545,8 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
     """Return the most relevant syllabus entries for a question."""
 
     entries = fetch_all("SELECT * FROM knowledge_entries ORDER BY grade, subject, chapter_number")
-    query_tokens = _tokenize(query)
+    query_tokens = _expand_query_tokens(_tokenize(query))
+    query_text = (query or "").lower().strip()
     subject_lower = subject.lower().strip() if subject else ""
 
     scored: list[tuple[int, dict]] = []
@@ -544,7 +564,11 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
         ).lower()
 
         if subject_lower and subject_lower in str(entry.get("subject", "")).lower():
-            score += 5
+            score += 2
+
+        chapter_title = str(entry.get("chapter_title", "")).lower()
+        if query_text and chapter_title and chapter_title in query_text:
+            score += 6
 
         for token in query_tokens:
             if token in entry_text:
@@ -555,7 +579,8 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
         if matched_token:
             score += 1
 
-        if score > 0:
+        should_keep = matched_token or (subject_lower and query_text == subject_lower)
+        if score > 0 and should_keep:
             scored.append((score, entry))
 
     scored.sort(key=lambda pair: (-pair[0], pair[1]["grade"], pair[1]["subject"], pair[1]["chapter_number"]))

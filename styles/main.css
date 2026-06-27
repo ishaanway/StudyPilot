@@ -1002,6 +1002,7 @@ body {
 }
 .local-badge  { background-color: #fef9c3; color: #713f12; }
 .online-badge { background-color: var(--primary-light); color: var(--primary); }
+.browser-badge { background-color: #e2e8f0; color: #334155; }
 
 /* Typing animation for AI "thinking" loader */
 .typing-dot {

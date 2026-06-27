@@ -1,9 +1,11 @@
 /* ======================================================== */
 /* StudyPilot Official Curriculum Catalog                   */
-/* CBSE Grade 10 | Official NCERT textbook links only       */
+/* CBSE Grade 10 | Official NCERT textbook links + local PDF cache */
 /* ======================================================== */
 
 (function () {
+  const LOCAL_BOOK_ROOT = "/assets/books/ncert";
+
   const SCIENCE_CHAPTERS = [
     {
       id: "cbse10_science_ch2",
@@ -84,6 +86,63 @@
     "Social Science": "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/Social_Science_Sec_2025-26.pdf",
     English: "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/English_LL_2025-26.pdf",
     "Computer Science": "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/Computer_Applications_Sec_2025-26.pdf",
+  };
+
+  const TEXTBOOK_CATALOG = {
+    ncert: {
+      6: {
+        Mathematics: {
+      bookTitle: "Ganita Prakash",
+      pdfUrl: "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
+      pageUrl: "https://ncert.nic.in/textbook.php?fegp1=0-10",
+      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-mathematics-ganita-prakash.pdf`,
+      sourceLabel: "Official NCERT Grade 6 Mathematics textbook",
+    },
+  },
+  7: {
+    Science: {
+      bookTitle: "Curiosity",
+      pdfUrl: "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
+      pageUrl: "https://ncert.nic.in/textbook.php?gecu1=0-12",
+      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-science-curiosity.pdf`,
+      sourceLabel: "Official NCERT Grade 7 Science textbook",
+    },
+  },
+  10: {
+    Science: {
+      bookTitle: "Science",
+      pdfUrl: "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
+      pageUrl: "https://ncert.nic.in/textbook.php?jesc1=1-16",
+      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-science.pdf`,
+      sourceLabel: "Official NCERT Grade 10 Science textbook",
+    },
+    English: {
+      bookTitle: "First Flight",
+      pdfUrl: "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
+      pageUrl: "https://ncert.nic.in/textbook.php?jeff1=0-11",
+      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-english-first-flight.pdf`,
+      sourceLabel: "Official NCERT Grade 10 English textbook",
+    },
+  },
+    },
+    tamil: {
+      6: {
+        Tamil: {
+          bookTitle: "Tamil Nadu Textbooks",
+          pdfUrl: "",
+          pageUrl: "https://textbookcorp.in/textbook/schools/books",
+          sourceLabel: "Official Tamil Nadu textbook listing",
+        },
+      },
+      10: {
+        Tamil: {
+          bookTitle: "Tamil Nadu Textbooks",
+          pdfUrl: "",
+          pageUrl: "https://textbookcorp.in/textbook/schools/books",
+          sourceLabel: "Official Tamil Nadu textbook listing",
+        },
+      },
+    },
   };
 
   const SCIENCE_CHAPTERS_BY_GRADE = {
@@ -601,6 +660,22 @@
     return Object.keys(OFFICIAL_SOURCE_URLS);
   }
 
+  function getBookCatalog(boardKey = "ncert", grade = 10, subject = "") {
+    const board = TEXTBOOK_CATALOG[boardKey] || {};
+    const gradeCatalog = board[Number(grade)] || {};
+    if (!subject) {
+      return Object.values(gradeCatalog).map(entry => ({ ...entry }));
+    }
+
+    const book = gradeCatalog[subject];
+    return book ? [{ ...book }] : [];
+  }
+
+  function getTextbookResource(boardKey = "ncert", grade = 10, subject = "") {
+    const catalog = getBookCatalog(boardKey, grade, subject);
+    return catalog[0] ? { ...catalog[0] } : null;
+  }
+
   function getQuizChapters(subject, grade = 10) {
     if (normalize(subject) !== "science") return [];
     const chapters = getScienceChapters(grade);
@@ -677,6 +752,8 @@
     getQuizChapters,
     getQuizBank,
     getFlashcardsForGrade,
+    getBookCatalog,
+    getTextbookResource,
     findKnowledge,
     getOfficialTextbookUrl: (chapterKey) => {
       const chapter = getChapterByKey(chapterKey);

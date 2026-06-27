@@ -5,6 +5,33 @@
 (function () {
   const DB_PREFIX = "studypilot_";
 
+  function pad2(value) {
+    return String(value).padStart(2, "0");
+  }
+
+  function toLocalISODate(date = new Date()) {
+    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return local.toISOString().slice(0, 10);
+  }
+
+  function addLocalDays(date = new Date(), days = 0) {
+    const next = new Date(date);
+    next.setDate(next.getDate() + days);
+    return next;
+  }
+
+  function formatLocalTimestamp(date = new Date(), time = "00:00") {
+    const [hours, minutes] = String(time || "00:00").split(":").map(part => Number(part) || 0);
+    const next = new Date(date);
+    next.setHours(hours, minutes, 0, 0);
+    return `${toLocalISODate(next)} ${pad2(next.getHours())}:${pad2(next.getMinutes())}`;
+  }
+
+  const TODAY = toLocalISODate();
+  const YESTERDAY = toLocalISODate(addLocalDays(new Date(), -1));
+  const TOMORROW = toLocalISODate(addLocalDays(new Date(), 1));
+  const DAY_AFTER_TOMORROW = toLocalISODate(addLocalDays(new Date(), 2));
+
   const DEFAULTS = {
     auth: {
       user: null,
@@ -19,42 +46,63 @@
       grade: "10",
       board: "CBSE",
       subjects: ["Mathematics", "Science", "Social Science", "English", "Tamil", "Computer Science"],
+      favoriteSubjects: ["Science", "Mathematics"],
+      weakSubjects: [],
+      interests: [],
+      hobbies: [],
+      learningGoals: [],
       dailyHours: 2,
       goal: "Improve overall grades",
+      dreamCareer: "",
       streak: 5,
-      lastActive: "2026-06-21",
+      lastActive: YESTERDAY,
       setupComplete: false,
       careerUnlocked: false
     },
 
+    tutorHistory: [],
+    studyAnalytics: {
+      questionsAsked: 0,
+      revisionSessions: 0,
+      quizAttempts: [],
+      strongTopics: [],
+      weakTopics: [],
+      subjectsStudied: [],
+      lastTutorMode: "learn"
+    },
+    libraryState: {
+      books: [],
+      lastSyncedAt: ""
+    },
+
     tasks: [
-      { id: "t6_1", grade: "6", title: "Read Science: Food and Its Sources", subject: "Science", duration: 20, completed: false, date: "2026-06-22" },
-      { id: "t6_2", grade: "6", title: "Practice Maths: Fractions and Numbers", subject: "Mathematics", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t6_3", grade: "6", title: "Revise English: nouns and sentences", subject: "English", duration: 20, completed: false, date: "2026-06-23" },
-      { id: "t7_1", grade: "7", title: "Read Science: Nutrition in Plants", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t7_2", grade: "7", title: "Practice Maths: Simple Equations", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t7_3", grade: "7", title: "Review Social Science: Environment", subject: "Social Science", duration: 20, completed: false, date: "2026-06-23" },
-      { id: "t8_1", grade: "8", title: "Read Science: Force and Pressure", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t8_2", grade: "8", title: "Practice Maths: Linear Equations", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t8_3", grade: "8", title: "Revise English: formal letter format", subject: "English", duration: 20, completed: false, date: "2026-06-23" },
-      { id: "t9_1", grade: "9", title: "Read Science: Matter in Our Surroundings", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t9_2", grade: "9", title: "Practice Maths: Number Systems", subject: "Mathematics", duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t9_3", grade: "9", title: "Review Social Science: Democratic Politics", subject: "Social Science", duration: 20, completed: false, date: "2026-06-23" },
-      { id: "t1", grade: "10", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: "2026-06-22" },
-      { id: "t2", grade: "10", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: "2026-06-22" },
-      { id: "t3", grade: "10", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: "2026-06-22" },
-      { id: "t4", grade: "10", title: "Complete one mixed practice quiz", subject: "Science", duration: 25, completed: false, date: "2026-06-22" },
-      { id: "t5", grade: "10", title: "Review class notes and mark doubts", subject: "Science", duration: 20, completed: false, date: "2026-06-23" }
+      { id: "t6_1", grade: "6", title: "Read Science: Food and Its Sources", subject: "Science", duration: 20, completed: false, date: TODAY },
+      { id: "t6_2", grade: "6", title: "Practice Maths: Fractions and Numbers", subject: "Mathematics", duration: 25, completed: false, date: TODAY },
+      { id: "t6_3", grade: "6", title: "Revise English: nouns and sentences", subject: "English", duration: 20, completed: false, date: TOMORROW },
+      { id: "t7_1", grade: "7", title: "Read Science: Nutrition in Plants", subject: "Science", duration: 25, completed: false, date: TODAY },
+      { id: "t7_2", grade: "7", title: "Practice Maths: Simple Equations", subject: "Mathematics", duration: 30, completed: false, date: TODAY },
+      { id: "t7_3", grade: "7", title: "Review Social Science: Environment", subject: "Social Science", duration: 20, completed: false, date: TOMORROW },
+      { id: "t8_1", grade: "8", title: "Read Science: Force and Pressure", subject: "Science", duration: 25, completed: false, date: TODAY },
+      { id: "t8_2", grade: "8", title: "Practice Maths: Linear Equations", subject: "Mathematics", duration: 30, completed: false, date: TODAY },
+      { id: "t8_3", grade: "8", title: "Revise English: formal letter format", subject: "English", duration: 20, completed: false, date: TOMORROW },
+      { id: "t9_1", grade: "9", title: "Read Science: Matter in Our Surroundings", subject: "Science", duration: 25, completed: false, date: TODAY },
+      { id: "t9_2", grade: "9", title: "Practice Maths: Number Systems", subject: "Mathematics", duration: 30, completed: false, date: TODAY },
+      { id: "t9_3", grade: "9", title: "Review Social Science: Democratic Politics", subject: "Social Science", duration: 20, completed: false, date: TOMORROW },
+      { id: "t1", grade: "10", title: "Read NCERT Science Ch 2 - Acids, Bases and Salts", subject: "Science", duration: 30, completed: false, date: TODAY },
+      { id: "t2", grade: "10", title: "Revise NCERT Science Ch 9 - Light, Reflection and Refraction", subject: "Science", duration: 35, completed: false, date: TODAY },
+      { id: "t3", grade: "10", title: "Solve NCERT Science Ch 11 - Electricity practice questions", subject: "Science", duration: 40, completed: false, date: TODAY },
+      { id: "t4", grade: "10", title: "Complete one mixed practice quiz", subject: "Science", duration: 25, completed: false, date: TODAY },
+      { id: "t5", grade: "10", title: "Review class notes and mark doubts", subject: "Science", duration: 20, completed: false, date: TOMORROW }
     ],
 
     exams: [
-      { id: "e6_1", grade: "6", subject: "Science", topic: "Chapter quiz: Food and Its Sources", date: "2026-06-25" },
-      { id: "e7_1", grade: "7", subject: "Science", topic: "Chapter quiz: Heat", date: "2026-06-26" },
-      { id: "e8_1", grade: "8", subject: "Science", topic: "Chapter quiz: Force and Pressure", date: "2026-06-27" },
-      { id: "e9_1", grade: "9", subject: "Science", topic: "Chapter quiz: Matter in Our Surroundings", date: "2026-06-28" },
-      { id: "e1", grade: "10", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: "2026-06-25" },
-      { id: "e2", grade: "10", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: "2026-06-29" },
-      { id: "e3", grade: "10", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: "2026-07-03" }
+      { id: "e6_1", grade: "6", subject: "Science", topic: "Chapter quiz: Food and Its Sources", date: toLocalISODate(addLocalDays(new Date(), 3)) },
+      { id: "e7_1", grade: "7", subject: "Science", topic: "Chapter quiz: Heat", date: toLocalISODate(addLocalDays(new Date(), 4)) },
+      { id: "e8_1", grade: "8", subject: "Science", topic: "Chapter quiz: Force and Pressure", date: toLocalISODate(addLocalDays(new Date(), 5)) },
+      { id: "e9_1", grade: "9", subject: "Science", topic: "Chapter quiz: Matter in Our Surroundings", date: toLocalISODate(addLocalDays(new Date(), 6)) },
+      { id: "e1", grade: "10", subject: "Science", topic: "Periodic Test: NCERT Ch 2, 9 and 11", date: toLocalISODate(addLocalDays(new Date(), 3)) },
+      { id: "e2", grade: "10", subject: "Science", topic: "Chapter quiz: Acids, Bases and Salts", date: toLocalISODate(addLocalDays(new Date(), 7)) },
+      { id: "e3", grade: "10", subject: "Science", topic: "Chapter quiz: Light, Reflection and Refraction", date: toLocalISODate(addLocalDays(new Date(), 11)) }
     ],
 
     calendar: [
@@ -79,7 +127,7 @@
         title: "Science - Food and Its Sources",
         body: "Food comes from plants and animals. Use one example for each source.",
         color: "blue",
-        updatedAt: "2026-06-22 09:30"
+        updatedAt: formatLocalTimestamp(new Date(), "09:30")
       },
       {
         id: "n7_1",
@@ -87,7 +135,7 @@
         title: "Science - Heat",
         body: "Remember conduction, convection, and radiation with a daily-life example.",
         color: "yellow",
-        updatedAt: "2026-06-22 10:00"
+        updatedAt: formatLocalTimestamp(new Date(), "10:00")
       },
       {
         id: "n8_1",
@@ -95,7 +143,7 @@
         title: "Science - Force and Pressure",
         body: "Force is a push or pull. Pressure depends on force and area.",
         color: "purple",
-        updatedAt: "2026-06-22 10:30"
+        updatedAt: formatLocalTimestamp(new Date(), "10:30")
       },
       {
         id: "n1",
@@ -103,7 +151,7 @@
         title: "Matter in Our Surroundings",
         body: "Track state changes, diffusion, evaporation, and condensation from the chapter summary.",
         color: "blue",
-        updatedAt: "2026-06-22 10:15"
+        updatedAt: formatLocalTimestamp(new Date(), "10:15")
       },
       {
         id: "n2",
@@ -111,7 +159,7 @@
         title: "Atoms and Molecules",
         body: "Keep the law of conservation of mass, formula writing, and atomic mass in one place.",
         color: "yellow",
-        updatedAt: "2026-06-21 15:40"
+        updatedAt: formatLocalTimestamp(addLocalDays(new Date(), -1), "15:40")
       },
       {
         id: "n3",
@@ -119,7 +167,7 @@
         title: "Force and Laws of Motion",
         body: "Revise inertia, momentum, and Newton's laws with one worked example per law.",
         color: "purple",
-        updatedAt: "2026-06-22 09:00"
+        updatedAt: formatLocalTimestamp(new Date(), "09:00")
       },
       {
         id: "n4",
@@ -127,7 +175,7 @@
         title: "Science Ch 2 - Acids, Bases and Salts",
         body: "Use the official NCERT chapter for indicators, pH, and neutralisation. Keep one page for examples from daily life.",
         color: "blue",
-        updatedAt: "2026-06-22 10:15"
+        updatedAt: formatLocalTimestamp(new Date(), "10:15")
       },
       {
         id: "n5",
@@ -135,7 +183,7 @@
         title: "Science Ch 9 - Light, Reflection and Refraction",
         body: "Revise mirror formulas, refraction, and ray diagrams. Open the textbook page before the quiz.",
         color: "yellow",
-        updatedAt: "2026-06-21 15:40"
+        updatedAt: formatLocalTimestamp(addLocalDays(new Date(), -1), "15:40")
       },
       {
         id: "n6",
@@ -143,7 +191,7 @@
         title: "Science Ch 11 - Electricity",
         body: "Focus on current, potential difference, resistance, Ohm's law, and circuit safety.",
         color: "purple",
-        updatedAt: "2026-06-22 09:00"
+        updatedAt: formatLocalTimestamp(new Date(), "09:00")
       }
     ],
 
@@ -183,6 +231,8 @@
           set(key, DEFAULTS[key]);
         }
       }
+      this.normalizeProfileShape();
+      this.normalizeAnalyticsShape();
       this.migrateLegacyDemoData();
       this.checkStreak();
     },
@@ -235,11 +285,57 @@
       return get("profile");
     },
     saveProfile: function (profileData) {
-      set("profile", profileData);
+      const normalized = this.normalizeProfile(profileData || {});
+      set("profile", normalized);
       window.dispatchEvent(new CustomEvent("studypilot_profile_updated", {
-        detail: profileData
+        detail: normalized
       }));
       window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
+    },
+    normalizeProfileShape: function () {
+      const profile = this.normalizeProfile(this.getProfile() || {});
+      this.saveProfile(profile);
+    },
+    normalizeProfile: function (profileData) {
+      const base = JSON.parse(JSON.stringify(DEFAULTS.profile));
+      const profile = { ...base, ...(profileData || {}) };
+      profile.name = String(profile.name || "").trim();
+      profile.grade = String(profile.grade || "10");
+      profile.board = String(profile.board || "CBSE");
+      profile.subjects = this.uniqueStrings(profile.subjects, base.subjects);
+      profile.favoriteSubjects = this.uniqueStrings(profile.favoriteSubjects, profile.subjects.slice(0, 2));
+      profile.weakSubjects = this.uniqueStrings(profile.weakSubjects, []);
+      profile.interests = this.uniqueStrings(profile.interests, []);
+      profile.hobbies = this.uniqueStrings(profile.hobbies, []);
+      profile.learningGoals = this.uniqueStrings(profile.learningGoals, []);
+      profile.goal = String(profile.goal || base.goal);
+      profile.dreamCareer = String(profile.dreamCareer || "");
+      profile.setupComplete = !!profile.setupComplete;
+      profile.careerUnlocked = !!profile.careerUnlocked;
+      return profile;
+    },
+    uniqueStrings: function (items, fallback = []) {
+      const source = Array.isArray(items) && items.length ? items : fallback;
+      return [...new Set(source.map(item => String(item || "").trim()).filter(Boolean))];
+    },
+    normalizeAnalyticsShape: function () {
+      const analytics = this.getStudyAnalytics();
+      const normalized = {
+        questionsAsked: Number(analytics.questionsAsked || 0),
+        revisionSessions: Number(analytics.revisionSessions || 0),
+        quizAttempts: Array.isArray(analytics.quizAttempts) ? analytics.quizAttempts : [],
+        strongTopics: this.uniqueStrings(analytics.strongTopics, []),
+        weakTopics: this.uniqueStrings(analytics.weakTopics, []),
+        subjectsStudied: this.uniqueStrings(analytics.subjectsStudied, []),
+        lastTutorMode: String(analytics.lastTutorMode || "learn"),
+      };
+      set("studyAnalytics", normalized);
+      if (!Array.isArray(get("tutorHistory"))) {
+        set("tutorHistory", []);
+      }
+      if (!Array.isArray(get("libraryState")?.books)) {
+        set("libraryState", JSON.parse(JSON.stringify(DEFAULTS.libraryState)));
+      }
     },
 
     // Authentication API
@@ -386,7 +482,7 @@
         subject: subject,
         duration: parseInt(duration),
         completed: false,
-        date: "2026-06-22" // Hardcoded today's date for demo context consistency
+        date: toLocalISODate()
       };
       tasks.push(newTask);
       this.saveTasks(tasks);
@@ -518,13 +614,14 @@
       const progress = this.getCurriculumProgress();
       const current = progress[chapterId] || { status: "Not Started", startedAt: "", completedAt: "", revisionDates: [] };
       const revisionDates = Array.isArray(current.revisionDates) ? current.revisionDates.slice() : [];
-      const baseDate = new Date("2026-06-22T00:00:00");
+      const baseDate = new Date();
+      baseDate.setHours(0, 0, 0, 0);
       const offsets = [2, 7];
 
       offsets.forEach(days => {
         const reviewDate = new Date(baseDate);
         reviewDate.setDate(reviewDate.getDate() + days);
-        const reviewIso = reviewDate.toISOString().slice(0, 10);
+        const reviewIso = toLocalISODate(reviewDate);
         if (!revisionDates.includes(reviewIso)) {
           revisionDates.push(reviewIso);
           const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][reviewDate.getDay()];
@@ -590,15 +687,11 @@
     getFlashcards: function (gradeOverride) {
       const profile = this.getProfile();
       const grade = String(gradeOverride || (profile && profile.grade ? profile.grade : "10"));
-      const curriculum = window.StudyPilotCurriculum;
-      const official = curriculum && typeof curriculum.getFlashcardsForGrade === "function"
-        ? curriculum.getFlashcardsForGrade(grade)
-        : [];
       const stored = get("flashcards");
       const custom = Array.isArray(stored)
         ? stored.filter(card => String(card && card.grade ? card.grade : "") === grade)
         : [];
-      return [...official, ...custom];
+      return custom;
     },
     saveFlashcards: function (cards) {
       set("flashcards", cards);
@@ -644,14 +737,169 @@
       window.dispatchEvent(new CustomEvent("studypilot_notification"));
     },
 
+    // Tutor history and analytics
+    getTutorHistory: function (limit = 20) {
+      const history = Array.isArray(get("tutorHistory")) ? get("tutorHistory") : [];
+      return history.slice(-Math.max(0, limit));
+    },
+    saveTutorHistory: function (entries) {
+      set("tutorHistory", Array.isArray(entries) ? entries : []);
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
+    },
+    addTutorHistoryEntry: function (entry) {
+      const history = Array.isArray(get("tutorHistory")) ? get("tutorHistory") : [];
+      history.push({
+        id: "th_" + Date.now(),
+        createdAt: new Date().toISOString(),
+        ...entry,
+      });
+      this.saveTutorHistory(history.slice(-100));
+    },
+    getStudyAnalytics: function () {
+      return get("studyAnalytics") || JSON.parse(JSON.stringify(DEFAULTS.studyAnalytics));
+    },
+    saveStudyAnalytics: function (analytics) {
+      set("studyAnalytics", analytics || JSON.parse(JSON.stringify(DEFAULTS.studyAnalytics)));
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
+    },
+    trackTutorQuestion: function (question, mode = "learn", subject = "", meta = {}) {
+      const analytics = this.getStudyAnalytics();
+      analytics.questionsAsked = Number(analytics.questionsAsked || 0) + 1;
+      analytics.lastTutorMode = mode || "learn";
+      if (subject) {
+        analytics.subjectsStudied = this.uniqueStrings([...analytics.subjectsStudied, subject]);
+      }
+      if (Array.isArray(meta.weakTopics)) {
+        analytics.weakTopics = this.uniqueStrings([...analytics.weakTopics, ...meta.weakTopics]);
+      }
+      if (Array.isArray(meta.strongTopics)) {
+        analytics.strongTopics = this.uniqueStrings([...analytics.strongTopics, ...meta.strongTopics]);
+      }
+      this.saveStudyAnalytics(analytics);
+      this.addTutorHistoryEntry({
+        role: "user",
+        mode,
+        subject,
+        content: String(question || ""),
+        metadata: meta,
+      });
+    },
+    trackTutorAnswer: function (answer, mode = "learn", subject = "", provider = "") {
+      this.addTutorHistoryEntry({
+        role: "assistant",
+        mode,
+        subject,
+        provider,
+        content: String(answer || ""),
+      });
+    },
+    trackQuizAttempt: function (payload) {
+      const analytics = this.getStudyAnalytics();
+      analytics.quizAttempts = Array.isArray(analytics.quizAttempts) ? analytics.quizAttempts : [];
+      analytics.quizAttempts.push({
+        at: new Date().toISOString(),
+        ...payload,
+      });
+      if (payload && payload.subject) {
+        analytics.subjectsStudied = this.uniqueStrings([...analytics.subjectsStudied, payload.subject]);
+      }
+      this.saveStudyAnalytics(analytics);
+    },
+    trackRevisionSession: function (subject, topic) {
+      const analytics = this.getStudyAnalytics();
+      analytics.revisionSessions = Number(analytics.revisionSessions || 0) + 1;
+      if (subject) {
+        analytics.subjectsStudied = this.uniqueStrings([...analytics.subjectsStudied, subject]);
+      }
+      if (topic) {
+        analytics.strongTopics = this.uniqueStrings([...analytics.strongTopics, topic]);
+      }
+      this.saveStudyAnalytics(analytics);
+    },
+    trackWeakTopic: function (topic) {
+      const analytics = this.getStudyAnalytics();
+      analytics.weakTopics = this.uniqueStrings([...analytics.weakTopics, topic]);
+      this.saveStudyAnalytics(analytics);
+    },
+    trackStrongTopic: function (topic) {
+      const analytics = this.getStudyAnalytics();
+      analytics.strongTopics = this.uniqueStrings([...analytics.strongTopics, topic]);
+      this.saveStudyAnalytics(analytics);
+    },
+    getStudyAnalyticsSummary: function () {
+      const analytics = this.getStudyAnalytics();
+      const quizAttempts = Array.isArray(analytics.quizAttempts) ? analytics.quizAttempts : [];
+      const attemptsWithScores = quizAttempts.filter(item => item && Number.isFinite(Number(item.score)) && Number.isFinite(Number(item.total)) && Number(item.total) > 0);
+      const averageQuizScore = attemptsWithScores.length
+        ? Math.round(
+            attemptsWithScores.reduce((sum, item) => sum + (Number(item.score) / Number(item.total)), 0) * 100 / attemptsWithScores.length
+          )
+        : 0;
+      const quizAccuracy = attemptsWithScores.length
+        ? Math.round(
+            (attemptsWithScores.reduce((sum, item) => sum + Number(item.score), 0) /
+              attemptsWithScores.reduce((sum, item) => sum + Number(item.total), 0)) * 100
+          )
+        : 0;
+
+      const countTopics = (topics) => {
+        const counts = new Map();
+        (Array.isArray(topics) ? topics : []).forEach(topic => {
+          const key = String(topic || "").trim();
+          if (!key) return;
+          counts.set(key, (counts.get(key) || 0) + 1);
+        });
+        return [...counts.entries()]
+          .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+          .slice(0, 5)
+          .map(([topic, count]) => ({ topic, count }));
+      };
+
+      return {
+        questionsAsked: Number(analytics.questionsAsked || 0),
+        revisionSessions: Number(analytics.revisionSessions || 0),
+        quizAttempts: quizAttempts.length,
+        averageQuizScore,
+        quizAccuracy,
+        strongTopics: countTopics(analytics.strongTopics),
+        weakTopics: countTopics(analytics.weakTopics),
+        subjectsStudied: this.uniqueStrings(Array.isArray(analytics.subjectsStudied) ? analytics.subjectsStudied : []),
+      };
+    },
+    getLibraryState: function () {
+      const state = get("libraryState");
+      if (!state || typeof state !== "object") {
+        return JSON.parse(JSON.stringify(DEFAULTS.libraryState));
+      }
+      state.books = Array.isArray(state.books) ? state.books : [];
+      state.lastSyncedAt = String(state.lastSyncedAt || "");
+      return state;
+    },
+    saveLibraryState: function (state) {
+      set("libraryState", state || JSON.parse(JSON.stringify(DEFAULTS.libraryState)));
+      window.dispatchEvent(new CustomEvent("studypilot_data_updated"));
+    },
+    upsertLibraryBookState: function (bookState) {
+      const state = this.getLibraryState();
+      const books = state.books.filter(item => item && item.key !== bookState.key);
+      books.unshift({
+        ...bookState,
+        updatedAt: new Date().toISOString(),
+      });
+      state.books = books.slice(0, 100);
+      state.lastSyncedAt = new Date().toISOString();
+      this.saveLibraryState(state);
+      return state;
+    },
+
     // Streak and Date management
     checkStreak: function () {
       const profile = this.getProfile();
-      const todayStr = "2026-06-22"; // Anchor demo date
+      const todayStr = toLocalISODate();
       
       if (profile.lastActive && profile.lastActive !== todayStr) {
-        // If last active was yesterday (June 21), keep streak or increment it
-        if (profile.lastActive === "2026-06-21") {
+      // If last active was yesterday, keep streak or increment it.
+        if (profile.lastActive === toLocalISODate(addLocalDays(new Date(), -1))) {
           // Keep streak active. If they complete tasks, dashboard will increment
         } else {
           // Reset streak to 1 if they missed more than 1 day

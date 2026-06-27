@@ -3,6 +3,92 @@
 /* ======================================================== */
 
 (function () {
+  function trimApiBase(value) {
+    return String(value || "").trim().replace(/\/+$/, "");
+  }
+
+  function readConfiguredApiBase() {
+    const globalBase = trimApiBase(window.STUDYPILOT_API_BASE);
+    if (globalBase) return globalBase;
+
+    const meta = document.querySelector('meta[name="studypilot-api-base"]');
+    if (meta) {
+      const metaBase = trimApiBase(meta.getAttribute("content"));
+      if (metaBase) return metaBase;
+    }
+
+    try {
+      const params = new URL(window.location.href).searchParams;
+      const queryBase = trimApiBase(params.get("api") || params.get("studypilotApiBase"));
+      if (queryBase) return queryBase;
+    } catch {
+      // Ignore malformed URLs and fall back to the default resolver.
+    }
+
+    return "";
+  }
+
+  window.StudyPilotApi = window.StudyPilotApi || {
+    getBaseUrl: function () {
+      const configuredBase = readConfiguredApiBase();
+      if (configuredBase) return configuredBase;
+
+      if (window.location && window.location.protocol === "file:") {
+        return "http://127.0.0.1:5000";
+      }
+
+      if (
+        window.location &&
+        ["localhost", "127.0.0.1", "::1", "0.0.0.0"].includes(window.location.hostname)
+      ) {
+        return window.location.origin;
+      }
+
+      return "http://127.0.0.1:5000";
+    },
+
+    getDisplayLabel: function (baseUrl) {
+      const resolved = trimApiBase(baseUrl || this.getBaseUrl());
+      if (!resolved) return "the local backend";
+
+      try {
+        const parsed = new URL(resolved);
+        if (["localhost", "127.0.0.1", "::1", "0.0.0.0"].includes(parsed.hostname)) {
+          return `${parsed.hostname}${parsed.port ? `:${parsed.port}` : ""}`;
+        }
+        return parsed.host || resolved;
+      } catch {
+        return resolved;
+      }
+    },
+
+    checkHealth: async function (baseUrl, timeoutMs = 2500) {
+      const resolvedBaseUrl = trimApiBase(baseUrl || this.getBaseUrl());
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(`${resolvedBaseUrl}/api/health`, {
+          method: "GET",
+          mode: "cors",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          return { ok: false, status: response.status };
+        }
+        const data = await response.json().catch(() => ({}));
+        return { ok: true, status: response.status, data };
+      } catch (error) {
+        return {
+          ok: false,
+          error: error && error.name === "AbortError" ? "timeout" : "unreachable",
+        };
+      } finally {
+        clearTimeout(timer);
+      }
+    },
+  };
+
   window.StudyPilotApp = {
     activeScreen: "dashboard",
     currentTheme: "light",
@@ -141,15 +227,33 @@
       document.getElementById("profile-fullname").innerText = profile.name;
       document.getElementById("profile-details").innerText = `Grade ${profile.grade} Student • ${profile.board} Board`;
       document.getElementById("profile-goal-badge").innerText = profile.goal;
+      const dreamBadge = document.getElementById("profile-dream-badge");
+      if (dreamBadge) {
+        dreamBadge.innerText = profile.dreamCareer ? `Dream: ${profile.dreamCareer}` : "Dream: Not set";
+      }
 
       // Populate profile edit form values
       document.getElementById("profile-edit-name").value = profile.name;
       document.getElementById("profile-edit-grade").value = profile.grade;
       document.getElementById("profile-edit-board").value = profile.board;
       document.getElementById("profile-edit-goal").value = profile.goal;
+      const dreamInput = document.getElementById("profile-edit-dream-career");
+      if (dreamInput) {
+        dreamInput.value = profile.dreamCareer || "";
+      }
+      this.setProfileListField("profile-edit-favorite-subjects", profile.favoriteSubjects);
+      this.setProfileListField("profile-edit-weak-subjects", profile.weakSubjects);
+      this.setProfileListField("profile-edit-interests", profile.interests);
+      this.setProfileListField("profile-edit-hobbies", profile.hobbies);
+      this.setProfileListField("profile-edit-learning-goals", profile.learningGoals);
 
-      // Set today's date label (consistent demo date)
-      document.getElementById("dashboard-date").innerText = "Monday, 22 June 2026";
+      // Set today's date label using the user's local date.
+      document.getElementById("dashboard-date").innerText = new Date().toLocaleDateString("en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
     },
 
     // Navigation (Sidebar and Mobile Navigation)
@@ -402,6 +506,13 @@
       const grade = document.getElementById("profile-edit-grade").value;
       const board = document.getElementById("profile-edit-board").value;
       const goal = document.getElementById("profile-edit-goal").value;
+      const dreamCareerInput = document.getElementById("profile-edit-dream-career");
+      const dreamCareer = dreamCareerInput ? dreamCareerInput.value.trim() : "";
+      const favoriteSubjects = this.parseProfileListField("profile-edit-favorite-subjects");
+      const weakSubjects = this.parseProfileListField("profile-edit-weak-subjects");
+      const interests = this.parseProfileListField("profile-edit-interests");
+      const hobbies = this.parseProfileListField("profile-edit-hobbies");
+      const learningGoals = this.parseProfileListField("profile-edit-learning-goals");
 
       if (!name) {
         alert("Name cannot be blank!");
@@ -413,6 +524,12 @@
       profile.grade = grade;
       profile.board = board;
       profile.goal = goal;
+      profile.dreamCareer = dreamCareer;
+      profile.favoriteSubjects = favoriteSubjects;
+      profile.weakSubjects = weakSubjects;
+      profile.interests = interests;
+      profile.hobbies = hobbies;
+      profile.learningGoals = learningGoals;
 
       window.StudyPilotDB.saveProfile(profile);
       if (window.StudyPilotDB && typeof window.StudyPilotDB.getAuth === "function" && typeof window.StudyPilotDB.saveAuth === "function") {
@@ -455,4 +572,19 @@
   function escapeHTML(str) {
     return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
+
+  window.StudyPilotApp.parseProfileListField = function (id) {
+    const el = document.getElementById(id);
+    if (!el) return [];
+    return String(el.value || "")
+      .split(/[,;\n]/)
+      .map(item => item.trim())
+      .filter(Boolean);
+  };
+
+  window.StudyPilotApp.setProfileListField = function (id, values) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = Array.isArray(values) ? values.join(", ") : "";
+  };
 })();

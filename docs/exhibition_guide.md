@@ -51,12 +51,12 @@ This guide is written specifically to help a Grade 7 student demonstrate **Study
 - Click the **Flashcards** tab:
   > "These flashcards use a **Spaced Repetition Algorithm**. When I flip the card, I can rate it as Easy, Medium, or Hard. The system uses this rating to schedule when I need to review it next, which helps me remember things longer."
 
-### Step 5: The Toolbox (Pomodoro & OCR)
+### Step 5: The Toolbox (Pomodoro & Career)
 - Click **Toolbox** on the sidebar.
 - Show the **Pomodoro Timer**:
   > "To help me focus, I use the Pomodoro timer. It sets a 25-minute focus session followed by a break. I can also play ambient sounds like rain or lofi study beats in the background."
-- Click **Document Summarizer** on the toolbox menu, then click the drag zone:
-  > "Imagine I have a page of my textbook. I can scan it using our **Mock OCR Scanner**. It simulates extracting the key points and mathematical formulas from the page."
+- Click the career or notes tools in the toolbox menu:
+  > "Imagine I have a page of my textbook. I can open the official PDF directly inside the app and study the same content without leaving StudyPilot."
 - Once the progress bar hits 100%, show the formula boxes:
   > "It renders formulas in professional formatting, and I can click **Save to Notes** to instantly add it to my Notion-style notes board!"
 

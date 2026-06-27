@@ -3,6 +3,11 @@
 /* ======================================================== */
 
 (function () {
+  function getLocalISODate(date = new Date()) {
+    const local = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+    return local.toISOString().slice(0, 10);
+  }
+
   window.StudyPilotSetup = {
     currentStep: 1,
 
@@ -79,6 +84,8 @@
       // Gather selected goal
       const goalRadio = document.querySelector('input[name="setup-goal"]:checked');
       const goal = goalRadio ? goalRadio.value : "Improve overall grades";
+      const dreamCareerInput = document.getElementById("setup-dream-career");
+      const dreamCareer = dreamCareerInput ? dreamCareerInput.value.trim() : "";
 
       // Save to Database
       const profile = window.StudyPilotDB.getProfile();
@@ -88,9 +95,10 @@
       profile.subjects = subjects;
       profile.dailyHours = dailyHours;
       profile.goal = goal;
+      profile.dreamCareer = dreamCareer;
       profile.setupComplete = true;
       profile.streak = 1;
-      profile.lastActive = "2026-06-22"; // Hardcoded today date
+      profile.lastActive = getLocalISODate();
 
       window.StudyPilotDB.saveProfile(profile);
 

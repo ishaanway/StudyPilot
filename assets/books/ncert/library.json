@@ -1,0 +1,34 @@
+[
+  {
+    "title": "Ganita Prakash",
+    "grade": 6,
+    "subject": "Mathematics",
+    "localPdfUrl": "/assets/books/ncert/grade6-mathematics-ganita-prakash.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?fegp1=0-10"
+  },
+  {
+    "title": "Curiosity",
+    "grade": 7,
+    "subject": "Science",
+    "localPdfUrl": "/assets/books/ncert/grade7-science-curiosity.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gecu1=0-12"
+  },
+  {
+    "title": "Science",
+    "grade": 10,
+    "subject": "Science",
+    "localPdfUrl": "/assets/books/ncert/grade10-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jesc1=1-16"
+  },
+  {
+    "title": "First Flight",
+    "grade": 10,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/grade10-english-first-flight.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jeff1=0-11"
+  }
+]

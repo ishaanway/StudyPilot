@@ -7,11 +7,12 @@ provides the SQLite-backed foundation for the next phases.
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 
 from backend.database import execute, fetch_all, fetch_one, init_db
 from backend.knowledge import (
@@ -23,7 +24,14 @@ from backend.knowledge import (
     seed_official_curriculum_catalog,
     solve_simple_arithmetic,
 )
-from backend.llm import generate_tutor_response
+from backend.library import (
+    delete_download,
+    ensure_downloaded,
+    book_file_path,
+    filtered_catalog,
+    find_catalog_item,
+)
+from backend.llm import generate_tutor_response_with_choice, list_local_model_options
 from backend.reminder import build_reminders
 from backend.scheduler import build_daily_plan, rebalance_missed_sessions
 
@@ -84,6 +92,362 @@ def _looks_like_prompt_echo(answer: str) -> bool:
         "please let me know",
     )
     return any(marker in text for marker in echo_markers)
+
+
+def _resolve_llm_details(llm_mode: str, requested_provider: str | None, requested_model: str | None) -> tuple[str, str]:
+    provider = (requested_provider or "").strip().lower() or "auto"
+    model = (requested_model or "").strip()
+
+    if isinstance(llm_mode, str) and ":" in llm_mode:
+        # llm_mode values look like "ollama:gemma3:4b".
+        resolved_provider, resolved_model = llm_mode.split(":", 1)
+        resolved_provider = resolved_provider.strip().lower()
+        resolved_model = resolved_model.strip()
+        if resolved_provider == "ollama":
+            provider = resolved_provider
+            if resolved_model:
+                model = resolved_model
+    elif isinstance(llm_mode, str) and llm_mode.strip() == "ollama":
+        provider = llm_mode.strip().lower()
+
+    return provider, model
+
+
+def _normalize_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        items = value
+    elif isinstance(value, str):
+        items = [part.strip() for part in value.replace(";", ",").split(",")]
+    else:
+        items = []
+
+    normalized: list[str] = []
+    for item in items:
+        text = str(item).strip()
+        if text:
+            normalized.append(text)
+    return normalized
+
+
+def _normalize_history(value: Any, limit: int = 8) -> list[dict[str, str]]:
+    if not isinstance(value, list):
+        return []
+
+    normalized: list[dict[str, str]] = []
+    for item in value[-max(limit, 1):]:
+        if not isinstance(item, dict):
+            continue
+        role = str(item.get("role") or "").strip().lower()
+        content = str(item.get("content") or item.get("message") or "").strip()
+        if role not in {"user", "assistant"} or not content:
+            continue
+        normalized.append(
+            {
+                "role": role,
+                "content": content,
+                "mode": str(item.get("mode") or "").strip().lower(),
+            }
+        )
+    return normalized[-max(limit, 1):]
+
+
+def _profile_context(profile: dict[str, Any] | None, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    profile = profile or {}
+    payload = payload or {}
+    subjects = _normalize_list(profile.get("subjects") or payload.get("subjects"))
+    favorite_subjects = _normalize_list(profile.get("favoriteSubjects") or profile.get("favouriteSubjects"))
+    weak_subjects = _normalize_list(profile.get("weakSubjects") or profile.get("weak_subjects"))
+    interests = _normalize_list(profile.get("interests"))
+    hobbies = _normalize_list(profile.get("hobbies"))
+    learning_goals = _normalize_list(profile.get("learningGoals") or profile.get("learning_goals"))
+
+    return {
+        "name": str(profile.get("name") or payload.get("name") or "").strip(),
+        "grade": str(profile.get("grade") or payload.get("grade") or "10"),
+        "board": str(profile.get("board") or profile.get("school_board") or payload.get("board") or payload.get("school_board") or "CBSE").strip(),
+        "subjects": subjects,
+        "favorite_subjects": favorite_subjects or subjects[:3],
+        "weak_subjects": weak_subjects,
+        "interests": interests,
+        "hobbies": hobbies,
+        "learning_goals": learning_goals,
+        "goal": str(profile.get("goal") or profile.get("academic_goal") or payload.get("goal") or "").strip(),
+        "dream_career": str(profile.get("dreamCareer") or profile.get("dream_career") or payload.get("dreamCareer") or payload.get("dream_career") or "").strip(),
+        "daily_hours": profile.get("dailyHours") or profile.get("daily_study_hours") or payload.get("dailyHours") or payload.get("daily_study_hours") or 0,
+    }
+
+
+def _mode_instruction(mode: str) -> str:
+    normalized = (mode or "learn").strip().lower()
+    if normalized == "homework":
+        return (
+            "Explain homework problems step by step. "
+            "Guide the student through the reasoning, pause for checks, and avoid giving only the final answer."
+        )
+    if normalized == "revision":
+        return (
+            "Provide a concise revision summary with key formulas, definitions, and memory hooks. "
+            "Use short bullets and keep the response compact."
+        )
+    if normalized == "exam":
+        return (
+            "Create a mini test or mock exam with a few questions, marking scheme hints, and quick exam strategy. "
+            "Encourage practice instead of just answering once."
+        )
+    if normalized == "doubt":
+        return (
+            "Answer interactively and invite the next follow-up question. "
+            "Be patient, clarify misconceptions, and adapt to the student's exact doubt."
+        )
+    return (
+        "Teach the concept in detail at the student's grade level with examples, analogies, and small checks for understanding. "
+        "Do not simply provide a bare answer."
+    )
+
+
+def _step_by_step_arithmetic_response(question: str, result: str) -> str:
+    return (
+        f"Let's solve it together step by step. {result}. "
+        "I kept the final value at the end so you can see how the calculation lands, and you can check the order of operations again if needed."
+    )
+
+
+def _strip_json_fences(text: str) -> str:
+    cleaned = (text or "").strip()
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`")
+        if cleaned.lower().startswith("json"):
+            cleaned = cleaned[4:].strip()
+    if cleaned.startswith("json"):
+        cleaned = cleaned[4:].strip()
+    return cleaned
+
+
+def _career_catalog() -> list[dict[str, Any]]:
+    return [
+        {
+            "title": "Aerospace Engineer",
+            "required_subjects": ["Physics", "Mathematics"],
+            "skills": ["Analytical thinking", "Problem solving", "CAD", "Design"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Science stream -> Engineering degree -> Aerospace specialization",
+            "keywords": ["space", "physics", "math", "engineering", "rockets", "aircraft", "aerospace"],
+        },
+        {
+            "title": "Software Developer",
+            "required_subjects": ["Mathematics", "Computer Science"],
+            "skills": ["Logic", "Programming", "Debugging", "System design"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Science or Computer stream -> Computer Science degree -> Software projects and internships",
+            "keywords": ["coding", "programming", "apps", "software", "ai", "robotics"],
+        },
+        {
+            "title": "Doctor",
+            "required_subjects": ["Biology", "Chemistry", "Physics"],
+            "skills": ["Empathy", "Memory", "Observation", "Communication"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Science stream -> Medical entrance preparation -> MBBS and specialization",
+            "keywords": ["medicine", "health", "biology", "human body", "hospital"],
+        },
+        {
+            "title": "Civil Engineer",
+            "required_subjects": ["Mathematics", "Physics"],
+            "skills": ["Planning", "Design", "Structural thinking", "Project management"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Science stream -> Engineering degree -> Civil or structural specialization",
+            "keywords": ["construction", "buildings", "roads", "design", "infrastructure"],
+        },
+        {
+            "title": "Architect",
+            "required_subjects": ["Mathematics", "Art"],
+            "skills": ["Visualization", "Creativity", "Space planning", "Design"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Mathematics/Arts aligned stream -> Architecture degree -> Internship and licensing",
+            "keywords": ["design", "buildings", "spaces", "creativity", "drawing", "architecture"],
+        },
+        {
+            "title": "Data Scientist",
+            "required_subjects": ["Mathematics", "Statistics", "Computer Science"],
+            "skills": ["Data analysis", "Programming", "Pattern recognition", "Critical thinking"],
+            "future_demand": "Very High",
+            "pathway": "Grade 10 -> Science/Math -> Computer Science or Statistics degree -> Data projects and analytics roles",
+            "keywords": ["data", "analysis", "ai", "statistics", "coding", "math"],
+        },
+        {
+            "title": "Chartered Accountant",
+            "required_subjects": ["Mathematics", "Commerce"],
+            "skills": ["Numeracy", "Attention to detail", "Financial analysis", "Planning"],
+            "future_demand": "High",
+            "pathway": "Grade 10 -> Commerce stream -> CA foundation -> Articleship and qualification",
+            "keywords": ["finance", "accounting", "business", "numbers", "economics"],
+        },
+        {
+            "title": "Teacher",
+            "required_subjects": ["English", "Any core subject"],
+            "skills": ["Communication", "Patience", "Explanation", "Empathy"],
+            "future_demand": "Stable",
+            "pathway": "Grade 10 -> Any stream -> Graduation -> Teacher education / subject specialization",
+            "keywords": ["teaching", "explain", "students", "learning", "education"],
+        },
+    ]
+
+
+def _career_fallback(profile: dict[str, Any] | None, progress_payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    profile = profile or {}
+    progress_payload = progress_payload or {}
+
+    text_bag = " ".join(
+        [
+            str(profile.get("name") or ""),
+            str(profile.get("grade") or ""),
+            str(profile.get("board") or ""),
+            " ".join(_normalize_list(profile.get("subjects"))),
+            " ".join(_normalize_list(profile.get("favorite_subjects"))),
+            " ".join(_normalize_list(profile.get("weak_subjects"))),
+            " ".join(_normalize_list(profile.get("interests"))),
+            " ".join(_normalize_list(profile.get("hobbies"))),
+            " ".join(_normalize_list(profile.get("learning_goals"))),
+            str(profile.get("dream_career") or ""),
+            str(progress_payload.get("overall_readiness") or ""),
+        ]
+    ).lower()
+
+    def score_item(item: dict[str, Any]) -> int:
+        score = 45
+        title = str(item.get("title") or "").lower()
+        keywords = [str(term).lower() for term in item.get("keywords", []) if str(term).strip()]
+        required_subjects = [str(term).lower() for term in item.get("required_subjects", []) if str(term).strip()]
+
+        if str(profile.get("dream_career") or "").strip():
+            dream = str(profile.get("dream_career") or "").lower()
+            if dream in title or title in dream:
+                score += 30
+            elif any(term in dream for term in keywords):
+                score += 18
+
+        favorite_subjects = set(_normalize_list(profile.get("favorite_subjects")))
+        weak_subjects = set(_normalize_list(profile.get("weak_subjects")))
+        interests = set(_normalize_list(profile.get("interests")))
+        hobbies = set(_normalize_list(profile.get("hobbies")))
+
+        for subject in required_subjects:
+            if subject in {item.lower() for item in favorite_subjects}:
+                score += 12
+            if subject in {item.lower() for item in weak_subjects}:
+                score -= 5
+
+        for term in keywords:
+            if term and term in text_bag:
+                score += 10
+
+        for term in interests | hobbies:
+            if term.lower() in title or any(term.lower() in keyword for keyword in keywords):
+                score += 10
+
+        if "science" in text_bag and any(key in title for key in ["engineer", "doctor", "scientist", "data"]):
+            score += 6
+        if "math" in text_bag or "mathematics" in text_bag:
+            if any(key in title for key in ["engineer", "data", "accountant", "architect", "software"]):
+                score += 6
+        if "art" in text_bag or "design" in text_bag:
+            if any(key in title for key in ["architect", "designer", "teacher"]):
+                score += 6
+        if "coding" in text_bag or "robot" in text_bag:
+            if any(key in title for key in ["software", "data", "engineer"]):
+                score += 8
+
+        return max(0, min(100, score))
+
+    ranked: list[dict[str, Any]] = []
+    for item in _career_catalog():
+        score = score_item(item)
+        ranked.append(
+            {
+                "title": item["title"],
+                "match_score": score,
+                "fit_score": score,
+                "why": f"{profile.get('name') or 'This student'} shows signals that align with {item['title'].lower()}.",
+                "summary": f"{profile.get('name') or 'This student'} shows signals that align with {item['title'].lower()}.",
+                "required_subjects": item["required_subjects"],
+                "best_subjects": item["required_subjects"],
+                "skills": item["skills"],
+                "future_demand": item["future_demand"],
+                "pathway": item["pathway"],
+                "next_steps": [
+                    f"Check how {item['title'].lower()} connects to current school subjects.",
+                    f"Build one small project or note set related to {item['title'].lower()}.",
+                    "Review the strongest matching subjects and improve one weak area.",
+                ],
+                "why_it_fits": f"It matches the student's profile, interests, and school strengths.",
+            }
+        )
+
+    ranked.sort(key=lambda item: (-int(item.get("match_score") or 0), str(item.get("title") or "")))
+    top = ranked[:5]
+    summary = (
+        f"These career directions are ranked from the student's profile, interests, and current study signals. "
+        f"The best overall match is {top[0]['title']}."
+        if top
+        else "Career recommendations are generated from the student profile."
+    )
+
+    return {
+        "summary": summary,
+        "recommendations": top,
+        "action_plan": [
+            "Keep using the AI Tutor for subject strengths and weak areas.",
+            "Track study progress so the career ranking can improve over time.",
+            "Review the top two career pathways and save one goal to the profile.",
+        ],
+    }
+
+
+def _build_tutor_system_prompt(mode: str, profile_context: dict[str, Any]) -> str:
+    mode_note = _mode_instruction(mode)
+    return (
+        "You are StudyPilot, an educational AI tutor for school students. "
+        f"Mode: {mode}. "
+        f"{mode_note} "
+        "Always adapt the explanation to the student's grade level. "
+        "Use the profile context, weak areas, and conversation history. "
+        "Never dump a raw final answer without teaching the reasoning. "
+        "Use examples and analogies when helpful. "
+        "If the student's question needs multiple steps, structure the answer clearly. "
+        "If the student is asking follow-up doubt questions, answer interactively and invite the next question. "
+        "Stay aligned to the official CBSE/NCERT syllabus context when it is available. "
+        f"Student context: {json.dumps(profile_context, ensure_ascii=False)}"
+    )
+
+
+def _normalize_career_recommendation(item: dict[str, Any]) -> dict[str, Any]:
+    subjects = item.get("required_subjects") or item.get("best_subjects") or []
+    skills = item.get("skills") or []
+    pathway = item.get("pathway") or ""
+    why = item.get("why") or item.get("summary") or item.get("why_it_fits") or ""
+    score = item.get("match_score", item.get("fit_score", 70))
+    next_steps = _normalize_list(item.get("next_steps"))
+    if not next_steps and pathway:
+        next_steps = [
+            step.strip(" -•")
+            for step in re.split(r"\s*(?:->|→|›|››|\|)\s*", str(pathway))
+            if step.strip(" -•")
+        ]
+    normalized = {
+        "title": str(item.get("title") or "Career Path").strip(),
+        "match_score": max(0, min(100, int(score or 70))),
+        "fit_score": max(0, min(100, int(score or 70))),
+        "why": str(why).strip(),
+        "summary": str(why).strip(),
+        "required_subjects": _normalize_list(subjects),
+        "best_subjects": _normalize_list(subjects),
+        "skills": _normalize_list(skills),
+        "future_demand": str(item.get("future_demand") or "Moderate").strip(),
+        "pathway": str(pathway).strip(),
+        "next_steps": next_steps,
+        "why_it_fits": str(item.get("why_it_fits") or why).strip(),
+        "rank": int(item.get("rank") or 0),
+    }
+    return normalized
 
 
 def _student_from_row(row: dict | None) -> dict | None:
@@ -708,10 +1072,20 @@ def tutor_respond():
         return _json_error("Question is required.")
 
     student_id = _resolve_student_id(payload)
-    profile = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)) if student_id else None
-    grade = _clamp_grade(payload.get("grade") or (profile.get("grade") if profile else 10))
+    backend_profile = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)) if student_id else None
+    merged_profile: dict[str, Any] = {}
+    if backend_profile:
+      merged_profile.update(backend_profile)
+    if isinstance(payload.get("profile"), dict):
+      merged_profile.update(payload.get("profile") or {})
+
+    grade = _clamp_grade(payload.get("grade") or (merged_profile.get("grade") if merged_profile else 10))
     subject = (payload.get("subject") or "").strip()
+    study_mode = str(payload.get("mode") or payload.get("study_mode") or "learn").strip().lower() or "learn"
     greeting_mode = _looks_like_greeting(question)
+    history = _normalize_history(payload.get("history"), limit=12)
+    profile_context = _profile_context(merged_profile, payload)
+    analytics_summary = payload.get("analytics_summary") if isinstance(payload.get("analytics_summary"), dict) else {}
 
     arithmetic_answer = solve_simple_arithmetic(question)
     if arithmetic_answer:
@@ -719,7 +1093,10 @@ def tutor_respond():
             {
                 "ok": True,
                 "mode": "calculator",
-                "answer": arithmetic_answer,
+                "study_mode": study_mode,
+                "provider": "calculator",
+                "model": "",
+                "answer": _step_by_step_arithmetic_response(question, arithmetic_answer),
                 "sources": [],
             }
         )
@@ -743,64 +1120,93 @@ def tutor_respond():
                 + (f" | Chapter {row.get('chapter_number')}" if row.get('chapter_number') else "")
             )
         context = f"{context}\n\n" + "\n".join(syllabus_lines) if context else "\n".join(syllabus_lines)
-    system_prompt = (
-        "You are StudyPilot, a warm, highly capable school tutor for Grades 6-10. "
-        "Use the provided CBSE/NCERT syllabus context as grounding, but explain concepts in a teaching style with examples, hints, and short steps. "
-        "Adapt your explanation to the student's grade and subject. "
-        "Never invent syllabus facts or chapter names that conflict with the official curriculum. "
-        "If the question is unclear, ask one short clarifying question. "
-        "Otherwise, answer directly and helpfully in school-friendly language."
-    )
+    system_prompt = _build_tutor_system_prompt(study_mode, profile_context)
     if greeting_mode:
         system_prompt = (
             "You are StudyPilot, a friendly school tutor and study companion. "
             "The student is greeting you, so respond warmly in one short paragraph. "
-            "Then ask what grade, subject, or chapter they want help with. "
-            "Keep the tone encouraging and energetic."
+            "Then ask what subject, chapter, or mode they want help with. "
+            "Keep the tone encouraging and energetic. "
+            "Use the student's profile context and remember the recent conversation history. "
+            f"Student context: {json.dumps(profile_context, ensure_ascii=False)} "
+            f"Conversation history: {json.dumps(history, ensure_ascii=False)}"
         )
 
-    if greeting_mode:
-        user_prompt = (
-            f"The student said: {question}\n"
-            "Reply with a warm greeting in one short paragraph. "
-            "Ask what subject or chapter they want help with."
-        )
-    else:
-        user_prompt = (
-            f"Grade: {grade}\n"
-            f"Subject hint: {subject or 'not specified'}\n"
-            f"Question: {question}\n\n"
-            f"Context:\n{context}\n\n"
-            "Answer the student's question in simple language. "
-            "Keep the response to 4-6 short sentences or 4-5 bullets. "
-            "Do not repeat the labels above. "
-            "If helpful, end with one short follow-up question."
-        )
+    user_prompt = json.dumps(
+        {
+            "question": question,
+            "mode": "greeting" if greeting_mode else study_mode,
+            "grade": grade,
+            "subject_hint": subject or "",
+            "student": profile_context,
+            "analytics_summary": analytics_summary,
+            "conversation_history": history,
+            "curriculum_context": context,
+            "instructions": [
+                "Never simply provide a bare final answer.",
+                "Encourage understanding with steps, examples, or a short check-for-understanding question.",
+                "Keep the explanation age-appropriate for the student's grade.",
+            ],
+        },
+        ensure_ascii=False,
+        indent=2,
+    )
 
-    response_text, llm_mode = generate_tutor_response(system_prompt, user_prompt)
+    requested_provider = payload.get("provider") or payload.get("ai_provider") or payload.get("model_provider")
+    requested_model = payload.get("model") or payload.get("ai_model")
 
-    if llm_mode == "ollama" and _looks_like_prompt_echo(response_text):
+    response_text, llm_mode = generate_tutor_response_with_choice(
+        system_prompt,
+        user_prompt,
+        provider=requested_provider,
+        model=requested_model,
+    )
+
+    if llm_mode.startswith("ollama") and _looks_like_prompt_echo(response_text):
         if greeting_mode:
             retry_system_prompt = (
                 "You are StudyPilot, a warm school tutor. "
                 "Reply with exactly one short friendly paragraph. "
-                "Do not repeat the user's words or any labels."
+                "Do not repeat the user's words or any labels. "
+                "Use the student's profile and recent conversation history to keep the greeting personal."
             )
-            retry_user_prompt = "Write a short greeting and ask what grade, subject, or chapter they need help with."
+            retry_user_prompt = json.dumps(
+                {
+                    "grade": grade,
+                    "student": profile_context,
+                    "conversation_history": history,
+                    "task": "Write a short greeting and ask what grade, subject, or chapter they need help with.",
+                },
+                ensure_ascii=False,
+                indent=2,
+            )
         else:
             retry_system_prompt = (
                 "You are StudyPilot, a helpful school tutor. "
-                "Answer directly with no labels, no context recap, and no quoted prompt text. "
-                "Use a natural teaching style."
+                "Answer with a teaching-first explanation using steps, examples, and one short check question. "
+                "Do not repeat labels or prompt text. "
+                "Use the student's profile context and conversation history."
             )
             retry_user_prompt = (
-                f"Grade: {grade}\n"
-                f"Question: {question}\n"
-                f"Context: {context}\n\n"
-                "Write only the final answer in simple school language. "
-                "Use 3-5 short sentences or 4 concise bullets."
+                json.dumps(
+                    {
+                        "grade": grade,
+                        "mode": study_mode,
+                        "question": question,
+                        "student": profile_context,
+                        "conversation_history": history,
+                        "context": context,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
             )
-        retry_text, retry_mode = generate_tutor_response(retry_system_prompt, retry_user_prompt)
+        retry_text, retry_mode = generate_tutor_response_with_choice(
+            retry_system_prompt,
+            retry_user_prompt,
+            provider=requested_provider,
+            model=requested_model,
+        )
         if retry_text and not _looks_like_prompt_echo(retry_text):
             response_text = retry_text
             llm_mode = retry_mode
@@ -809,10 +1215,16 @@ def tutor_respond():
         response_text = offline_answer(question, matches)
         llm_mode = "offline_knowledge"
 
+    resolved_provider, resolved_model = _resolve_llm_details(llm_mode, requested_provider, requested_model)
+
     return jsonify(
         {
             "ok": True,
             "mode": llm_mode,
+            "study_mode": study_mode,
+            "provider": resolved_provider,
+            "model": resolved_model,
+            "used_model": resolved_model,
             "answer": response_text,
             "sources": [
                 {
@@ -840,6 +1252,487 @@ def tutor_respond():
             ],
         }
     )
+
+
+@app.get("/api/tutor/models")
+def tutor_models():
+    models = list_local_model_options()
+    active = models[0] if models else {"provider": "offline", "model": "", "label": "Offline"}
+    return jsonify({"ok": True, "items": models, "active": active})
+
+
+@app.post("/api/career/recommendations")
+def career_recommendations():
+    payload = _payload()
+    profile_payload = payload.get("profile") if isinstance(payload.get("profile"), dict) else {}
+    student_id = _resolve_student_id(payload)
+    backend_profile = _student_from_row(fetch_one("SELECT * FROM students WHERE id = ?", (student_id,))) if student_id else None
+
+    profile: dict[str, Any] = {}
+    if backend_profile:
+        profile.update(backend_profile)
+    profile.update(profile_payload)
+
+    history = _normalize_history(payload.get("history"), limit=12)
+    profile_context = _profile_context(profile, payload)
+    analytics_summary = payload.get("analytics_summary") if isinstance(payload.get("analytics_summary"), dict) else {}
+    progress_payload = payload.get("progress") if isinstance(payload.get("progress"), dict) else {}
+
+    system_prompt = (
+        "You are StudyPilot Career Coach. "
+        "Return valid JSON only with summary, recommendations, and action_plan. "
+        "Generate at least five distinct career matches from the student's real profile and performance signals. "
+        "Each recommendation must include title, match_score, why, required_subjects, skills, future_demand, pathway, and why_it_fits. "
+        "Do not use fallback cards or placeholder careers. "
+        "Keep the advice realistic, specific, and motivating for a school student."
+    )
+    user_prompt = json.dumps(
+        {
+            "profile": {
+                "name": profile_context.get("name", ""),
+                "grade": profile_context.get("grade", ""),
+                "board": profile_context.get("board", ""),
+                "favorite_subjects": profile_context.get("favorite_subjects", []),
+                "weak_subjects": profile_context.get("weak_subjects", []),
+                "interests": profile_context.get("interests", []),
+                "hobbies": profile_context.get("hobbies", []),
+                "dream_career": profile_context.get("dream_career", ""),
+                "learning_goals": profile_context.get("learning_goals", []),
+            },
+            "analytics_summary": {
+                "questionsAsked": analytics_summary.get("questionsAsked", 0),
+                "revisionSessions": analytics_summary.get("revisionSessions", 0),
+                "quizAccuracy": analytics_summary.get("quizAccuracy", 0),
+                "strongTopics": [item.get("topic") for item in analytics_summary.get("strongTopics", []) if isinstance(item, dict) and item.get("topic")],
+                "weakTopics": [item.get("topic") for item in analytics_summary.get("weakTopics", []) if isinstance(item, dict) and item.get("topic")],
+            },
+            "conversation_history": history[-2:],
+        },
+        indent=2,
+    )
+
+    response_text, llm_mode = generate_tutor_response_with_choice(
+        system_prompt,
+        user_prompt,
+        provider=payload.get("provider") or payload.get("ai_provider") or "auto",
+        model=payload.get("model") or payload.get("ai_model"),
+        json_mode=True,
+    )
+
+    parsed: dict[str, Any] | None = None
+    if response_text:
+        try:
+            parsed = json.loads(_strip_json_fences(response_text))
+        except json.JSONDecodeError:
+            parsed = None
+
+    if not parsed or not isinstance(parsed.get("recommendations"), list):
+        parsed = _career_fallback(profile_context, progress_payload)
+        llm_mode = "profile_rules"
+
+    parsed.setdefault("summary", "Here are the strongest career directions for you right now.")
+    parsed.setdefault("recommendations", [])
+    parsed.setdefault("action_plan", [])
+    parsed["recommendations"] = [_normalize_career_recommendation(item) for item in parsed["recommendations"][:5] if isinstance(item, dict)]
+    if len(parsed["recommendations"]) < 5:
+        fallback_data = _career_fallback(profile_context, progress_payload)
+        fallback_recommendations = [
+            _normalize_career_recommendation(item)
+            for item in fallback_data.get("recommendations", [])
+            if isinstance(item, dict)
+        ]
+        combined = parsed["recommendations"][:]
+        seen_titles = {str(item.get("title") or "").strip().lower() for item in combined if item.get("title")}
+        for item in fallback_recommendations:
+            title_key = str(item.get("title") or "").strip().lower()
+            if not title_key or title_key in seen_titles:
+                continue
+            combined.append(item)
+            seen_titles.add(title_key)
+            if len(combined) >= 5:
+                break
+        if len(combined) < 5:
+            for item in fallback_recommendations:
+                combined.append(item)
+                if len(combined) >= 5:
+                    break
+        parsed["recommendations"] = combined[:5]
+        if not str(parsed.get("summary") or "").strip():
+            parsed["summary"] = fallback_data.get("summary", "")
+        if not parsed.get("action_plan"):
+            parsed["action_plan"] = fallback_data.get("action_plan", [])
+        if not llm_mode.startswith("ollama"):
+            llm_mode = "profile_rules"
+
+    resolved_provider, resolved_model = _resolve_llm_details(llm_mode, payload.get("provider"), payload.get("model"))
+
+    return jsonify(
+        {
+            "ok": True,
+            "mode": llm_mode,
+            "provider": resolved_provider,
+            "model": resolved_model,
+            "used_model": resolved_model,
+            **parsed,
+        }
+    )
+
+
+def _study_tool_prompt(tool: str, profile_context: dict[str, Any], analytics: dict[str, Any], analytics_summary: dict[str, Any], payload: dict[str, Any], context: str, history: list[dict[str, str]]) -> tuple[str, str]:
+    normalized_tool = (tool or "pack").strip().lower()
+    subject = str(payload.get("subject") or "").strip()
+    chapter = str(payload.get("chapter") or payload.get("chapter_title") or "").strip()
+    difficulty = str(payload.get("difficulty") or "medium").strip().lower()
+    count = int(payload.get("count") or 5)
+    tool_specific_notes = {
+        "quiz": "Return 5 quiz questions with four options, a correct answer index, and a short explanation. Make the questions match the selected chapter and difficulty.",
+        "flashcards": "Return compact flashcards with short fronts and backs. Keep them revision-friendly.",
+        "notes": "Return concise chapter notes with bullet points, definitions, and examples where helpful.",
+        "summary": "Return a short revision summary and a compact set of key points.",
+        "practice": "Return practice questions with hints and answer outlines. Do not make them too easy.",
+        "pack": "Return a balanced learning pack that can include notes, summary, flashcards, quiz questions, and practice questions.",
+    }
+
+    system_prompt = (
+        "You are StudyPilot's study-tool generator. "
+        "Return valid JSON only. "
+        "Generate school-appropriate learning material that matches the student's profile, analytics, and syllabus context. "
+        "Never include filler text outside JSON. "
+        f"{tool_specific_notes.get(normalized_tool, tool_specific_notes['pack'])}"
+    )
+    user_prompt = json.dumps(
+        {
+            "tool": normalized_tool,
+            "profile": profile_context,
+            "analytics": analytics,
+            "analytics_summary": analytics_summary,
+            "conversation_history": history,
+            "subject": subject,
+            "chapter": chapter,
+            "difficulty": difficulty,
+            "count": count,
+            "syllabus_context": context,
+            "schema": {
+                "summary": "string",
+                "notes": "string",
+                "flashcards": [{"front": "string", "back": "string"}],
+                "quiz_questions": [
+                    {"question": "string", "options": ["A", "B", "C", "D"], "answer_index": 0, "explanation": "string"}
+                ],
+                "practice_questions": [
+                    {"question": "string", "hint": "string", "answer_outline": "string"}
+                ],
+                "revision_summary": "string",
+            },
+            "instructions": [
+                "Keep explanations age-appropriate.",
+                "Use examples when useful.",
+                "Match the output to the selected difficulty.",
+                "If the student profile shows weak subjects, make the practice slightly more supportive.",
+            ],
+        },
+        indent=2,
+    )
+    return system_prompt, user_prompt
+
+
+def _offline_study_pack(tool_name: str, grade: int, subject: str, context_entries: list[dict[str, Any]], count: int) -> dict[str, Any]:
+    limit = max(1, min(int(count or 5), 8))
+    summary = format_knowledge_context(context_entries) if context_entries else f"Use the official NCERT chapter list and study tools for {subject or f'Grade {grade}'}."
+
+    notes_lines = [summary]
+    if context_entries:
+      notes_lines.extend(["", "Matched chapters:"])
+      for row in context_entries[:limit]:
+        chapter_title = str(row.get("chapter_title") or row.get("title") or "Study topic").strip()
+        book_title = str(row.get("book_title") or "").strip()
+        notes_lines.append(f"- {chapter_title}" + (f" | {book_title}" if book_title else ""))
+    notes = "\n".join(notes_lines).strip()
+
+    flashcards: list[dict[str, str]] = []
+    quiz_questions: list[dict[str, Any]] = []
+    practice_questions: list[dict[str, str]] = []
+
+    for row in context_entries[:limit]:
+        chapter_title = str(row.get("chapter_title") or row.get("title") or "This topic").strip()
+        chapter_summary = str(row.get("summary") or summary).strip()
+        subject_name = str(row.get("subject") or subject or "Study").strip()
+        flashcards.append(
+            {
+                "front": f"What is {chapter_title} about?",
+                "back": chapter_summary or summary,
+            }
+        )
+        quiz_questions.append(
+            {
+                "question": f"Which idea is covered in {chapter_title}?",
+                "options": [
+                    chapter_title,
+                    subject_name,
+                    "A sports topic",
+                    "A poetry topic",
+                ],
+                "answer_index": 0,
+                "explanation": chapter_summary or summary,
+            }
+        )
+        practice_questions.append(
+            {
+                "question": f"Explain the main idea of {chapter_title} in your own words.",
+                "hint": chapter_summary or summary,
+            }
+        )
+
+    if not flashcards:
+        flashcards = [
+            {
+                "front": f"What should you revise first for Grade {grade} {subject or 'study'}?",
+                "back": summary,
+            }
+        ]
+    if not quiz_questions:
+        quiz_questions = [
+            {
+                "question": f"What should you focus on first for Grade {grade} {subject or 'study'}?",
+                "options": [
+                    "Review the syllabus context",
+                    "Ignore the chapter list",
+                    "Skip revision",
+                    "Only memorize answers",
+                ],
+                "answer_index": 0,
+                "explanation": summary,
+            }
+        ]
+    if not practice_questions:
+        practice_questions = [
+            {
+                "question": f"Write one short revision note for Grade {grade} {subject or 'study'}.",
+                "hint": summary,
+            }
+        ]
+
+    payload: dict[str, Any] = {
+        "summary": summary,
+        "notes": notes,
+        "flashcards": flashcards,
+        "quiz_questions": quiz_questions,
+        "practice_questions": practice_questions,
+        "revision_summary": summary,
+    }
+
+    if tool_name == "notes":
+        payload["notes"] = notes
+        payload["revision_summary"] = summary
+        payload["summary"] = summary
+    elif tool_name == "summary":
+        payload["summary"] = summary
+        payload["revision_summary"] = summary
+    elif tool_name == "flashcards":
+        payload["flashcards"] = flashcards
+    elif tool_name == "quiz":
+        payload["quiz_questions"] = quiz_questions
+
+    return payload
+
+
+@app.post("/api/study-tools/generate")
+def generate_study_tools():
+    payload = _payload()
+    profile_payload = payload.get("profile") if isinstance(payload.get("profile"), dict) else {}
+    student_id = _resolve_student_id(payload)
+    backend_profile = _student_from_row(fetch_one("SELECT * FROM students WHERE id = ?", (student_id,))) if student_id else None
+
+    profile: dict[str, Any] = {}
+    if backend_profile:
+        profile.update(backend_profile)
+    profile.update(profile_payload)
+
+    analytics = payload.get("analytics") if isinstance(payload.get("analytics"), dict) else {}
+    analytics_summary = payload.get("analytics_summary") if isinstance(payload.get("analytics_summary"), dict) else {}
+    history = _normalize_history(payload.get("history"), limit=12)
+    profile_context = _profile_context(profile, payload)
+    subject = (payload.get("subject") or "").strip()
+    grade = _clamp_grade(payload.get("grade") or profile_context.get("grade"))
+    context_query = subject or f"Grade {grade}"
+    context_entries = search_knowledge(context_query, grade=grade, subject=subject or None, limit=4)
+    context = format_knowledge_context(context_entries) if context_entries else "No local syllabus context was matched."
+
+    system_prompt, user_prompt = _study_tool_prompt(
+        payload.get("tool") or "pack",
+        profile_context,
+        analytics,
+        analytics_summary,
+        payload,
+        context,
+        history,
+    )
+
+    response_text, llm_mode = generate_tutor_response_with_choice(
+        system_prompt,
+        user_prompt,
+        provider=payload.get("provider") or payload.get("ai_provider") or "auto",
+        model=payload.get("model") or payload.get("ai_model"),
+        json_mode=True,
+    )
+
+    if not response_text:
+        offline_pack = _offline_study_pack(
+            str(payload.get("tool") or "pack").strip().lower(),
+            grade,
+            subject,
+            context_entries,
+            int(payload.get("count") or 5),
+        )
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "offline_knowledge",
+                "tool": payload.get("tool") or "pack",
+                "provider": "offline_knowledge",
+                "data": offline_pack,
+            }
+        )
+
+    parsed: dict[str, Any] | None = None
+    try:
+        parsed = json.loads(_strip_json_fences(response_text))
+    except json.JSONDecodeError:
+        parsed = None
+
+    tool_name = str(payload.get("tool") or "pack").strip().lower()
+    fallback_text = _strip_json_fences(response_text)
+    if not isinstance(parsed, dict):
+        if tool_name == "notes":
+            parsed = {
+                "summary": "",
+                "notes": fallback_text,
+                "flashcards": [],
+                "quiz_questions": [],
+                "practice_questions": [],
+                "revision_summary": fallback_text,
+            }
+        elif tool_name == "summary":
+            parsed = {
+                "summary": fallback_text,
+                "notes": "",
+                "flashcards": [],
+                "quiz_questions": [],
+                "practice_questions": [],
+                "revision_summary": fallback_text,
+            }
+        else:
+            return jsonify(
+                {
+                    "ok": False,
+                    "error": "The AI study generator returned an invalid response.",
+                    "mode": llm_mode,
+                }
+            ), 503
+
+    parsed.setdefault("summary", "")
+    parsed.setdefault("notes", "")
+    parsed.setdefault("flashcards", [])
+    parsed.setdefault("quiz_questions", [])
+    parsed.setdefault("practice_questions", [])
+    parsed.setdefault("revision_summary", parsed.get("summary", ""))
+    def _extract_blob_text(value: Any, preferred_keys: list[str]) -> str:
+        if not isinstance(value, str):
+            return str(value or "").strip()
+        blob = _strip_json_fences(value)
+        try:
+            nested = json.loads(blob)
+        except json.JSONDecodeError:
+            return blob.strip()
+        if isinstance(nested, dict):
+            for key in preferred_keys:
+                candidate = nested.get(key)
+                if isinstance(candidate, str) and candidate.strip():
+                    return candidate.strip()
+            nested_notes = nested.get("notes")
+            if isinstance(nested_notes, dict):
+                sections: list[str] = []
+                for section_name, items in nested_notes.items():
+                    if isinstance(items, list) and items:
+                        sections.append(f"{section_name}: " + "; ".join(str(item) for item in items))
+                if sections:
+                    return "\n".join(sections)
+        return blob.strip()
+
+    if tool_name == "notes" and not str(parsed.get("notes") or "").strip():
+        parsed["notes"] = fallback_text
+    if tool_name == "summary" and not str(parsed.get("summary") or "").strip():
+        parsed["summary"] = fallback_text
+    if tool_name == "summary" and not str(parsed.get("revision_summary") or "").strip():
+        parsed["revision_summary"] = fallback_text
+    if tool_name == "notes":
+        parsed["notes"] = _extract_blob_text(parsed.get("notes"), ["notes", "summary"])
+        parsed["revision_summary"] = _extract_blob_text(parsed.get("revision_summary"), ["revision_summary", "summary"])
+    if tool_name == "summary":
+        parsed["summary"] = _extract_blob_text(parsed.get("summary"), ["summary", "revision_summary"])
+        parsed["revision_summary"] = parsed["summary"]
+
+    return jsonify(
+        {
+            "ok": True,
+            "mode": llm_mode,
+            "tool": payload.get("tool") or "pack",
+            "provider": "ollama" if llm_mode.startswith("ollama") else "offline_knowledge",
+            "data": parsed,
+        }
+    )
+
+
+@app.get("/api/library/books")
+def library_books():
+    grade = request.args.get("grade", type=int)
+    subject = request.args.get("subject", type=str)
+    query = request.args.get("query", type=str)
+    downloaded_arg = request.args.get("downloaded", type=str)
+    downloaded: bool | None
+    if downloaded_arg is None or downloaded_arg == "":
+        downloaded = None
+    else:
+        downloaded = downloaded_arg.lower() in {"1", "true", "yes"}
+
+    items = filtered_catalog(grade=grade, subject=subject, query=query, downloaded=downloaded)
+    return jsonify({"ok": True, "items": items})
+
+
+@app.post("/api/library/books/<path:item_id>/download")
+def library_download_book(item_id: str):
+    try:
+        item = ensure_downloaded(item_id)
+    except KeyError:
+        return _json_error("Book not found.", 404)
+    except ValueError as exc:
+        return _json_error(str(exc))
+    except Exception:
+        return _json_error("Unable to download this NCERT book right now.", 503)
+    return jsonify({"ok": True, "item": item})
+
+
+@app.delete("/api/library/books/<path:item_id>")
+def library_delete_book(item_id: str):
+    try:
+        item = delete_download(item_id)
+    except KeyError:
+        return _json_error("Book not found.", 404)
+    return jsonify({"ok": True, "item": item})
+
+
+@app.get("/api/library/books/<path:item_id>/file")
+def library_book_file(item_id: str):
+    try:
+        item = find_catalog_item(item_id)
+        if not item:
+            return _json_error("Book not found.", 404)
+        path = book_file_path(item_id)
+        if not path.exists():
+            return _json_error("This book has not been downloaded yet.", 404)
+        return send_file(path, mimetype="application/pdf", as_attachment=False, download_name=path.name)
+    except KeyError:
+        return _json_error("Book not found.", 404)
 
 
 @app.get("/api/syllabus/tree")
