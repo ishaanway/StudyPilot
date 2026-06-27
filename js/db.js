@@ -292,6 +292,16 @@
           set(key, DEFAULTS[key]);
         }
       }
+      const profile = this.getProfile();
+      if (!profile.setupComplete && !String(profile.name || "").trim()) {
+        set("tasks", []);
+        set("exams", []);
+        set("calendar", []);
+        set("notes", []);
+        set("flashcards", []);
+        set("notifications", []);
+        set("chapter_progress", {});
+      }
       this.checkStreak();
     },
 
@@ -307,7 +317,9 @@
       return get("profile");
     },
     saveProfile: function (profileData) {
-      set("profile", profileData);
+      const normalizedProfile = normalizeProfile(profileData);
+      set("profile", normalizedProfile);
+      void syncProfileToBackend(normalizedProfile);
     },
 
     // Tasks API
