@@ -37,8 +37,8 @@
   };
 
   const SUBJECT_FALLBACKS = {
-    ncert: ["Science", "Mathematics", "Social Science", "English", "Tamil", "Hindi", "Computer Science"],
-    tamil: ["Tamil", "English", "Mathematics", "Science", "Social Science", "Computer Science"],
+    ncert: ["Science", "Mathematics", "Social Science", "English", "Hindi", "Computer Science"],
+    tamil: ["English", "Mathematics", "Science", "Social Science", "Computer Science"],
   };
 
   const TAMIL_CLASS_PAGE_BY_GRADE = {
@@ -50,8 +50,8 @@
   };
 
   window.StudyPilotBooks = {
-    selectedBoard: "ncert",
-    selectedGrade: "10",
+    selectedBoard: "tamil",
+    selectedGrade: "7",
     selectedSubject: "Science",
     selectedBookKey: "",
     lastProfileSignature: "",
@@ -381,7 +381,6 @@
         <div class="input-group books-board-group">
           <label>Board</label>
           <div class="books-board-toggle">
-            <button type="button" class="books-board-pill ${this.selectedBoard === "ncert" ? "active" : ""}" onclick="window.StudyPilotBooks.setBoard('ncert')">NCERT / CBSE</button>
             <button type="button" class="books-board-pill ${this.selectedBoard === "tamil" ? "active" : ""}" onclick="window.StudyPilotBooks.setBoard('tamil')">Tamil Nadu</button>
           </div>
         </div>
@@ -390,7 +389,7 @@
           <div class="input-group">
             <label for="books-grade-select">Grade</label>
             <select id="books-grade-select" onchange="window.StudyPilotBooks.setGrade(this.value)">
-              ${[6, 7, 8, 9, 10].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Grade ${grade}</option>`).join("")}
+              ${[7].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Grade ${grade}</option>`).join("")}
             </select>
           </div>
           <div class="input-group">
@@ -486,14 +485,14 @@
   window.StudyPilotBooks.libraryRequestPromise = null;
 
   window.StudyPilotBooks.getApiBaseUrl = function () {
+    if (typeof window.getStudyPilotApiBaseUrl === "function") {
+      return window.getStudyPilotApiBaseUrl();
+    }
     if (window.StudyPilotApi && typeof window.StudyPilotApi.getBaseUrl === "function") {
       return window.StudyPilotApi.getBaseUrl();
     }
     if (window.STUDYPILOT_API_BASE && String(window.STUDYPILOT_API_BASE).trim()) {
       return String(window.STUDYPILOT_API_BASE).replace(/\/+$/, "");
-    }
-    if (window.location && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
-      return window.location.origin;
     }
     return "http://127.0.0.1:5000";
   };

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StudyPilot — Plan Smarter. Learn Better.</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="StudyPilot is an AI-powered academic operating system that helps students organize school life, prepare for exams, and improve learning.">
@@ -23,6 +24,7 @@
   <link rel="stylesheet" href="styles/planner.css">
   <link rel="stylesheet" href="styles/tutor.css">
   <link rel="stylesheet" href="styles/toolbox.css">
+  <link rel="stylesheet" href="styles/parents.css">
 </head>
 <body>
 
@@ -47,38 +49,19 @@
           <div class="input-group">
             <label for="setup-grade">Grade</label>
             <select id="setup-grade" onchange="window.StudyPilotSetup.handleGradeChange(this.value)">
-              <option value="prekg">Pre-KG</option>
-              <option value="lkg">LKG</option>
-              <option value="ukg">UKG</option>
-              <option value="1">Grade 1</option>
-              <option value="2">Grade 2</option>
-              <option value="3">Grade 3</option>
-              <option value="4">Grade 4</option>
-              <option value="5">Grade 5</option>
-              <option value="6">Grade 6</option>
               <option value="7" selected>Grade 7</option>
-              <option value="8">Grade 8</option>
-              <option value="9">Grade 9</option>
-              <option value="10">Grade 10</option>
-              <option value="11">Grade 11</option>
-              <option value="12">Grade 12</option>
             </select>
           </div>
           <div class="input-group hidden" id="setup-stream-group">
             <label for="setup-stream">Stream</label>
             <select id="setup-stream">
               <option value="Science">Science</option>
-              <option value="Commerce">Commerce</option>
-              <option value="Humanities">Humanities</option>
             </select>
           </div>
           <div class="input-group">
             <label for="setup-board">School Board</label>
             <select id="setup-board">
-              <option value="CBSE">CBSE (India)</option>
-              <option value="ICSE">ICSE (India)</option>
-              <option value="State Board">State Board</option>
-              <option value="IB">IB / Cambridge</option>
+              <option value="State Board" selected>Tamil Nadu State Board</option>
             </select>
           </div>
         </div>
@@ -179,17 +162,68 @@
           <i data-lucide="briefcase"></i>
           <span>Toolbox</span>
         </button>
+        <button class="nav-item" data-screen="parents">
+          <i data-lucide="user-check"></i>
+          <span>Parent Portal</span>
+        </button>
         <button class="nav-item" data-screen="profile">
           <i data-lucide="user"></i>
           <span>Profile</span>
         </button>
       </nav>
       <div class="sidebar-footer">
-        <button id="theme-toggle-btn" class="theme-toggle">
-          <i data-lucide="sun" class="sun-icon"></i>
-          <i data-lucide="moon" class="moon-icon hidden"></i>
-          <span>Light Mode</span>
-        </button>
+        <div class="theme-picker-wrap">
+          <button id="theme-toggle-btn" class="theme-toggle" aria-expanded="false" aria-controls="theme-picker-menu">
+            <i data-lucide="sun" class="sun-icon"></i>
+            <i data-lucide="moon" class="moon-icon hidden"></i>
+            <span id="theme-toggle-label">Dawn Notes</span>
+            <i data-lucide="chevrons-up-down" class="theme-caret"></i>
+          </button>
+          <div id="theme-picker-menu" class="theme-picker-menu hidden">
+            <button class="theme-option" data-theme="dawn-notes" type="button">
+              <span class="theme-option-swatch theme-option-swatch--dawn-notes"></span>
+              <span class="theme-option-copy">
+                <strong>Dawn Notes</strong>
+                <small>Light</small>
+              </span>
+            </button>
+            <button class="theme-option" data-theme="paper-grove" type="button">
+              <span class="theme-option-swatch theme-option-swatch--paper-grove"></span>
+              <span class="theme-option-copy">
+                <strong>Paper Grove</strong>
+                <small>Light</small>
+              </span>
+            </button>
+            <button class="theme-option" data-theme="sunset-prep" type="button">
+              <span class="theme-option-swatch theme-option-swatch--sunset-prep"></span>
+              <span class="theme-option-copy">
+                <strong>Sunset Prep</strong>
+                <small>Light</small>
+              </span>
+            </button>
+            <button class="theme-option" data-theme="midnight-bloom" type="button">
+              <span class="theme-option-swatch theme-option-swatch--midnight-bloom"></span>
+              <span class="theme-option-copy">
+                <strong>Midnight Bloom</strong>
+                <small>Dark</small>
+              </span>
+            </button>
+            <button class="theme-option" data-theme="deep-current" type="button">
+              <span class="theme-option-swatch theme-option-swatch--deep-current"></span>
+              <span class="theme-option-copy">
+                <strong>Deep Current</strong>
+                <small>Dark</small>
+              </span>
+            </button>
+            <button class="theme-option" data-theme="ember-lab" type="button">
+              <span class="theme-option-swatch theme-option-swatch--ember-lab"></span>
+              <span class="theme-option-copy">
+                <strong>Ember Lab</strong>
+                <small>Dark</small>
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     </aside>
 
@@ -327,68 +361,107 @@
         </div>
       </section>
 
-      <!-- SCREEN: PLANNER (Calendar) -->
+      <!-- SCREEN: PLANNER (Syllabus Tracker) -->
       <section id="screen-planner" class="screen-view hidden">
         <div class="planner-header">
           <div class="planner-title-block">
-            <h1>Academic Planner & Calendar</h1>
-            <p>Organize classes, exam revisions, and study blocks aligned with CBSE syllabus.</p>
+            <h1>Academic Planner & Syllabus Tracker</h1>
+            <p>Track your textbook syllabus and schedule revision sessions aligned with your goals.</p>
           </div>
           <div class="planner-controls">
-            <button class="btn btn-outline" onclick="window.StudyPilotPlanner.autoGeneratePlan()">
-              <i data-lucide="sparkles"></i> AI Auto-Schedule Revision
-            </button>
-            <button class="btn btn-primary" onclick="window.StudyPilotPlanner.showEventModal()">
-              <i data-lucide="plus"></i> Add Event
+            <button class="btn btn-primary" onclick="window.StudyPilotPlanner.openCalendarModal()" style="display:inline-flex; align-items:center; gap:0.4rem;">
+              <i data-lucide="calendar"></i> View Weekly Calendar Schedule
             </button>
           </div>
         </div>
 
-        <div class="planner-grid-container">
-          <!-- Sidebar: Curriculum explorer and Lesson Preparation tracker (Parent Progress) -->
-          <div class="planner-sidebar">
-            <div class="curriculum-picker" style="display:flex; flex-direction:column; height:100%;">
-              <h3><i data-lucide="book-open"></i> CBSE Syllabus Tracker</h3>
-              
-              <!-- Textbook Progress Bar -->
-              <div class="textbook-overall-progress" style="margin-bottom: 0.75rem; background: var(--bg-app); padding:0.65rem; border-radius: var(--radius-sm); border:1px solid var(--border-color);">
-                <div style="display:flex; justify-content:space-between; font-size: 0.75rem; font-weight:600; margin-bottom: 0.25rem;">
-                  <span id="textbook-subject-lbl">Science Prep</span>
-                  <span id="textbook-pct-lbl">35%</span>
-                </div>
-                <div class="quiz-progress-bar" style="height: 5px;">
-                  <div class="quiz-progress-fill" id="textbook-progress-fill" style="width: 35%; background: var(--accent);"></div>
-                </div>
+        <div class="planner-syllabus-view-card">
+          <!-- Top Subject Tabs -->
+          <div class="planner-syllabus-header">
+            <div class="syllabus-subject-tabs main-tabs">
+              <!-- Subject tabs loaded dynamically based on grade in planner.js -->
+            </div>
+            
+            <!-- Textbook Progress Card -->
+            <div class="textbook-overall-progress-card">
+              <div class="textbook-progress-info">
+                <span id="textbook-subject-lbl">Science Prep</span>
+                <span id="textbook-pct-lbl">35%</span>
               </div>
-
-              <div class="syllabus-subject-tabs">
-                <!-- Subject tabs loaded dynamically based on grade in planner.js -->
-              </div>
-              
-              <div class="chapters-accordion" id="syllabus-chapters-list">
-                <!-- Dynamically populated with NCERT Chapters containing Read, Revised, Quiz checkbox progress trackers -->
+              <div class="quiz-progress-bar">
+                <div class="quiz-progress-fill" id="textbook-progress-fill"></div>
               </div>
             </div>
           </div>
 
-          <!-- Main Weekly Calendar Grid -->
-          <div class="planner-main-card">
-            <div class="calendar-nav">
-              <div class="cal-nav-left">
-                <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(-1)"><i data-lucide="chevron-left"></i></button>
-                <h3 id="calendar-week-range">22 June - 28 June 2026</h3>
-                <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(1)"><i data-lucide="chevron-right"></i></button>
-              </div>
-              <div class="cal-nav-right">
-                <span class="badge badge-indigo">Class Time</span>
-                <span class="badge badge-accent">AI Study Block</span>
-                <span class="badge badge-red">Exams</span>
-              </div>
+          <!-- Main Syllabus Checklist Explorer -->
+          <div class="chapters-accordion-main" id="syllabus-chapters-list">
+            <!-- Dynamically populated chapters & subchapters -->
+          </div>
+
+          <div class="planner-reading-workspace" id="planner-reading-workspace">
+            <div class="planner-reading-empty" id="planner-reading-empty">
+              <div class="planner-reading-empty-icon"><i data-lucide="book-open-text"></i></div>
+              <h3>Open a chapter to study inside StudyPilot</h3>
+              <p>The chapter PDF, AI Tutor summary, and your own answer draft will appear here.</p>
             </div>
-            
-            <div class="calendar-grid-wrapper">
-              <div class="calendar-grid" id="weekly-calendar-grid">
-                <!-- Dynamic Header and Time Grid -->
+
+            <div class="planner-reading-shell hidden" id="planner-reading-shell">
+              <div class="planner-reading-header">
+                <div>
+                  <span class="planner-reading-kicker" id="planner-reading-subject">Science</span>
+                  <h3 id="planner-reading-title">Chapter workspace</h3>
+                  <p id="planner-reading-status">Fetching chapter PDF...</p>
+                </div>
+                <div class="planner-reading-actions">
+                  <button class="btn btn-secondary btn-sm" type="button" id="btn-extend-pdf" onclick="window.StudyPilotPlanner.toggleExtendPdfView()">
+                    <i data-lucide="maximize-2"></i> Extend View
+                  </button>
+                  <button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotPlanner.openWorkspaceSource()">
+                    <i data-lucide="external-link"></i> Open Source
+                  </button>
+                  <button class="btn btn-primary btn-sm" type="button" onclick="window.StudyPilotPlanner.summarizeActiveChapter()">
+                    <i data-lucide="sparkles"></i> AI Tutor Summary
+                  </button>
+                </div>
+              </div>
+
+              <div class="planner-reading-grid" id="planner-reading-grid">
+                <div class="planner-pdf-panel" id="planner-pdf-panel">
+                  <div class="planner-panel-head">
+                    <div class="flex-align-center gap-2">
+                      <h4>Chapter PDF</h4>
+                      <span class="badge badge-indigo" id="planner-pdf-badge">Preparing...</span>
+                    </div>
+                    <div class="planner-pdf-controls flex-align-center gap-1">
+                      <button class="btn btn-outline btn-xs" type="button" title="Zoom Out" onclick="window.StudyPilotPlanner.zoomPdf(-0.15)"><i data-lucide="minus"></i></button>
+                      <span class="pdf-zoom-level text-xs font-mono" id="pdf-zoom-level">100%</span>
+                      <button class="btn btn-outline btn-xs" type="button" title="Zoom In" onclick="window.StudyPilotPlanner.zoomPdf(0.15)"><i data-lucide="plus"></i></button>
+                      <button class="btn btn-outline btn-xs" type="button" title="Reset Zoom" onclick="window.StudyPilotPlanner.resetPdfZoom()">Reset</button>
+                    </div>
+                  </div>
+                  <div class="planner-pdf-wrapper" id="planner-pdf-wrapper">
+                    <iframe id="planner-pdf-frame" title="Chapter PDF viewer" src="about:blank"></iframe>
+                  </div>
+                </div>
+
+                <div class="planner-study-panel">
+                  <div class="planner-panel-head">
+                    <h4>AI Tutor Summary</h4>
+                    <button class="btn btn-text btn-xs" type="button" onclick="window.StudyPilotPlanner.sendSummaryToTutor()">Continue in Tutor</button>
+                  </div>
+                  <div class="planner-summary-box" id="planner-summary-box">
+                    <p>Select a chapter and ask the AI Tutor to summarize it from the PDF.</p>
+                  </div>
+
+                  <div class="planner-panel-head planner-panel-head--secondary">
+                    <h4>Answer Draft</h4>
+                    <button class="btn btn-secondary btn-xs" type="button" onclick="window.StudyPilotPlanner.saveChapterDraft()">
+                      <i data-lucide="save"></i> Save Draft
+                    </button>
+                  </div>
+                  <textarea id="planner-answer-editor" class="planner-answer-editor" placeholder="Write your own chapter explanation, key formulas, doubts, or exam-style answer here..."></textarea>
+                </div>
               </div>
             </div>
           </div>
@@ -431,6 +504,79 @@
             <div class="tutor-tabs">
               <button class="tutor-tab-btn active" data-tab="quiz">Practice Quizzes</button>
               <button class="tutor-tab-btn" data-tab="flashcard">Flashcards</button>
+              <button class="tutor-tab-btn" data-tab="feed-books">Feed Books</button>
+            </div>
+
+            <!-- TAB CONTENT: FEED BOOKS -->
+            <div class="tutor-tab-content hidden" id="tutor-tab-feed-books">
+              <div class="quiz-container-card">
+                <h3>Feed Textbook PDFs to AI</h3>
+                <p>Upload any textbook PDF (e.g., Tamil Nadu Samacheer Kalvi books) to chunk-index its text so the AI Tutor can query it for study help.</p>
+                
+                <form id="feed-books-form" style="margin-top: 1rem;" onsubmit="window.StudyPilotTutor.uploadBookSubmit(event)">
+                  <div class="input-row">
+                    <div class="input-group">
+                      <label for="feed-input-board">School Board</label>
+                      <select id="feed-input-board">
+                        <option value="State Board">Tamil Nadu Board</option>
+                        <option value="CBSE">CBSE / NCERT</option>
+                        <option value="Other">Other Board</option>
+                      </select>
+                    </div>
+                    <div class="input-group">
+                      <label for="feed-input-grade">Class / Grade</label>
+                      <select id="feed-input-grade">
+                        <option value="6">Class 6</option>
+                        <option value="7" selected>Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                        <option value="11">Class 11</option>
+                        <option value="12">Class 12</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="input-row">
+                    <div class="input-group">
+                      <label for="feed-input-subject">Subject</label>
+                      <input type="text" id="feed-input-subject" placeholder="e.g., Science, Tamil, Maths" required>
+                    </div>
+                    <div class="input-group">
+                      <label for="feed-input-title">Book Title</label>
+                      <input type="text" id="feed-input-title" placeholder="e.g., Science Term 1" required>
+                    </div>
+                  </div>
+                  
+                  <div class="input-group" style="margin-top: 0.5rem;">
+                    <label for="feed-input-file">Select PDF File</label>
+                    <input type="file" id="feed-input-file" accept="application/pdf" required style="padding: 0.5rem; border: 1px dashed var(--border-color); border-radius: var(--radius-sm); width: 100%; cursor: pointer;">
+                  </div>
+                  
+                  <button type="submit" id="feed-books-submit-btn" class="btn btn-primary w-full" style="margin-top: 1rem;">
+                    Feed to Tutor AI
+                  </button>
+                </form>
+
+                <div style="margin-top: 0.85rem;">
+                  <button type="button" class="btn btn-secondary w-full" onclick="window.StudyPilotTutor.syncLocalBooks(event)">
+                    Index Downloaded Books
+                  </button>
+                  <p style="margin: 0.45rem 0 0; font-size: 0.8rem; color: var(--text-muted);">
+                    This imports local PDFs already saved in StudyPilot, including Tamil Nadu books if they are present in the local book folders.
+                  </p>
+                </div>
+
+                <div id="feed-books-status" class="hidden" style="margin-top: 1rem; padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-focus); background: var(--bg-app); font-size: 0.85rem; font-weight: 500;">
+                </div>
+
+                <div class="uploaded-books-section" style="margin-top: 2rem;">
+                  <h4 style="font-weight: 700; font-size: 0.95rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                    Currently Fed Textbooks
+                  </h4>
+                  <div id="uploaded-books-list" class="upcoming-list" style="max-height: 250px; overflow-y: auto;">
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- TAB CONTENT: QUIZZES -->
@@ -564,20 +710,7 @@
                 <p>Google Keep / Notion notes board</p>
               </div>
             </button>
-            <button class="tool-menu-btn" data-tool="ocr">
-              <i data-lucide="scan"></i>
-              <div>
-                <h3>Document Summarizer</h3>
-                <p>Mock OCR textbook scanner</p>
-              </div>
-            </button>
-            <button class="tool-menu-btn" data-tool="career" id="toolbox-menu-career">
-              <i data-lucide="compass"></i>
-              <div>
-                <h3>Career Guidance Mode</h3>
-                <p>Personalized learning roadmaps</p>
-              </div>
-            </button>
+            <!-- Removed OCR and Career buttons -->
           </div>
 
           <!-- Right Panel: Active Tool Display -->
@@ -636,64 +769,7 @@
                   <!-- Dynamically populated from localStorage -->
                 </div>
               </div>
-            </div>
-
-            <!-- TOOL: OCR SCANNER & SUMMARIZER -->
-            <div class="tool-panel hidden" id="tool-panel-ocr">
-              <div class="ocr-wrapper">
-                <h3>Document Summarizer (Mock OCR Scanner)</h3>
-                <p>Drag and drop a PDF chapter or image page of your textbook to extract summary & key formulas instantly.</p>
-                
-                <div class="ocr-drag-zone" id="ocr-drag-zone" onclick="window.StudyPilotToolbox.triggerMockOCR()">
-                  <i data-lucide="file-text" class="drag-icon"></i>
-                  <p>Click here to simulate uploading a textbook chapter</p>
-                  <span class="text-muted text-xs">Supports PDF, PNG, JPG up to 10MB</span>
-                </div>
-                
-                <div class="ocr-progress-container hidden" id="ocr-progress-container">
-                  <div class="ocr-progress-row">
-                    <span>Extracting text & formulas...</span>
-                    <span id="ocr-progress-pct">45%</span>
-                  </div>
-                  <div class="ocr-progress-track">
-                    <div class="ocr-progress-fill" id="ocr-progress-fill" style="width: 45%;"></div>
-                  </div>
-                </div>
-
-                <div class="ocr-results hidden" id="ocr-results">
-                  <div class="ocr-results-header">
-                    <h4 id="ocr-summary-chapter-title"><i data-lucide="file-check"></i> Extracted Summary: Curiosity Chapter 3 (Electricity)</h4>
-                    <button class="btn btn-outline btn-xs" onclick="window.StudyPilotToolbox.saveOCRAsNote()">Save to Notes</button>
-                  </div>
-                  <div class="ocr-results-body" id="ocr-summary-results-body">
-                    <!-- Populated in toolbox.js based on grade -->
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- TOOL: CAREER GUIDANCE -->
-            <div class="tool-panel hidden" id="tool-panel-career">
-              <div class="career-wrapper" id="career-opt-in-view">
-                <div class="career-promo-card">
-                  <i data-lucide="compass" class="career-promo-icon"></i>
-                  <h2>Career suggestions are ready!</h2>
-                  <p>Our AI Coach has analyzed your subjects, goal (<strong><span id="career-user-goal"></span></strong>), and learning history. Would you like personalized career roadmap suggestions?</p>
-                  <button class="btn btn-primary" onclick="window.StudyPilotToolbox.unlockCareerMode()">Show Career Suggestions</button>
-                </div>
-              </div>
-              
-              <div class="career-wrapper hidden" id="career-active-view">
-                <div class="career-header-row">
-                  <h3>AI Recommended Career Pathways</h3>
-                  <button class="btn btn-outline btn-sm" onclick="window.StudyPilotToolbox.resetCareerOptIn()">Lock Suggestions</button>
-                </div>
-                
-                <div class="career-grid" id="career-cards-grid">
-                  <!-- Loaded dynamically based on user goals/subjects -->
-                </div>
-              </div>
-            </div>
+            </div> <!-- Removed OCR and Career tool panels -->
 
           </div>
         </div>
@@ -728,39 +804,24 @@
                   <div class="input-group">
                     <label for="profile-edit-grade">Grade</label>
                     <select id="profile-edit-grade" onchange="window.StudyPilotApp.handleProfileGradeChange(this.value)">
-                      <option value="prekg">Pre-KG</option>
-                      <option value="lkg">LKG</option>
-                      <option value="ukg">UKG</option>
-                      <option value="1">Grade 1</option>
-                      <option value="2">Grade 2</option>
-                      <option value="3">Grade 3</option>
-                      <option value="4">Grade 4</option>
-                      <option value="5">Grade 5</option>
-                      <option value="6">Grade 6</option>
-                      <option value="7">Grade 7</option>
-                      <option value="8">Grade 8</option>
-                      <option value="9">Grade 9</option>
-                      <option value="10">Grade 10</option>
-                      <option value="11">Grade 11</option>
-                      <option value="12">Grade 12</option>
+                      <option value="7" selected>Grade 7</option>
                     </select>
                   </div>
                   <div class="input-group hidden" id="profile-edit-stream-group">
                     <label for="profile-edit-stream">Select Stream</label>
                     <select id="profile-edit-stream">
                       <option value="Science">Science</option>
-                      <option value="Commerce">Commerce</option>
-                      <option value="Humanities">Humanities</option>
                     </select>
                   </div>
                   <div class="input-group">
                     <label for="profile-edit-board">School Board</label>
                     <select id="profile-edit-board">
-                      <option value="CBSE">CBSE (India)</option>
-                      <option value="ICSE">ICSE (India)</option>
-                      <option value="State Board">State Board</option>
-                      <option value="IB">IB / Cambridge</option>
+                      <option value="State Board" selected>Tamil Nadu State Board</option>
                     </select>
+                  </div>
+                  <div class="input-group">
+                    <label for="profile-edit-target-date">Target Exam Date</label>
+                    <input type="date" id="profile-edit-target-date">
                   </div>
                 </div>
                 <div class="input-group">
@@ -777,21 +838,26 @@
           </div>
 
           <div class="profile-column">
-            <!-- Connect Gemini Key Card -->
+            <!-- Connect Ollama Local Tutor Card -->
             <div class="card">
               <div class="card-header">
-                <h2><i data-lucide="key"></i> Connect Live AI Coach</h2>
+                <h2><i data-lucide="cpu"></i> Local Ollama Tutor</h2>
               </div>
               <div class="card-body">
                 <p class="text-muted text-xs" style="margin-bottom: 0.75rem; line-height: 1.4;">
-                  Enter a Gemini API Key to let the AI Coach answer any CBSE study question from Pre-KG to Grade 12. 
-                  <a href="https://aistudio.google.com/" target="_blank" style="color:var(--primary);text-decoration:underline;font-weight:600;">Get a free API key here</a>.
+                  Configure your local Ollama tutor for fully offline, private AI assistance. Make sure Ollama is running at <code>http://127.0.0.1:11434</code>.
                 </p>
                 <div class="input-group" style="margin-bottom:0.75rem;">
-                  <label for="profile-api-key">Gemini API Key</label>
-                  <input type="text" id="profile-api-key" placeholder="AIzaSy...">
+                  <label for="profile-ollama-model">Selected Ollama Model</label>
+                  <select id="profile-ollama-model">
+                    <option value="auto">Auto (Choose best available)</option>
+                  </select>
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.saveApiKey()">Save API Key</button>
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                  <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.saveOllamaModel()">Save Model Settings</button>
+                  <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.refreshOllamaModels()">Refresh Models</button>
+                  <span id="ollama-status-lbl" style="font-size:0.75rem; font-weight:600;">Checking status...</span>
+                </div>
               </div>
             </div>
 
@@ -804,6 +870,57 @@
                 <p>Need to reset the application and run the first setup wizard again? All local progress will be cleared.</p>
                 <button class="btn btn-danger btn-outline mt-md" onclick="window.StudyPilotApp.resetApp()">Reset All Data</button>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN: PARENT PORTAL -->
+      <section id="screen-parents" class="screen-view hidden">
+        <div class="toolbox-header">
+          <h1>Parent Portal & AI Assistant</h1>
+          <p>Track your child's task completion and get AI tips on how you can support their learning.</p>
+        </div>
+
+        <div class="parent-grid-container">
+          <!-- Left Column: Task Checklist -->
+          <div class="card">
+            <div class="card-header">
+              <h2><i data-lucide="check-square"></i> Student Task Checklist</h2>
+            </div>
+            <div class="card-body">
+              <p class="text-muted text-xs" style="margin-bottom: 0.75rem; line-height: 1.4;">
+                Track whether your child has completed their daily study goals, homework, and syllabus topics.
+              </p>
+              <div id="parent-task-completer-list" class="upcoming-list">
+                <!-- Loaded dynamically in parents.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: AI Parent Coach -->
+          <div class="parent-coach-card">
+            <div class="parent-coach-header">
+              <div class="parent-coach-avatar">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <div>
+                <div class="parent-coach-title">AI Parent Coach</div>
+                <div class="parent-coach-subtitle">Support & Guidance Assistant for Parents</div>
+              </div>
+            </div>
+            <div class="parent-coach-messages" id="parent-coach-messages">
+              <div class="parent-message bot">
+                <p>Welcome! Ask me how you can support your child's study schedule, encourage healthy habits, or help them prepare for exams.</p>
+                <p style="margin-top:0.4rem; font-weight:600;">Tap a quick question or type your own:</p>
+                <div class="parent-quick-prompts" id="parent-quick-prompts">
+                  <!-- Loaded dynamically in parents.js -->
+                </div>
+              </div>
+            </div>
+            <div class="parent-chat-input-bar">
+              <input type="text" id="parent-chat-input" placeholder="Ask e.g. How can I help my child manage study time?">
+              <button id="parent-chat-send-btn" class="btn btn-primary btn-icon-only" onclick="window.StudyPilotParents.sendQuery()"><i data-lucide="send"></i></button>
             </div>
           </div>
         </div>
@@ -828,6 +945,10 @@
       <button class="mobile-nav-item" data-screen="toolbox">
         <i data-lucide="briefcase"></i>
         <span>Tools</span>
+      </button>
+      <button class="mobile-nav-item" data-screen="parents">
+        <i data-lucide="user-check"></i>
+        <span>Parents</span>
       </button>
       <button class="mobile-nav-item" data-screen="profile">
         <i data-lucide="user"></i>
@@ -1004,7 +1125,43 @@
       </div>
     </div>
   </div>
-
+  <!-- CALENDAR WEEKLY SCHEDULE MODAL -->
+  <div id="calendar-modal" class="modal-overlay hidden">
+    <div class="modal-box modal-lg cal-modal-box animate-fade-in">
+      <div class="modal-header">
+        <h2 style="display:flex; align-items:center; gap:0.5rem;"><i data-lucide="calendar"></i> Weekly Study Schedule</h2>
+        <button class="modal-close" onclick="window.StudyPilotPlanner.closeCalendarModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="cal-modal-controls">
+          <div class="cal-nav-left">
+            <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(-1)"><i data-lucide="chevron-left"></i></button>
+            <h3 id="calendar-week-range">22 June - 28 June 2026</h3>
+            <button class="btn-icon" onclick="window.StudyPilotPlanner.navigateWeek(1)"><i data-lucide="chevron-right"></i></button>
+          </div>
+          <div class="cal-nav-right" style="display:flex; gap:0.4rem; align-items:center;">
+            <span class="badge badge-indigo">Class Time</span>
+            <span class="badge badge-accent">AI Study Block</span>
+            <span class="badge badge-red">Exams</span>
+          </div>
+          <div class="cal-actions" style="display:flex; gap:0.4rem;">
+            <button class="btn btn-outline btn-xs" onclick="window.StudyPilotPlanner.autoGeneratePlan()">
+              <i data-lucide="sparkles"></i> AI Auto-Schedule
+            </button>
+            <button class="btn btn-primary btn-xs" onclick="window.StudyPilotPlanner.showEventModal()">
+              <i data-lucide="plus"></i> Add Event
+            </button>
+          </div>
+        </div>
+        
+        <div class="calendar-grid-wrapper">
+          <div class="calendar-grid" id="weekly-calendar-grid">
+            <!-- Dynamic Header and Time Grid -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- Add Flashcard Modal (Tutor Screen) -->
   <div id="modal-add-flashcard" class="modal-overlay hidden">
     <div class="modal-card animate-fade-in">
@@ -1043,13 +1200,14 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <!-- Application Modules -->
-  <script src="js/db.js"></script>
-  <script src="js/setup.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/planner.js"></script>
-  <script src="js/tutor.js"></script>
-  <script src="js/toolbox.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/db.js?v=20260728-1"></script>
+  <script src="js/setup.js?v=20260728-1"></script>
+  <script src="js/dashboard.js?v=20260728-1"></script>
+  <script src="js/planner.js?v=20260728-1"></script>
+  <script src="js/tutor.js?v=20260728-1"></script>
+  <script src="js/toolbox.js?v=20260728-1"></script>
+  <script src="js/parents.js?v=20260728-1"></script>
+  <script src="js/app.js?v=20260728-1"></script>
 
 </body>
 </html>

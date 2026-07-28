@@ -21,6 +21,35 @@
     audioUnlocked: false,
   };
 
+  const storageFallback = {};
+
+  function safeGetItem(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn("[StudyPilotReminders] localStorage.getItem failed, using memory:", e);
+      return storageFallback[key] || null;
+    }
+  }
+
+  function safeSetItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn("[StudyPilotReminders] localStorage.setItem failed, using memory:", e);
+      storageFallback[key] = value;
+    }
+  }
+
+  function safeRemoveItem(key) {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn("[StudyPilotReminders] localStorage.removeItem failed, using memory:", e);
+      delete storageFallback[key];
+    }
+  }
+
   function parseIsoDate(value) {
     if (!value) return null;
     const match = String(value).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -292,15 +321,15 @@
 
     const digest = getAlarmDigest(items);
     const now = Date.now();
-    const snoozeUntil = Number(localStorage.getItem(STORAGE_SNOOZE_UNTIL) || "0");
+    const snoozeUntil = Number(safeGetItem(STORAGE_SNOOZE_UNTIL) || "0");
     if (now < snoozeUntil) return;
 
-    const lastDigest = localStorage.getItem(STORAGE_LAST_DIGEST) || "";
-    const lastAlert = Number(localStorage.getItem(STORAGE_LAST_ALERT) || "0");
+    const lastDigest = safeGetItem(STORAGE_LAST_DIGEST) || "";
+    const lastAlert = Number(safeGetItem(STORAGE_LAST_ALERT) || "0");
     if (digest && digest === lastDigest && now - lastAlert < 10 * 60 * 1000) return;
 
-    localStorage.setItem(STORAGE_LAST_DIGEST, digest);
-    localStorage.setItem(STORAGE_LAST_ALERT, String(now));
+    safeSetItem(STORAGE_LAST_DIGEST, digest);
+    safeSetItem(STORAGE_LAST_ALERT, String(now));
 
     const overlay = ensureOverlay();
     if (!overlay) return;
@@ -337,13 +366,13 @@
     if (overlay) overlay.classList.add("hidden");
     document.body.classList.remove("alarm-active");
     if (!keepDigest) {
-      localStorage.removeItem(STORAGE_LAST_DIGEST);
+      safeRemoveItem(STORAGE_LAST_DIGEST);
     }
   }
 
   function snoozeAlarm() {
     const snoozeUntil = Date.now() + SNOOZE_MINUTES * 60 * 1000;
-    localStorage.setItem(STORAGE_SNOOZE_UNTIL, String(snoozeUntil));
+    safeSetItem(STORAGE_SNOOZE_UNTIL, String(snoozeUntil));
     stopAlarm(true);
     if (window.StudyPilotDB && typeof window.StudyPilotDB.addNotification === "function") {
       window.StudyPilotDB.addNotification(`Alarm snoozed for ${SNOOZE_MINUTES} minutes.`, "info");
@@ -360,8 +389,8 @@
     if (state.initialized) return;
     state.initialized = true;
 
-    state.snoozeUntil = Number(localStorage.getItem(STORAGE_SNOOZE_UNTIL) || "0");
-    state.lastDigest = localStorage.getItem(STORAGE_LAST_DIGEST) || "";
+    state.snoozeUntil = Number(safeGetItem(STORAGE_SNOOZE_UNTIL) || "0");
+    state.lastDigest = safeGetItem(STORAGE_LAST_DIGEST) || "";
 
     document.addEventListener("pointerdown", unlockAudio, { passive: true });
     document.addEventListener("keydown", unlockAudio, { passive: true });

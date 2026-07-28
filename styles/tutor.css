@@ -469,7 +469,7 @@
   transform: rotateY(180deg);
 }
 
-[data-theme="dark"] .flashcard-back {
+[data-theme-tone="dark"] .flashcard-back {
   background-color: #1e1b4b;
 }
 

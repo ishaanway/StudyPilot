@@ -269,7 +269,7 @@
   border-color: var(--border-focus);
 }
 
-[data-theme="dark"] .card-ai-tips {
+[data-theme-tone="dark"] .card-ai-tips {
   background-color: #1e1b4b;
   border-color: var(--primary);
 }

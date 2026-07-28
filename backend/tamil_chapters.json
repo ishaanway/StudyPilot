@@ -1,0 +1,307 @@
+{
+  "grade": 7,
+  "subject": "Tamil",
+  "chapters": [
+    {
+      "unit": "பருவம் 1 இயல் 1",
+      "chapter_number": "1.1",
+      "title": "எங்கள் தமிழ்",
+      "page_start": "2",
+      "page_end": "4"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 1",
+      "chapter_number": "1.2",
+      "title": "ஒன்றல்ல இரண்டல்ல",
+      "page_start": "5",
+      "page_end": "7"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 1",
+      "chapter_number": "1.3",
+      "title": "பேச்சுமொழியும் எழுத்துமொழியும்",
+      "page_start": "8",
+      "page_end": "12"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 1",
+      "chapter_number": "1.4",
+      "title": "சொலவடைகள்",
+      "page_start": "13",
+      "page_end": "16"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 1",
+      "chapter_number": "1.5",
+      "title": "குற்றியலுகரம், குற்றியலிகரம்",
+      "page_start": "17",
+      "page_end": "23"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.1",
+      "title": "காடு",
+      "page_start": "24",
+      "page_end": "26"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.2",
+      "title": "அப்படியே நிற்கட்டும் அந்த மரம்",
+      "page_start": "27",
+      "page_end": "29"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.3",
+      "title": "விலங்குகள் உலகம்",
+      "page_start": "30",
+      "page_end": "34"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.4",
+      "title": "இந்திய வனமகன்",
+      "page_start": "35",
+      "page_end": "38"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.5",
+      "title": "நால்வகைச் சொற்கள்",
+      "page_start": "39",
+      "page_end": "42"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 2",
+      "chapter_number": "2.6",
+      "title": "திருக்குறள்",
+      "page_start": "43",
+      "page_end": "47"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 3",
+      "chapter_number": "3.1",
+      "title": "விருந்தோம்பல்",
+      "page_start": "48",
+      "page_end": "50"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 3",
+      "chapter_number": "3.2",
+      "title": "தேசியம் காத்த செம்மல் பசுன்பொன் உ. முத்துராமலிங்கத்தேவர்",
+      "page_start": "51",
+      "page_end": "55"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 3",
+      "chapter_number": "3.3",
+      "title": "கப்பலோட்டிய தமிழர்",
+      "page_start": "56",
+      "page_end": "59"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 3",
+      "chapter_number": "3.4",
+      "title": "ஒரெழுத்து ஒருமொழி, பகுபதம், பகாபதம்",
+      "page_start": "60",
+      "page_end": "66"
+    },
+    {
+      "unit": "பருவம் 1 இயல் 3",
+      "chapter_number": "3.5",
+      "title": "திருக்குறள்",
+      "page_start": "67",
+      "page_end": "70"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 1",
+      "chapter_number": "4.1",
+      "title": "கல்வி அழியாச் செல்வம்",
+      "page_start": "2",
+      "page_end": "3"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 1",
+      "chapter_number": "4.2",
+      "title": "தீயினால் சுட்ட புண்",
+      "page_start": "4",
+      "page_end": "6"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 1",
+      "chapter_number": "4.3",
+      "title": "வாழ்விக்கும் கல்வி",
+      "page_start": "7",
+      "page_end": "11"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 1",
+      "chapter_number": "4.4",
+      "title": "பள்ளி மறுதிறப்பு",
+      "page_start": "12",
+      "page_end": "14"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 1",
+      "chapter_number": "4.5",
+      "title": "இலக்கியவகைச் சொற்கள்",
+      "page_start": "15",
+      "page_end": "21"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 2",
+      "chapter_number": "5.1",
+      "title": "பூத்தொடுத்தல்",
+      "page_start": "22",
+      "page_end": "23"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 2",
+      "chapter_number": "5.2",
+      "title": "பேசும் ஓவியங்கள்",
+      "page_start": "24",
+      "page_end": "28"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 2",
+      "chapter_number": "5.3",
+      "title": "தமிழ் ஒளிர் இடங்கள்",
+      "page_start": "29",
+      "page_end": "34"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 2",
+      "chapter_number": "5.4",
+      "title": "தொழிற்பெயர்",
+      "page_start": "35",
+      "page_end": "39"
+    },
+    {
+      "unit": "பருவம் 2 இயல் 2",
+      "chapter_number": "5.5",
+      "title": "திருக்குறள்",
+      "page_start": "40",
+      "page_end": "44"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 1",
+      "chapter_number": "6.1",
+      "title": "விருந்தோம்பல்",
+      "page_start": "2",
+      "page_end": "3"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 1",
+      "chapter_number": "6.2",
+      "title": "வயலும் வாழ்வும்",
+      "page_start": "4",
+      "page_end": "8"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 1",
+      "chapter_number": "6.3",
+      "title": "தக்கார் தகவிலர் - தழுவுதல்",
+      "page_start": "9",
+      "page_end": "12"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 1",
+      "chapter_number": "6.4",
+      "title": "பயணம்",
+      "page_start": "13",
+      "page_end": "19"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 1",
+      "chapter_number": "6.5",
+      "title": "அணியிலக்கணம்",
+      "page_start": "20",
+      "page_end": "26"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.1",
+      "title": "புதுமை விளக்கு",
+      "page_start": "20",
+      "page_end": "22"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.2",
+      "title": "அறம் என்னும் கதிர்",
+      "page_start": "23",
+      "page_end": "24"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.3",
+      "title": "ஒப்புரவு ஒழுகு ஒப்புரவு நெறி",
+      "page_start": "25",
+      "page_end": "28"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.4",
+      "title": "உண்மை ஒளி",
+      "page_start": "29",
+      "page_end": "34"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.5",
+      "title": "இலக்கணம் - பொது",
+      "page_start": "35",
+      "page_end": "41"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 2",
+      "chapter_number": "7.6",
+      "title": "திருக்குறள்",
+      "page_start": "42",
+      "page_end": "45"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.1",
+      "title": "மலைப்பொழிவு",
+      "page_start": "46",
+      "page_end": "48"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.2",
+      "title": "தன்னை அறிதல்",
+      "page_start": "49",
+      "page_end": "50"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.3",
+      "title": "மானுடம் வெல்லும்கண்ணியமிகு தலைவர்",
+      "page_start": "51",
+      "page_end": "54"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.4",
+      "title": "பயணம்",
+      "page_start": "55",
+      "page_end": "58"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.5",
+      "title": "வினா, விடை வகைகள்",
+      "page_start": "59",
+      "page_end": "66"
+    },
+    {
+      "unit": "பருவம் 3 இயல் 3",
+      "chapter_number": "8.6",
+      "title": "திருக்குறள்",
+      "page_start": "67",
+      "page_end": "70"
+    }
+  ]
+}

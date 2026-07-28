@@ -393,13 +393,17 @@
         goalSpan.innerText = profile.goal;
       }
 
-      if (profile.careerUnlocked) {
-        document.getElementById("career-opt-in-view").classList.add("hidden");
-        document.getElementById("career-active-view").classList.remove("hidden");
-        this.renderCareerRoadmaps();
-      } else {
-        document.getElementById("career-opt-in-view").classList.remove("hidden");
-        document.getElementById("career-active-view").classList.add("hidden");
+      const optInView = document.getElementById("career-opt-in-view");
+      const activeView = document.getElementById("career-active-view");
+      if (optInView && activeView) {
+        if (profile.careerUnlocked) {
+          optInView.classList.add("hidden");
+          activeView.classList.remove("hidden");
+          this.renderCareerRoadmaps();
+        } else {
+          optInView.classList.remove("hidden");
+          activeView.classList.add("hidden");
+        }
       }
     },
 

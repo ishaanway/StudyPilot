@@ -30,5 +30,53 @@
     "localPdfUrl": "/assets/books/ncert/grade10-english-first-flight.pdf",
     "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
     "officialPageUrl": "https://ncert.nic.in/textbook.php?jeff1=0-11"
+  },
+  {
+    "title": "Exploring Society: India and Beyond Part 1",
+    "grade": 7,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/ss_ch1.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees1=0-12"
+  },
+  {
+    "title": "Exploring Society: India and Beyond Part 2",
+    "grade": 7,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/ss_ch13.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees2ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees2=0-8"
+  },
+  {
+    "title": "Poorvi",
+    "grade": 7,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/en_u1.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gepr1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gepr1=0-11"
+  },
+  {
+    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 1",
+    "grade": 7,
+    "subject": "Tamil",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch1.pdf",
+    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1f1P6f7AB9-k12AnHix7M2z0Zy2dERSBV",
+    "officialPageUrl": "https://drive.google.com/file/d/1f1P6f7AB9-k12AnHix7M2z0Zy2dERSBV/view"
+  },
+  {
+    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 2",
+    "grade": 7,
+    "subject": "Tamil",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch2.pdf",
+    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1IvIPrpxpgZn15jmn_Um1gWCMDX_VyVxm",
+    "officialPageUrl": "https://drive.google.com/file/d/1IvIPrpxpgZn15jmn_Um1gWCMDX_VyVxm/view"
+  },
+  {
+    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 3",
+    "grade": 7,
+    "subject": "Tamil",
+    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch3.pdf",
+    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1eks90EpMJGvb_NfiR_olAl-Ecz1os1XM",
+    "officialPageUrl": "https://drive.google.com/file/d/1eks90EpMJGvb_NfiR_olAl-Ecz1os1XM/view"
   }
 ]

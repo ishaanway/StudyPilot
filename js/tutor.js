@@ -99,6 +99,9 @@
     flashcardList: [],
     currentFlashcardIndex: 0,
     filteredCards: [],
+    plannerSummaryCache: {},
+
+    chatHistory: [],
 
     init: function () {
       this.initTabs();
@@ -106,6 +109,7 @@
       this.updateTutorWelcomeLabels();
       this.updateQuizChapters();
       this.loadFlashcards();
+      this.chatHistory = [];
     },
 
     initTabs: function () {
@@ -118,6 +122,10 @@
           const tabName = btn.getAttribute("data-tab");
           document.querySelectorAll(".tutor-tab-content").forEach(c => c.classList.add("hidden"));
           document.getElementById(`tutor-tab-${tabName}`).classList.remove("hidden");
+
+          if (tabName === "feed-books") {
+            window.StudyPilotTutor.loadUploadedBooks();
+          }
         });
       });
     },
@@ -167,58 +175,96 @@
       };
     },
 
+    inferSubjectHint: function (msg, profile) {
+      const text = String(msg || "").toLowerCase();
+      const board = String(profile && profile.board ? profile.board : "").toLowerCase();
+
+      const subjectHints = [
+        ["Computer Science", ["computer", "coding", "programming", "algorithm", "browser", "internet", "spreadsheet", "network"]],
+        ["Social Science", ["social science", "history", "geography", "civics", "economics", "democracy", "map"]],
+        ["Mathematics", ["math", "mathematics", "algebra", "geometry", "fraction", "equation", "ratio", "percent", "probability", "trigonometry"]],
+        ["Science", ["science", "physics", "chemistry", "biology", "acid", "base", "electric", "circuit", "light", "heat", "force", "pressure", "cell", "photosynthesis"]],
+        ["English", ["english", "grammar", "essay", "letter", "comprehension", "poem", "poetry", "noun", "verb", "tense"]],
+      ];
+
+      for (const [subject, keywords] of subjectHints) {
+        if (keywords.some(keyword => text.includes(keyword))) {
+          return subject;
+        }
+      }
+
+      return "";
+    },
+
     handleUserMessage: async function (msg) {
       this.appendMessage(msg, "user");
+      
+      this.chatHistory = this.chatHistory || [];
+      this.chatHistory.push({ role: "user", content: msg });
 
       const loader = this.appendMessage("AI is thinking...", "bot temp");
       
       const profile = window.StudyPilotDB.getProfile();
-      const apiKey = profile.geminiApiKey;
+      const backendStudentId = profile.backendStudentId || null;
+      const apiBase = this.getApiBaseUrl();
 
-      if (apiKey) {
-        // 1. Call Gemini Live API directly from client side
-        try {
-          const systemInstruction = `You are StudyPilot AI, an expert school tutor specifically teaching the CBSE syllabus for Grade ${profile.grade} (${profile.stream || 'General'}). 
-            Your role is strictly educational. You must explain school topics in an age-appropriate, simple, and encouraging way.
-            CRITICAL RULES:
-            - ONLY answer educational, syllabus-related questions.
-            - If the user asks general, non-study questions (e.g. video games, jokes, general code scripts, social chit-chat), politely decline and tell them you are programmed only to study CBSE lessons.
-            - Keep your explanations clean, well-formatted, and use bullet points where helpful.
-            - Answer the user's question now:`;
+      try {
+        const payload = {
+          question: msg,
+          student_id: backendStudentId,
+          grade: profile.grade,
+          subject: this.inferSubjectHint(msg, profile),
+          mode: "learn",
+          history: this.chatHistory.slice(0, -1),
+          profile: profile,
+          provider: "ollama",
+          model: profile.ollamaModel || "auto"
+        };
 
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: `${systemInstruction}\n\nUser Question: ${msg}` }]
-              }]
-            })
-          });
+        const response = await fetch(`${apiBase}/api/tutor/respond`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
 
-          if (loader) loader.remove();
+        if (loader) loader.remove();
 
-          if (!response.ok) {
-            throw new Error(`API returned error code: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`API returned error code: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data && data.ok) {
+          const replyText = data.answer;
+          this.chatHistory.push({ role: "assistant", content: replyText });
+          
+          const formattedReply = replyText.replace(/\n/g, "<br>");
+          
+          let sourceHtml = "";
+          if (data.sources && data.sources.length > 0) {
+            const uniqueSources = [];
+            const seen = new Set();
+            data.sources.forEach(src => {
+              const label = `${src.book_title || "Book"} (Ch ${src.chapter_number || src.title || ""})`;
+              if (!seen.has(label)) {
+                seen.add(label);
+                uniqueSources.push(src);
+              }
+            });
+            sourceHtml = `<div class="tutor-chat-sources" style="margin-top:0.5rem; font-size:0.75rem; color:var(--text-muted);">
+              <strong>Sources cited:</strong> ${uniqueSources.map(s => `<span class="badge badge-indigo" style="font-size:0.68rem; margin-right:0.25rem;">${escapeHTML(s.book_title || "Book")} Ch ${s.chapter_number || s.title || ""}</span>`).join("")}
+            </div>`;
           }
 
-          const data = await response.json();
-          const replyText = data.candidates[0].content.parts[0].text;
-          
-          // Format markdown carriage returns slightly for bubbles
-          const formattedReply = replyText.replace(/\n/g, "<br>");
-          this.appendMessage(`<p>${formattedReply}</p>`, "bot");
-
-        } catch (error) {
-          console.error("Gemini API Error: ", error);
-          if (loader) loader.remove();
-          this.appendMessage("<p>⚠️ <em>Could not connect to Gemini API. Checking local knowledge index...</em></p>", "bot");
-          this.handleLocalFallbackMessage(msg);
+          this.appendMessage(`<p>${formattedReply}</p>${sourceHtml}`, "bot");
+        } else {
+          throw new Error(data ? data.error : "Unknown error");
         }
-      } else {
-        // 2. Offline / Local Heuristic fallback
+
+      } catch (error) {
+        console.error("Local RAG API Error: ", error);
         if (loader) loader.remove();
         this.handleLocalFallbackMessage(msg);
       }
@@ -258,12 +304,54 @@
         } else if (lower.includes("bodmas") || lower.includes("order")) {
           responseHTML = LOCAL_KNOWLEDGE["7"].responses["bodmas"];
         } else {
-          responseHTML = `<p>I am your local study buddy. Enter a **Gemini API Key** in your Profile screen to ask me *any* question about the entire CBSE Pre-KG to Grade 12 syllabus.</p>
+          responseHTML = `<p>I am your local study buddy. Please make sure the StudyPilot backend is running and Ollama is started locally to ask me *any* question about the CBSE Grade 7 syllabus.</p>
             <p>Or, try asking me one of our preloaded topics: <strong>"${knowledge.prompts.join('", "')}"</strong>!</p>`;
         }
       }
 
       this.appendMessage(responseHTML, "bot");
+    },
+
+    syncLocalBooks: async function (event) {
+      if (event) event.preventDefault();
+
+      const apiBase = this.getApiBaseUrl();
+      const statusBox = document.getElementById("feed-books-status");
+      const triggerBtn = event && event.currentTarget ? event.currentTarget : null;
+      if (!statusBox || !triggerBtn) return;
+
+      try {
+        statusBox.classList.remove("hidden");
+        statusBox.style.color = "var(--text-main)";
+        statusBox.innerHTML = `<span>⏳ <strong>Indexing downloaded books...</strong> Importing local PDFs from the StudyPilot library into the AI Tutor.</span>`;
+        triggerBtn.disabled = true;
+
+        const response = await fetch(`${apiBase}/api/tutor/sync-local-books`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ refresh: false })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        statusBox.style.color = "#166534";
+        statusBox.innerHTML = `<span>✅ <strong>Synced!</strong> ${escapeHTML(data.message || "Downloaded books were indexed.")}</span>`;
+        if (window.StudyPilotDB && typeof window.StudyPilotDB.addNotification === "function") {
+          window.StudyPilotDB.addNotification(data.message || "Local books indexed for AI tutor.", "success");
+        }
+      } catch (error) {
+        console.error("Error syncing local books:", error);
+        statusBox.style.color = "var(--red-text)";
+        statusBox.innerHTML = `<span>⚠️ <strong>Sync failed:</strong> ${escapeHTML(error.message || "Unable to index local textbooks.")}</span>`;
+      } finally {
+        triggerBtn.disabled = false;
+      }
     },
 
     appendMessage: function (htmlContent, type) {
@@ -289,6 +377,32 @@
 
     askQuestion: function (query) {
       this.handleUserMessage(query);
+    },
+
+    capturePlannerSummary: function (payload) {
+      if (!payload || !payload.chapterId) return;
+      this.plannerSummaryCache[payload.chapterId] = payload;
+    },
+
+    showPlannerChapterSummary: function (payload) {
+      if (!payload || !payload.chapterId) return;
+      this.capturePlannerSummary(payload);
+
+      const summaryHtml = payload.summaryHtml || `<p>${escapeHTML((payload.summaryData && payload.summaryData.summary) || "Summary is not available yet.")}</p>`;
+      const chapterTitle = escapeHTML(payload.chapterTitle || "Selected chapter");
+      const subject = escapeHTML(payload.subject || "Subject");
+
+      this.appendMessage(
+        `
+          <div>
+            <span class="badge badge-indigo">Planner Summary</span>
+            <h3 style="margin:0.5rem 0 0.35rem 0;">${chapterTitle}</h3>
+            <p style="margin-bottom:0.75rem;"><strong>${subject}</strong> chapter summary prepared from the PDF.</p>
+            ${summaryHtml}
+          </div>
+        `,
+        "bot"
+      );
     },
 
     // Practice Quizzes
@@ -623,6 +737,149 @@
       document.getElementById("card-input-answer").value = "";
 
       this.loadFlashcards();
+    },
+
+    getApiBaseUrl: function () {
+      if (typeof window.getStudyPilotApiBaseUrl === "function") {
+        return window.getStudyPilotApiBaseUrl();
+      }
+      if (window.StudyPilotBooks && typeof window.StudyPilotBooks.getApiBaseUrl === "function") {
+        return window.StudyPilotBooks.getApiBaseUrl();
+      }
+      if (window.STUDYPILOT_API_BASE) {
+        return window.STUDYPILOT_API_BASE.replace(/\/+$/, "");
+      }
+      return "http://127.0.0.1:5000";
+    },
+
+    loadUploadedBooks: async function () {
+      const apiBase = this.getApiBaseUrl();
+      const listContainer = document.getElementById("uploaded-books-list");
+      if (!listContainer) return;
+
+      try {
+        listContainer.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">Loading books...</p>`;
+        const response = await fetch(`${apiBase}/api/tutor/uploaded-books`);
+        if (!response.ok) throw new Error("Failed to load uploaded books list");
+        
+        const data = await response.json();
+        if (data && data.ok) {
+          const books = data.items || [];
+          if (books.length === 0) {
+            listContainer.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:1rem;">No books fed yet. Upload your PDF above!</p>`;
+            return;
+          }
+
+          listContainer.innerHTML = books.map(book => {
+            const date = new Date(book.created_at).toLocaleDateString();
+            return `
+              <div class="upcoming-item" style="display:flex; justify-content:space-between; align-items:center; padding:0.65rem; border-bottom:1px solid var(--border-color);">
+                <div style="flex-grow:1; min-width:0; padding-right:1rem;">
+                  <span class="badge badge-accent" style="font-size:0.65rem; padding:0.15rem 0.35rem; margin-bottom:0.15rem; display:inline-block;">${escapeHTML(book.board)} · Class ${book.grade}</span>
+                  <h4 style="font-size:0.85rem; font-weight:600; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(book.book_title)}</h4>
+                  <p style="font-size:0.75rem; color:var(--text-muted); margin:0;">Subject: ${escapeHTML(book.subject)} · Uploaded: ${date}</p>
+                </div>
+                <button class="btn btn-outline btn-xs" onclick="window.StudyPilotTutor.deleteUploadedBook(event, ${book.id})" style="color:var(--red-text); border-color:var(--red-border); flex-shrink:0; cursor:pointer;">
+                  Delete
+                </button>
+              </div>
+            `;
+          }).join("");
+        }
+      } catch (error) {
+        console.error("Error loading uploaded books:", error);
+        listContainer.innerHTML = `<p style="font-size:0.85rem; color:var(--red-text);">Failed to load textbooks.</p>`;
+      }
+    },
+
+    uploadBookSubmit: async function (event) {
+      if (event) event.preventDefault();
+
+      const apiBase = this.getApiBaseUrl();
+      const form = document.getElementById("feed-books-form");
+      const statusBox = document.getElementById("feed-books-status");
+      const submitBtn = document.getElementById("feed-books-submit-btn");
+      if (!form || !statusBox || !submitBtn) return;
+
+      const board = document.getElementById("feed-input-board").value;
+      const grade = document.getElementById("feed-input-grade").value;
+      const subject = document.getElementById("feed-input-subject").value.trim();
+      const bookTitle = document.getElementById("feed-input-title").value.trim();
+      const fileInput = document.getElementById("feed-input-file");
+
+      if (!subject || !bookTitle || !fileInput.files || fileInput.files.length === 0) {
+        alert("Please fill all fields and select a PDF file.");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append("board", board);
+      formData.append("grade", grade);
+      formData.append("subject", subject);
+      formData.append("book_title", bookTitle);
+      formData.append("file", file);
+
+      try {
+        statusBox.classList.remove("hidden");
+        statusBox.style.color = "var(--text-main)";
+        statusBox.innerHTML = `<span>⏳ <strong>Parsing PDF book...</strong> Extracting text and indexing pages for the AI Tutor... Please wait (this can take up to a minute).</span>`;
+        submitBtn.disabled = true;
+
+        const response = await fetch(`${apiBase}/api/tutor/upload-book`, {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data && data.ok) {
+          statusBox.style.color = "#166534";
+          statusBox.innerHTML = `<span>✅ <strong>Success!</strong> ${escapeHTML(data.message)}</span>`;
+          form.reset();
+          this.loadUploadedBooks();
+          
+          window.StudyPilotDB.addNotification(`Book fed to AI: "${bookTitle}" indexed successfully.`, "success");
+        } else {
+          throw new Error(data.error || "Unknown error occurred.");
+        }
+      } catch (error) {
+        console.error("Error uploading book:", error);
+        statusBox.style.color = "#991b1b";
+        statusBox.innerHTML = `<span>❌ <strong>Failed:</strong> ${escapeHTML(error.message)}</span>`;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    },
+
+    deleteUploadedBook: async function (event, bookId) {
+      if (event) event.stopPropagation();
+
+      if (!confirm("Are you sure you want to delete this book? The tutor will no longer be able to reference its pages.")) {
+        return;
+      }
+
+      const apiBase = this.getApiBaseUrl();
+      try {
+        const response = await fetch(`${apiBase}/api/tutor/delete-book/${bookId}`, {
+          method: "DELETE"
+        });
+
+        if (!response.ok) throw new Error("Failed to delete book from server");
+
+        const data = await response.json();
+        if (data && data.ok) {
+          window.StudyPilotDB.addNotification("Book removed from AI tutor database.", "info");
+          this.loadUploadedBooks();
+        }
+      } catch (error) {
+        console.error("Error deleting book:", error);
+        alert(`Failed to delete book: ${error.message}`);
+      }
     }
   };
 

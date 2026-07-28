@@ -5,6 +5,7 @@
 
 (function () {
   const LOCAL_BOOK_ROOT = "/assets/books/ncert";
+  const PLANNER_BOOK_ROOT = `${LOCAL_BOOK_ROOT}/planner_chapters`;
 
   const SCIENCE_CHAPTERS = [
     {
@@ -92,54 +93,94 @@
     ncert: {
       6: {
         Mathematics: {
-      bookTitle: "Ganita Prakash",
-      pdfUrl: "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
-      pageUrl: "https://ncert.nic.in/textbook.php?fegp1=0-10",
-      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-mathematics-ganita-prakash.pdf`,
-      sourceLabel: "Official NCERT Grade 6 Mathematics textbook",
-    },
-  },
-  7: {
-    Science: {
-      bookTitle: "Curiosity",
-      pdfUrl: "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
-      pageUrl: "https://ncert.nic.in/textbook.php?gecu1=0-12",
-      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-science-curiosity.pdf`,
-      sourceLabel: "Official NCERT Grade 7 Science textbook",
-    },
-  },
-  10: {
-    Science: {
-      bookTitle: "Science",
-      pdfUrl: "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
-      pageUrl: "https://ncert.nic.in/textbook.php?jesc1=1-16",
-      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-science.pdf`,
-      sourceLabel: "Official NCERT Grade 10 Science textbook",
-    },
-    English: {
-      bookTitle: "First Flight",
-      pdfUrl: "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
-      pageUrl: "https://ncert.nic.in/textbook.php?jeff1=0-11",
-      localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-english-first-flight.pdf`,
-      sourceLabel: "Official NCERT Grade 10 English textbook",
-    },
-  },
-    },
-    tamil: {
-      6: {
-        Tamil: {
-          bookTitle: "Tamil Nadu Textbooks",
-          pdfUrl: "",
-          pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          sourceLabel: "Official Tamil Nadu textbook listing",
+          bookTitle: "Ganita Prakash",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?fegp1=0-10",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-mathematics-ganita-prakash.pdf`,
+          sourceLabel: "Official NCERT Grade 6 Mathematics textbook",
         },
       },
+      7: {
+        Science: {
+          bookTitle: "Curiosity",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?gecu1=0-12",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-science-curiosity.pdf`,
+          sourceLabel: "Official NCERT Grade 7 Science textbook",
+        },
+        "Social Science": [
+          {
+            bookTitle: "Exploring Society: India and Beyond Part 1",
+            pdfUrl: "https://ncert.nic.in/textbook/pdf/gees1ps.pdf",
+            pageUrl: "https://ncert.nic.in/textbook.php?gees1=0-12",
+            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-science-part1.pdf`,
+            sourceLabel: "Official NCERT Grade 7 Social Science textbook, Part 1",
+          },
+          {
+            bookTitle: "Exploring Society: India and Beyond Part 2",
+            pdfUrl: "https://ncert.nic.in/textbook/pdf/gees2ps.pdf",
+            pageUrl: "https://ncert.nic.in/textbook.php?gees2=0-8",
+            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-science-part2.pdf`,
+            sourceLabel: "Official NCERT Grade 7 Social Science textbook, Part 2",
+          },
+        ],
+        English: [
+          {
+            bookTitle: "Poorvi",
+            pdfUrl: "https://ncert.nic.in/textbook/pdf/gepr1ps.pdf",
+            pageUrl: "https://ncert.nic.in/textbook.php?gepr1=0-11",
+            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-english-poorvi.pdf`,
+            sourceLabel: "Official NCERT Grade 7 English textbook",
+          },
+        ],
+      },
       10: {
-        Tamil: {
-          bookTitle: "Tamil Nadu Textbooks",
-          pdfUrl: "",
+        Science: {
+          bookTitle: "Science",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?jesc1=1-16",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-science.pdf`,
+          sourceLabel: "Official NCERT Grade 10 Science textbook",
+        },
+        English: {
+          bookTitle: "First Flight",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?jeff1=0-11",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-english-first-flight.pdf`,
+          sourceLabel: "Official NCERT Grade 10 English textbook",
+        },
+      },
+    },
+
+      7: {
+        
+        Science: {
+          bookTitle: "Samacheer Kalvi Science",
+          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
           pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          sourceLabel: "Official Tamil Nadu textbook listing",
+          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-science-scert.pdf`,
+          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Science textbook",
+        },
+        Mathematics: {
+          bookTitle: "Samacheer Kalvi Mathematics",
+          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
+          pageUrl: "https://textbookcorp.in/textbook/schools/books",
+          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-maths-scert.pdf`,
+          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Mathematics textbook",
+        },
+        "Social Science": {
+          bookTitle: "Samacheer Kalvi Social Science",
+          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
+          pageUrl: "https://textbookcorp.in/textbook/schools/books",
+          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-scert.pdf`,
+          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Social Science textbook",
+        },
+        English: {
+          bookTitle: "Samacheer Kalvi English",
+          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
+          pageUrl: "https://textbookcorp.in/textbook/schools/books",
+          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-english-scert.pdf`,
+          sourceLabel: "Official Tamil Nadu SCERT Grade 7 English textbook",
         },
       },
     },
@@ -186,40 +227,40 @@
     ],
     7: [
       {
-        id: "cbse7_science_ch1",
+        id: "scert7_science_ch1",
         num: 1,
         key: "g7_ch1",
         grade: 7,
-        title: "Nutrition in Plants",
+        title: "Measurement",
         textbookUrl: OFFICIAL_SOURCE_URLS.Science,
         textbookPage: OFFICIAL_SOURCE_URLS.Science,
-        summary: "Study how plants make food, how chlorophyll works, and why photosynthesis matters.",
-        highlights: ["Photosynthesis", "Chlorophyll and sunlight", "Autotrophic nutrition"],
-        keywords: ["nutrition", "plants", "photosynthesis", "chlorophyll", "food"],
+        summary: "Study of physical quantities, standard units, and measuring instruments.",
+        highlights: ["Physical Quantities and Units", "Measurement of Area, Volume and Density", "Astronomical Unit and Light Year"],
+        keywords: ["measurement", "units", "density", "volume", "light year"],
       },
       {
-        id: "cbse7_science_ch2",
+        id: "scert7_science_ch2",
         num: 2,
         key: "g7_ch2",
         grade: 7,
-        title: "Heat",
+        title: "Force and Motion",
         textbookUrl: OFFICIAL_SOURCE_URLS.Science,
         textbookPage: OFFICIAL_SOURCE_URLS.Science,
-        summary: "Explore temperature, transfer of heat, and how heat moves by conduction, convection, and radiation.",
-        highlights: ["Temperature and heat", "Conduction and convection", "Radiation"],
-        keywords: ["heat", "temperature", "conduction", "convection", "radiation"],
+        summary: "Understanding distance, displacement, speed, velocity, and acceleration.",
+        highlights: ["Distance and Displacement", "Speed, Velocity and Acceleration", "Center of Gravity and Stability"],
+        keywords: ["force", "motion", "speed", "velocity", "acceleration"],
       },
       {
-        id: "cbse7_science_ch3",
+        id: "scert7_science_ch3",
         num: 3,
         key: "g7_ch3",
         grade: 7,
-        title: "Acids, Bases and Salts",
+        title: "Matter Around Us",
         textbookUrl: OFFICIAL_SOURCE_URLS.Science,
         textbookPage: OFFICIAL_SOURCE_URLS.Science,
-        summary: "Revise indicators, neutralisation, and everyday examples of acidic and basic substances.",
-        highlights: ["Acids and bases", "Indicators", "Neutralisation"],
-        keywords: ["acid", "base", "salt", "indicator", "neutralisation"],
+        summary: "Elements, compounds, mixtures, and chemical symbols.",
+        highlights: ["What is Matter?", "Elements and Compounds", "Mixtures and Separation Methods"],
+        keywords: ["matter", "elements", "compounds", "mixtures", "symbols"],
       },
     ],
     8: [
@@ -348,19 +389,19 @@
     7: {
       Science: {
         g7_ch1: [
-          { q: "What process do plants use to make food?", options: ["Photosynthesis", "Respiration", "Digestion", "Evaporation"], answer: 0, explain: "Plants make food by photosynthesis." },
-          { q: "Which pigment helps plants trap sunlight?", options: ["Chlorophyll", "Melanin", "Haemoglobin", "Starch"], answer: 0, explain: "Chlorophyll absorbs sunlight." },
-          { q: "Plants are called what kind of organisms?", options: ["Autotrophs", "Parasites", "Carnivores", "Consumers"], answer: 0, explain: "Plants make their own food, so they are autotrophs." },
+          { q: "What is the standard unit of density?", options: ["kg/m³", "g/cm³", "kg/m²", "kg/m"], answer: 0, explain: "Density is mass per unit volume, so its SI unit is kg/m³." },
+          { q: "What is the value of one astronomical unit (AU) in metres?", options: ["1.496 * 10¹¹ m", "1.496 * 10¹² m", "9.46 * 10¹⁵ m", "3 * 10⁸ m"], answer: 0, explain: "One Astronomical Unit (average distance from Earth to Sun) is approximately 1.496 * 10¹¹ metres." },
+          { q: "What is a light year?", options: ["The distance light travels in one year", "The time it takes to travel to a star", "The mass of light", "The speed of light"], answer: 0, explain: "A light year is a unit of astronomical distance equal to the distance light travels in one year." },
         ],
         g7_ch2: [
-          { q: "What is heat?", options: ["A form of energy", "A type of stone", "A metal only", "A gas only"], answer: 0, explain: "Heat is a form of energy." },
-          { q: "Which method transfers heat through solids?", options: ["Conduction", "Evaporation", "Condensation", "Fusion"], answer: 0, explain: "Conduction transfers heat through solids." },
-          { q: "Heat from the Sun reaches us by:", options: ["Radiation", "Conduction", "Friction", "Sound"], answer: 0, explain: "Heat travels from the Sun by radiation." },
+          { q: "What is the rate of change of displacement called?", options: ["Velocity", "Speed", "Acceleration", "Distance"], answer: 0, explain: "Velocity is the rate of change of displacement in a specific direction." },
+          { q: "Which of the following is a vector quantity?", options: ["Velocity", "Speed", "Distance", "Mass"], answer: 0, explain: "Velocity has both magnitude and direction, so it is a vector quantity." },
+          { q: "What is the unit of acceleration?", options: ["m/s²", "m/s", "m/s³", "km/h"], answer: 0, explain: "Acceleration is the rate of change of velocity, so its unit is m/s²." },
         ],
         g7_ch3: [
-          { q: "What do acids taste like?", options: ["Sour", "Sweet", "Bitter", "Salty"], answer: 0, explain: "Acids usually taste sour." },
-          { q: "What does neutralisation produce?", options: ["Salt and water", "Only heat", "Only gas", "Only acid"], answer: 0, explain: "Neutralisation produces salt and water." },
-          { q: "Which is a base?", options: ["Soap", "Vinegar", "Lemon juice", "Orange juice"], answer: 0, explain: "Soap is basic." },
+          { q: "Which of the following is a pure substance made of only one kind of atom?", options: ["Element", "Compound", "Mixture", "Solution"], answer: 0, explain: "An element is a pure substance consisting of only one type of atom." },
+          { q: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Fe", "Gd"], answer: 0, explain: "The chemical symbol for Gold is Au (from Latin Aurum)." },
+          { q: "Which separation technique is based on difference in boiling points?", options: ["Distillation", "Filtration", "Decantation", "Sieving"], answer: 0, explain: "Distillation separates components of a mixture based on their different boiling points." },
         ],
       },
     },
@@ -437,14 +478,14 @@
     },
     7: {
       Science: [
-        ["Nutrition in Plants", "What do plants need for photosynthesis?", "Sunlight, water, carbon dioxide, and chlorophyll."],
-        ["Heat", "What is conduction?", "Heat transfer through direct contact."],
-        ["Acids, Bases and Salts", "What happens in neutralisation?", "An acid and a base form salt and water."],
+        ["Measurement", "What is a light year?", "The distance travelled by light in one year, which is 9.46 * 10^15 metres."],
+        ["Force and Motion", "What is velocity?", "The rate of change of displacement, measured in m/s."],
+        ["Matter Around Us", "What is an element?", "A substance made of only one kind of atom, which cannot be broken down chemically."],
       ],
       Mathematics: [
-        ["Integers", "What is an integer?", "A whole number that can be positive, negative, or zero."],
-        ["Simple Equations", "What is an equation?", "A mathematical statement with an equal sign."],
-        ["Fractions", "What is a proper fraction?", "A fraction with numerator smaller than denominator."],
+        ["Number System", "What is the product of a negative integer and a positive integer?", "A negative integer."],
+        ["Measurements", "What is the formula for the area of a parallelogram?", "Base multiplied by height (b * h)."],
+        ["Algebra", "What is a variable?", "A symbol, usually a letter like x or y, that represents an unknown value in an equation."],
       ],
       "Social Science": [
         ["Environment", "What is the environment?", "Everything around us in nature and society."],
@@ -664,11 +705,12 @@
     const board = TEXTBOOK_CATALOG[boardKey] || {};
     const gradeCatalog = board[Number(grade)] || {};
     if (!subject) {
-      return Object.values(gradeCatalog).map(entry => ({ ...entry }));
+      return Object.values(gradeCatalog).flatMap(entry => Array.isArray(entry) ? entry.map(item => ({ ...item })) : [{ ...entry }]);
     }
 
     const book = gradeCatalog[subject];
-    return book ? [{ ...book }] : [];
+    if (!book) return [];
+    return Array.isArray(book) ? book.map(item => ({ ...item })) : [{ ...book }];
   }
 
   function getTextbookResource(boardKey = "ncert", grade = 10, subject = "") {

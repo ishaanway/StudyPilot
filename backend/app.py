@@ -7,6 +7,7 @@ provides the SQLite-backed foundation for the next phases.
 from __future__ import annotations
 
 import json
+import os
 import re
 from datetime import date
 from pathlib import Path
@@ -30,6 +31,13 @@ from backend.library import (
     book_file_path,
     filtered_catalog,
     find_catalog_item,
+)
+from backend.planner_pdf import (
+    chapter_file_path,
+    chapter_resource,
+    ensure_chapter_downloaded,
+    extract_chapter_text,
+    prefetch_chapters,
 )
 from backend.llm import generate_tutor_response_with_choice, list_local_model_options
 from backend.reminder import build_reminders
@@ -405,16 +413,27 @@ def _career_fallback(profile: dict[str, Any] | None, progress_payload: dict[str,
 def _build_tutor_system_prompt(mode: str, profile_context: dict[str, Any]) -> str:
     mode_note = _mode_instruction(mode)
     return (
-        "You are StudyPilot, an educational AI tutor for school students. "
-        f"Mode: {mode}. "
-        f"{mode_note} "
-        "Always adapt the explanation to the student's grade level. "
-        "Use the profile context, weak areas, and conversation history. "
-        "Never dump a raw final answer without teaching the reasoning. "
-        "Use examples and analogies when helpful. "
-        "If the student's question needs multiple steps, structure the answer clearly. "
-        "If the student is asking follow-up doubt questions, answer interactively and invite the next question. "
-        "Stay aligned to the official CBSE/NCERT syllabus context when it is available. "
+        "You are StudyPilot, an AI tutor for Tamil Nadu State Board students.\n\n"
+        "VERY IMPORTANT RULES:\n"
+        "1. Never use NCERT textbooks.\n"
+        "2. Never use CBSE textbooks.\n"
+        "3. Never invent chapter names.\n"
+        "4. Never answer from your own memory.\n"
+        "5. Only answer using the uploaded Tamil Nadu SCERT textbook.\n\n"
+        "Before answering:\n"
+        "- Find the requested chapter in the uploaded Grade 7 Tamil SCERT textbook.\n"
+        "- Use the exact chapter title from the book.\n"
+        "- If the chapter is not present, reply exactly:\n"
+        "  \"This chapter does not exist in the Tamil Nadu Grade 7 SCERT textbook.\"\n"
+        "- Never substitute another chapter.\n"
+        "- Never guess.\n"
+        "- Always quote the official chapter title first.\n"
+        "- Then explain the lesson in simple language suitable for Grade 7.\n\n"
+        "Interactive Behavior Flow:\n"
+        "- If the student greets you or asks about a subject (for example, if they say 'science' or 'tamil' or 'english' or 'mathematics'), respond exactly: \"Ok, let's dive into [SubjectName]. What chapter are we looking for?\"\n"
+        "- If the student then inputs any chapter, respond with: \"Ah ok!\" followed by a complete summary of that chapter using the context.\n"
+        "- If the student asks 'DOUBTS', help them by answering their doubts/questions using the local Ollama tutor and the SCERT textbook context.\n\n"
+        f"Mode: {mode}. {mode_note}\n"
         f"Student context: {json.dumps(profile_context, ensure_ascii=False)}"
     )
 
@@ -655,12 +674,12 @@ def _subject_progress(student_id: int) -> list[dict]:
         stored = progress_map.get(subject_name) or {}
         quiz_performance = int(stored.get("quiz_performance") or 0)
         confidence_level = int(stored.get("confidence_level") or max(revision_progress, quiz_performance))
+        completion_ratio = (homework_completion + chapter_completion + revision_progress) / 300.0
         readiness = round(
             homework_completion * 0.2
             + chapter_completion * 0.25
             + revision_progress * 0.25
-            + quiz_performance * 0.15
-            + confidence_level * 0.15
+            + (quiz_performance * 0.15 + confidence_level * 0.15) * completion_ratio
         )
 
         subject_metrics.append(
@@ -729,11 +748,77 @@ def index():
     return app.send_static_file("index.html")
 
 
+def _ensure_student_curriculum(student_id: int) -> None:
+    student = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,))
+    if not student:
+        return
+
+    try:
+        subjects = json.loads(student["subjects_json"])
+    except Exception:
+        subjects = []
+
+    grade = student["grade"]
+
+    for subject in subjects:
+        existing = fetch_one(
+            "SELECT id FROM curriculum WHERE student_id = ? AND LOWER(subject_name) = ? LIMIT 1",
+            (student_id, subject.lower()),
+        )
+        if existing:
+            continue
+
+        chapters = fetch_all(
+            """
+            SELECT * FROM syllabus_nodes
+            WHERE node_type = 'chapter' AND grade = ? AND LOWER(subject) = ?
+            ORDER BY chapter_number
+            """,
+            (grade, subject.lower()),
+        )
+
+        sort_order = 1
+        for ch in chapters:
+            sections = fetch_all(
+                """
+                SELECT * FROM syllabus_nodes
+                WHERE node_type = 'section' AND parent_id = ?
+                ORDER BY section_number
+                """,
+                (ch["id"],),
+            )
+            if sections:
+                for sec in sections:
+                    topic_title = f"{ch['chapter_number']}.{sec['section_number']} {sec['title']}"
+                    execute(
+                        """
+                        INSERT OR IGNORE INTO curriculum (
+                            student_id, grade, subject_name, chapter_title, topic_title, topic_status, sort_order
+                        ) VALUES (?, ?, ?, ?, ?, 'Not Started', ?)
+                        """,
+                        (student_id, grade, subject, ch["title"], topic_title, sort_order),
+                    )
+                    sort_order += 1
+            else:
+                execute(
+                    """
+                    INSERT OR IGNORE INTO curriculum (
+                        student_id, grade, subject_name, chapter_title, topic_title, topic_status, sort_order
+                    ) VALUES (?, ?, ?, ?, ?, 'Not Started', ?)
+                    """,
+                    (student_id, grade, subject, ch["title"], ch["title"], sort_order),
+                )
+                sort_order += 1
+
+
 @app.get("/api/bootstrap")
 def bootstrap():
     student_row = fetch_one("SELECT * FROM students ORDER BY id LIMIT 1")
     student = _student_from_row(student_row)
     student_id = student["id"] if student else None
+
+    if student_id is not None:
+        _ensure_student_curriculum(student_id)
 
     if student_id is None:
         return jsonify(
@@ -1054,6 +1139,8 @@ def curriculum():
     if student_id is None:
         return jsonify({"ok": True, "items": []}) if request.method == "GET" else _json_error("Create a student first.")
 
+    _ensure_student_curriculum(student_id)
+
     if request.method == "GET":
         rows = fetch_all("SELECT * FROM curriculum WHERE student_id = ? ORDER BY sort_order, id", (student_id,))
         return jsonify({"ok": True, "items": rows})
@@ -1263,13 +1350,9 @@ def tutor_respond():
     system_prompt = _build_tutor_system_prompt(study_mode, profile_context)
     if greeting_mode:
         system_prompt = (
-            "You are StudyPilot, a friendly school tutor and study companion. "
-            "The student is greeting you, so respond warmly in one short paragraph. "
-            "Then ask what subject, chapter, or mode they want help with. "
-            "Keep the tone encouraging and energetic. "
-            "Use the student's profile context and remember the recent conversation history. "
-            f"Student context: {json.dumps(profile_context, ensure_ascii=False)} "
-            f"Conversation history: {json.dumps(history, ensure_ascii=False)}"
+            "You are StudyPilot, an AI tutor for Tamil Nadu State Board students.\n\n"
+            "Respond warmly to the student's greeting, introduce yourself, and ask what subject they want to study. "
+            "Example: 'Ok, let's dive into [SubjectName]. What chapter are we looking for?'"
         )
 
     user_prompt = json.dumps(
@@ -1305,10 +1388,8 @@ def tutor_respond():
     if llm_mode.startswith("ollama") and _looks_like_prompt_echo(response_text):
         if greeting_mode:
             retry_system_prompt = (
-                "You are StudyPilot, a warm school tutor. "
-                "Reply with exactly one short friendly paragraph. "
-                "Do not repeat the user's words or any labels. "
-                "Use the student's profile and recent conversation history to keep the greeting personal."
+                "You are StudyPilot, an AI tutor for Tamil Nadu State Board students. "
+                "Reply with exactly one short friendly greeting and ask what subject they want to dive into."
             )
             retry_user_prompt = json.dumps(
                 {
@@ -1322,10 +1403,22 @@ def tutor_respond():
             )
         else:
             retry_system_prompt = (
-                "You are StudyPilot, a helpful school tutor. "
-                "Answer with a teaching-first explanation using steps, examples, and one short check question. "
-                "Do not repeat labels or prompt text. "
-                "Use the student's profile context and conversation history."
+                "You are StudyPilot, an AI tutor for Tamil Nadu State Board students.\n\n"
+                "VERY IMPORTANT RULES:\n"
+                "1. Never use NCERT textbooks.\n"
+                "2. Never use CBSE textbooks.\n"
+                "3. Never invent chapter names.\n"
+                "4. Never answer from your own memory.\n"
+                "5. Only answer using the uploaded Tamil Nadu SCERT textbook.\n\n"
+                "Before answering:\n"
+                "- Find the requested chapter in the uploaded Grade 7 Tamil SCERT textbook.\n"
+                "- Use the exact chapter title from the book.\n"
+                "- If the chapter is not present, reply exactly: \"This chapter does not exist in the Tamil Nadu Grade 7 SCERT textbook.\"\n"
+                "- Never substitute another chapter.\n"
+                "- Never guess.\n"
+                "- Always quote the official chapter title first.\n"
+                "- Then explain the lesson in simple language suitable for Grade 7.\n\n"
+                "If they ask DOUBTS, help them with their questions using the local Ollama tutor and textbook context."
             )
             retry_user_prompt = (
                 json.dumps(
@@ -1399,6 +1492,92 @@ def tutor_models():
     models = list_local_model_options()
     active = models[0] if models else {"provider": "offline", "model": "", "label": "Offline"}
     return jsonify({"ok": True, "items": models, "active": active})
+
+
+@app.post("/api/parents/query")
+def parents_query():
+    payload = _payload()
+    question = (payload.get("question") or "").strip()
+    profile = payload.get("profile") or {}
+    tasks = payload.get("tasks") or []
+    exams = payload.get("exams") or []
+    progress = payload.get("progress") or {}
+
+    student_name = profile.get("name", "the student")
+    grade = profile.get("grade", "7")
+    board = profile.get("board", "Tamil Nadu State Board")
+    
+    total_tasks = len(tasks)
+    completed_tasks = len([t for t in tasks if t.get("completed") or t.get("status") in ("completed", "submitted", "done")])
+    pending_tasks = total_tasks - completed_tasks
+
+    system_prompt = (
+        "You are StudyPilot AI Parent Coach, a warm and knowledgeable counselor helping parents support their child's education.\n\n"
+        "VERY IMPORTANT RULES:\n"
+        "1. Never use NCERT or CBSE textbooks.\n"
+        "2. Provide highly practical, specific advice on how the parent can support, guide, or encourage the student.\n"
+        "3. Emphasize Grade 7 Tamil Nadu State Board (SCERT) alignment and study habits.\n"
+        "4. Keep the tone encouraging, warm, and professional. Respond in short, clear paragraphs.\n"
+        "5. Address the parent directly (e.g. 'You can help...', 'Encourage your child...')."
+    )
+
+    user_prompt = json.dumps(
+        {
+            "parent_question": question,
+            "student_profile": {
+                "name": student_name,
+                "grade": grade,
+                "board": board,
+                "favorite_subjects": profile.get("favorite_subjects", []),
+                "academic_goal": profile.get("goal", "Improve overall grades")
+            },
+            "task_completer_status": {
+                "total_tasks": total_tasks,
+                "completed_tasks": completed_tasks,
+                "pending_tasks": pending_tasks
+            },
+            "recent_exams": exams
+        },
+        ensure_ascii=False,
+        indent=2
+    )
+
+    response_text, llm_mode = generate_tutor_response_with_choice(
+        system_prompt,
+        user_prompt,
+        provider=payload.get("provider") or payload.get("ai_provider") or "auto",
+        model=payload.get("model") or payload.get("ai_model"),
+    )
+
+    if not response_text:
+        lower = question.lower()
+        if "time" in lower or "schedule" in lower or "habit" in lower:
+            response_text = (
+                f"To help {student_name} manage study time better, encourage them to use the Pomodoro timer in the Student Toolbox. "
+                "You can sit with them for a 25-minute focus session, and then ensure they take a full 5-minute break. "
+                "Establishing consistent daily study blocks is key to building structured habits."
+            )
+        elif "struggling" in lower or "subject" in lower or "weak" in lower:
+            response_text = (
+                f"If {student_name} is struggling with a subject like Science or Tamil, you can sit together and review the "
+                "flashcards in the AI Tutor tab. Asking them to 'teach' a concept back to you is one of the most effective ways "
+                "to reinforce learning without pressure."
+            )
+        elif "tamil" in lower or "scert" in lower or "exam" in lower:
+            response_text = (
+                f"To support {student_name} in their Grade 7 Tamil exam prep, verify that they are studying the official Tamil Nadu "
+                "SCERT textbook chapters (such as 'எங்கள்தமிழ்'). Encourage them to use the AI Tutor to generate practice summaries "
+                "and test themselves before the exams."
+            )
+        else:
+            response_text = (
+                f"As a parent, the best way to support {student_name} is to establish a quiet, distraction-free study environment, "
+                f"praise their consistent study streak, and review their completed tasks daily on the checklist. "
+                "Open, positive communication about their academic goals is highly motivating!"
+            )
+        llm_mode = "offline_knowledge"
+
+    return jsonify({"ok": True, "answer": response_text, "mode": llm_mode})
 
 
 @app.post("/api/career/recommendations")
@@ -1916,6 +2095,39 @@ def syllabus_search():
     return jsonify({"ok": True, "items": rows})
 
 
+@app.post("/api/planner/chapter-pdfs/prefetch")
+def planner_prefetch_chapter_pdfs():
+    body = request.get_json() or {}
+    grade = body.get("grade", 7)
+    subjects = body.get("subjects")
+    items = prefetch_chapters(grade=grade, subjects=subjects)
+    return jsonify({"ok": True, "items": items})
+
+
+@app.get("/api/planner/chapters/<chapter_id>/file")
+def planner_chapter_file(chapter_id: str):
+    item = chapter_resource(chapter_id)
+    if not item:
+        return _json_error("Chapter not found.", 404)
+    path = chapter_file_path(chapter_id)
+    if not path.exists():
+        return _json_error("Chapter file not found.", 404)
+    return send_file(path, mimetype="application/pdf", as_attachment=False, download_name=path.name)
+
+
+@app.post("/api/planner/chapter-summary")
+def planner_chapter_summary():
+    body = request.get_json() or {}
+    chapter_id = body.get("chapter_id")
+    if not chapter_id:
+        return _json_error("chapter_id is required.")
+    try:
+        text = extract_chapter_text(chapter_id)
+        return jsonify({"ok": True, "text": text})
+    except Exception as exc:
+        return _json_error(str(exc), 500)
+
+
 def _ensure_student_profile_storage() -> None:
     columns = {row.get("name") for row in fetch_all("PRAGMA table_info(students)") if row.get("name")}
     if "profile_json" not in columns:
@@ -1928,5 +2140,6 @@ seed_knowledge_base()
 seed_official_curriculum_catalog()
 
 
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+if __name__ in {"__main__", "backend.app"}:
+    debug_mode = os.environ.get("FLASK_DEBUG", "0").lower() in {"1", "true", "yes"}
+    app.run(host="127.0.0.1", port=5000, debug=debug_mode)

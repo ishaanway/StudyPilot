@@ -1,32 +1,5 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS students (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    grade INTEGER NOT NULL CHECK (grade BETWEEN 6 AND 10),
-    section TEXT NOT NULL DEFAULT '',
-    school_board TEXT NOT NULL,
-    subjects_json TEXT NOT NULL DEFAULT '[]',
-    daily_study_hours REAL NOT NULL DEFAULT 2,
-    academic_goal TEXT NOT NULL DEFAULT 'Improve Marks',
-    profile_json TEXT NOT NULL DEFAULT '{}',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS subjects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id INTEGER NOT NULL,
-    name TEXT NOT NULL,
-    code TEXT,
-    teacher_name TEXT,
-    is_core INTEGER NOT NULL DEFAULT 1 CHECK (is_core IN (0, 1)),
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (student_id, name),
-    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS curriculum (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id INTEGER NOT NULL,
@@ -45,17 +18,28 @@ CREATE TABLE IF NOT EXISTS curriculum (
     FOREIGN KEY (subject_id) REFERENCES subjects (id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS tasks (
+CREATE TABLE IF NOT EXISTS exams (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     student_id INTEGER NOT NULL,
-    title TEXT NOT NULL,
     subject TEXT NOT NULL,
-    description TEXT DEFAULT '',
-    due_date TEXT NOT NULL,
-    priority INTEGER NOT NULL DEFAULT 2 CHECK (priority BETWEEN 1 AND 5),
-    estimated_minutes INTEGER NOT NULL DEFAULT 30,
-    status TEXT NOT NULL DEFAULT 'pending'
-        CHECK (status IN ('pending', 'completed', 'skipped')),
+    title TEXT NOT NULL,
+    exam_date TEXT NOT NULL,
+    syllabus_scope TEXT DEFAULT '',
+    confidence_level INTEGER NOT NULL DEFAULT 50 CHECK (confidence_level BETWEEN 0 AND 100),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS flashcards (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    subject TEXT NOT NULL,
+    front TEXT NOT NULL,
+    back TEXT NOT NULL,
+    ease INTEGER NOT NULL DEFAULT 0,
+    next_review TEXT DEFAULT '',
+    review_count INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
@@ -77,51 +61,19 @@ CREATE TABLE IF NOT EXISTS homework (
     FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS exams (
+CREATE TABLE IF NOT EXISTS knowledge_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id INTEGER NOT NULL,
+    grade INTEGER NOT NULL,
     subject TEXT NOT NULL,
-    title TEXT NOT NULL,
-    exam_date TEXT NOT NULL,
-    syllabus_scope TEXT DEFAULT '',
-    confidence_level INTEGER NOT NULL DEFAULT 50 CHECK (confidence_level BETWEEN 0 AND 100),
+    book_title TEXT NOT NULL,
+    chapter_number INTEGER NOT NULL,
+    chapter_title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    keywords TEXT NOT NULL DEFAULT '',
+    source_url TEXT NOT NULL DEFAULT '',
+    source_type TEXT NOT NULL DEFAULT 'NCERT',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS study_sessions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id INTEGER NOT NULL,
-    task_id INTEGER,
-    subject TEXT NOT NULL,
-    session_date TEXT NOT NULL,
-    start_time TEXT NOT NULL,
-    end_time TEXT NOT NULL,
-    session_type TEXT NOT NULL DEFAULT 'study'
-        CHECK (session_type IN ('study', 'revision', 'exam', 'break')),
-    focus_level INTEGER NOT NULL DEFAULT 3 CHECK (focus_level BETWEEN 1 AND 5),
-    status TEXT NOT NULL DEFAULT 'planned'
-        CHECK (status IN ('planned', 'completed', 'missed', 'rescheduled')),
-    notes TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
-    FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE SET NULL
-);
-
-CREATE TABLE IF NOT EXISTS flashcards (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    student_id INTEGER NOT NULL,
-    subject TEXT NOT NULL,
-    front TEXT NOT NULL,
-    back TEXT NOT NULL,
-    ease INTEGER NOT NULL DEFAULT 0,
-    next_review TEXT DEFAULT '',
-    review_count INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS notes (
@@ -164,19 +116,51 @@ CREATE TABLE IF NOT EXISTS settings (
     FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS knowledge_entries (
+CREATE TABLE IF NOT EXISTS students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    grade INTEGER NOT NULL,
-    subject TEXT NOT NULL,
-    book_title TEXT NOT NULL,
-    chapter_number INTEGER NOT NULL,
-    chapter_title TEXT NOT NULL,
-    summary TEXT NOT NULL,
-    keywords TEXT NOT NULL DEFAULT '',
-    source_url TEXT NOT NULL DEFAULT '',
-    source_type TEXT NOT NULL DEFAULT 'NCERT',
+    name TEXT NOT NULL,
+    grade INTEGER NOT NULL CHECK (grade BETWEEN 6 AND 10),
+    section TEXT NOT NULL DEFAULT '',
+    school_board TEXT NOT NULL,
+    subjects_json TEXT NOT NULL DEFAULT '[]',
+    daily_study_hours REAL NOT NULL DEFAULT 2,
+    academic_goal TEXT NOT NULL DEFAULT 'Improve Marks',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    profile_json TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS study_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    task_id INTEGER,
+    subject TEXT NOT NULL,
+    session_date TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    session_type TEXT NOT NULL DEFAULT 'study'
+        CHECK (session_type IN ('study', 'revision', 'exam', 'break')),
+    focus_level INTEGER NOT NULL DEFAULT 3 CHECK (focus_level BETWEEN 1 AND 5),
+    status TEXT NOT NULL DEFAULT 'planned'
+        CHECK (status IN ('planned', 'completed', 'missed', 'rescheduled')),
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE,
+    FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS subjects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    code TEXT,
+    teacher_name TEXT,
+    is_core INTEGER NOT NULL DEFAULT 1 CHECK (is_core IN (0, 1)),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (student_id, name),
+    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS syllabus_nodes (
@@ -201,13 +185,41 @@ CREATE TABLE IF NOT EXISTS syllabus_nodes (
     FOREIGN KEY (parent_id) REFERENCES syllabus_nodes (id) ON DELETE CASCADE
 );
 
-CREATE INDEX IF NOT EXISTS idx_students_grade ON students (grade);
-CREATE INDEX IF NOT EXISTS idx_tasks_student_due ON tasks (student_id, due_date);
-CREATE INDEX IF NOT EXISTS idx_exams_student_date ON exams (student_id, exam_date);
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    due_date TEXT NOT NULL,
+    priority INTEGER NOT NULL DEFAULT 2 CHECK (priority BETWEEN 1 AND 5),
+    estimated_minutes INTEGER NOT NULL DEFAULT 30,
+    status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'completed', 'skipped')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students (id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_curriculum_student_subject ON curriculum (student_id, subject_name);
-CREATE INDEX IF NOT EXISTS idx_sessions_student_date ON study_sessions (student_id, session_date);
+
+CREATE INDEX IF NOT EXISTS idx_exams_student_date ON exams (student_id, exam_date);
+
 CREATE INDEX IF NOT EXISTS idx_knowledge_grade_subject ON knowledge_entries (grade, subject);
+
 CREATE INDEX IF NOT EXISTS idx_knowledge_keywords ON knowledge_entries (keywords);
-CREATE INDEX IF NOT EXISTS idx_syllabus_nodes_parent ON syllabus_nodes (parent_id);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_student_date ON study_sessions (student_id, session_date);
+
+CREATE INDEX IF NOT EXISTS idx_students_grade ON students (grade);
+
 CREATE INDEX IF NOT EXISTS idx_syllabus_nodes_grade_subject ON syllabus_nodes (grade, subject);
+
+CREATE INDEX IF NOT EXISTS idx_syllabus_nodes_parent ON syllabus_nodes (parent_id);
+
 CREATE INDEX IF NOT EXISTS idx_syllabus_nodes_type ON syllabus_nodes (node_type);
+
+CREATE INDEX IF NOT EXISTS idx_tasks_student_due ON tasks (student_id, due_date);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_curriculum_student_topic
+    ON curriculum (student_id, subject_name, chapter_title, topic_title);

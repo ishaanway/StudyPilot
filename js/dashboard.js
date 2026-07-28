@@ -60,9 +60,9 @@
 
       listEl.innerHTML = tasks.map(t => {
         return `
-          <li class="task-item ${t.completed ? 'completed' : ''}">
+          <li class="task-item ${(t.completed || t.status === 'completed') ? 'completed' : ''}">
             <label class="task-checkbox-label">
-              <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="window.StudyPilotDashboard.toggleTaskStatus('${t.id}')">
+              <input type="checkbox" ${(t.completed || t.status === 'completed') ? 'checked' : ''} onclick="window.StudyPilotDashboard.toggleTaskStatus('${t.id}')">
               <span class="task-title">${escapeHTML(t.title)}</span>
             </label>
             <div class="task-meta">
@@ -103,7 +103,7 @@
 
       const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
       const total = tasks.length;
-      const completed = tasks.filter(t => t.completed).length;
+      const completed = tasks.filter(t => t.completed || t.status === "completed").length;
       
       const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
       
@@ -143,10 +143,10 @@
 
       // Demo current date is June 22
       const demoDate = new Date("2026-06-22");
-      exams.sort((a, b) => new Date(a.date) - new Date(b.date));
+      exams.sort((a, b) => new Date(a.date || a.exam_date) - new Date(b.date || b.exam_date));
 
       container.innerHTML = exams.map(e => {
-        const examDate = new Date(e.date);
+        const examDate = new Date(e.date || e.exam_date);
         const timeDiff = examDate - demoDate;
         const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
         
@@ -171,7 +171,7 @@
           <div class="upcoming-item">
             <div class="upcoming-info">
               <h3>${escapeHTML(e.subject)}</h3>
-              <p>${escapeHTML(e.topic)}</p>
+              <p>${escapeHTML(e.topic || e.title || "Upcoming Exam")}</p>
             </div>
             <span class="upcoming-days badge ${badgeClass}">${daysText}</span>
           </div>
@@ -186,10 +186,10 @@
 
       const exams = window.StudyPilotDB.getExams();
       const tasks = window.StudyPilotDB.getTasks().filter(t => t.date === "2026-06-22");
-      const uncompletedTasks = tasks.filter(t => !t.completed);
+      const uncompletedTasks = tasks.filter(t => !(t.completed || t.status === "completed"));
       const events = window.StudyPilotDB.getCalendarEvents().filter(e => e.day === "Monday");
       
-      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && e.date === "2026-06-25");
+      const hasScienceExamSoon = exams.some(e => e.subject === "Science" && (e.date || e.exam_date) === "2026-06-25");
       const hasStudyBlock = events.some(e => e.type === "study");
       
       let html = "";

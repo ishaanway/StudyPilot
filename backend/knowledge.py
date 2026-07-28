@@ -191,7 +191,9 @@ def clean_text(value: object) -> str:
 def seed_knowledge_base() -> None:
     """Populate the SQLite knowledge table the first time the app runs."""
 
-    execute("DELETE FROM knowledge_entries")
+    existing = fetch_one("SELECT COUNT(*) AS total FROM knowledge_entries")
+    if existing and int(existing.get("total", 0)) > 0:
+        return
 
     for entry in SEED_ENTRIES:
         execute(
@@ -215,12 +217,507 @@ def seed_knowledge_base() -> None:
         )
 
 
+GRADE_7_SYLLABUS = {
+    "Science": {
+        "book_title": "Samacheer Kalvi Science",
+        "chapters": [
+            {
+                "num": 1,
+                "title": "Measurement",
+                "desc": "Study of physical quantities, standard units, and measuring instruments.",
+                "sections": [
+                    {"num": "1.1", "title": "Physical Quantities and Units"},
+                    {"num": "1.2", "title": "Measurement of Area, Volume and Density"},
+                    {"num": "1.3", "title": "Astronomical Unit and Light Year"}
+                ]
+            },
+            {
+                "num": 2,
+                "title": "Force and Motion",
+                "desc": "Understanding distance, displacement, speed, velocity, and acceleration.",
+                "sections": [
+                    {"num": "2.1", "title": "Distance and Displacement"},
+                    {"num": "2.2", "title": "Speed, Velocity and Acceleration"},
+                    {"num": "2.3", "title": "Center of Gravity and Stability"}
+                ]
+            },
+            {
+                "num": 3,
+                "title": "Matter Around Us",
+                "desc": "Elements, compounds, mixtures, and chemical symbols.",
+                "sections": [
+                    {"num": "3.1", "title": "What is Matter?"},
+                    {"num": "3.2", "title": "Elements and Compounds"},
+                    {"num": "3.3", "title": "Mixtures and Separation Methods"}
+                ]
+            },
+            {
+                "num": 4,
+                "title": "Atomic Structure",
+                "desc": "Atoms, subatomic particles, atomic number, and valency.",
+                "sections": [
+                    {"num": "4.1", "title": "Dalton's Atomic Theory"},
+                    {"num": "4.2", "title": "Protons, Neutrons and Electrons"},
+                    {"num": "4.3", "title": "Valency and Chemical Formulas"}
+                ]
+            },
+            {
+                "num": 5,
+                "title": "Reproduction and Modification in Plants",
+                "desc": "Pollination, fertilization, and vegetative modifications of roots, stems, and leaves.",
+                "sections": [
+                    {"num": "5.1", "title": "Asexual and Sexual Reproduction"},
+                    {"num": "5.2", "title": "Pollination and Fertilization"},
+                    {"num": "5.3", "title": "Modifications of Vegetative Organs"}
+                ]
+            },
+            {
+                "num": 6,
+                "title": "Health and Hygiene",
+                "desc": "Food components, balanced diet, personal hygiene, and diseases.",
+                "sections": [
+                    {"num": "6.1", "title": "Components of Food and Balanced Diet"},
+                    {"num": "6.2", "title": "Personal Hygiene and Cleanliness"},
+                    {"num": "6.3", "title": "Infectious and Non-infectious Diseases"}
+                ]
+            },
+            {
+                "num": 7,
+                "title": "Visual Communication",
+                "desc": "Working with digital presentation tools and visual media files.",
+                "sections": [
+                    {"num": "7.1", "title": "File formats and media types"},
+                    {"num": "7.2", "title": "Creating visual slides and presentations"}
+                ]
+            }
+        ]
+    },
+    "Mathematics": {
+        "book_title": "Samacheer Kalvi Mathematics",
+        "chapters": [
+            {
+                "num": 1,
+                "title": "Number System",
+                "desc": "Addition, subtraction, multiplication, and division of integers.",
+                "sections": [
+                    {"num": "1.1", "title": "Addition and Subtraction of Integers"},
+                    {"num": "1.2", "title": "Multiplication of Integers"},
+                    {"num": "1.3", "title": "Division of Integers"}
+                ]
+            },
+            {
+                "num": 2,
+                "title": "Measurements",
+                "desc": "Area of parallelogram, rhombus, and trapezium.",
+                "sections": [
+                    {"num": "2.1", "title": "Area of Parallelogram"},
+                    {"num": "2.2", "title": "Area of Rhombus"},
+                    {"num": "2.3", "title": "Area of Trapezium"}
+                ]
+            },
+            {
+                "num": 3,
+                "title": "Algebra",
+                "desc": "Algebraic expressions, variables, terms, coefficients, and simple linear equations.",
+                "sections": [
+                    {"num": "3.1", "title": "Variables and Constants"},
+                    {"num": "3.2", "title": "Terms and Coefficients of Expressions"},
+                    {"num": "3.3", "title": "Simple Linear Equations"}
+                ]
+            },
+            {
+                "num": 4,
+                "title": "Direct and Inverse Proportion",
+                "desc": "Direct and indirect variation calculations and applications.",
+                "sections": [
+                    {"num": "4.1", "title": "Direct Proportion"},
+                    {"num": "4.2", "title": "Inverse Proportion"},
+                    {"num": "4.3", "title": "Unitary Method Applications"}
+                ]
+            },
+            {
+                "num": 5,
+                "title": "Geometry",
+                "desc": "Angles, transversals, and construction of triangles.",
+                "sections": [
+                    {"num": "5.1", "title": "Types of Angles and Pairs"},
+                    {"num": "5.2", "title": "Angles in Transversals"},
+                    {"num": "5.3", "title": "Construction of Triangles"}
+                ]
+            },
+            {
+                "num": 6,
+                "title": "Information Processing",
+                "desc": "Systematic listing, counting techniques, and scheduling.",
+                "sections": [
+                    {"num": "6.1", "title": "Systematic Listing"},
+                    {"num": "6.2", "title": "Counting Techniques"}
+                ]
+            }
+        ]
+    },
+    "Social Science": {
+        "book_title": "Exploring Society: India and Beyond",
+        "chapters": [
+            {
+                "num": 1,
+                "title": "Geographical Diversity of India",
+                "desc": "Part 1 Theme A – India and the World: Relief, physical features, mountains, plains, plateaus, and island regions.",
+                "sections": [
+                    {"num": "1.1", "title": "Relief & Physical features"},
+                    {"num": "1.2", "title": "Mountains, Plains, Plateaus"},
+                    {"num": "1.3", "title": "Coastal & Island regions"}
+                ]
+            },
+            {
+                "num": 2,
+                "title": "Understanding the Weather",
+                "desc": "Part 1 Theme A – India and the World: Temperature, air pressure, wind systems, humidity, and weather elements.",
+                "sections": [
+                    {"num": "2.1", "title": "Temperature and Air Pressure"},
+                    {"num": "2.2", "title": "Wind systems and Humidity"},
+                    {"num": "2.3", "title": "Measuring weather elements"}
+                ]
+            },
+            {
+                "num": 3,
+                "title": "Climate of India",
+                "desc": "Part 1 Theme A – India and the World: Monsoon seasons, climate drivers, and regional climatic variations.",
+                "sections": [
+                    {"num": "3.1", "title": "Factors shaping climate"},
+                    {"num": "3.2", "title": "Monsoons and Seasons"},
+                    {"num": "3.3", "title": "Regional climate variations"}
+                ]
+            },
+            {
+                "num": 4,
+                "title": "New Beginnings: Cities and States",
+                "desc": "Part 1 Theme B – Tapestry of the Past: Early urban centers, Janapadas, Mahajanapadas, and socio-economic structures.",
+                "sections": [
+                    {"num": "4.1", "title": "Early urban centers"},
+                    {"num": "4.2", "title": "Janapadas & Mahajanapadas"},
+                    {"num": "4.3", "title": "Social & economic life"}
+                ]
+            },
+            {
+                "num": 5,
+                "title": "The Rise of Empires",
+                "desc": "Part 1 Theme B – Tapestry of the Past: The Mauryan Empire, Ashoka's Dhamma, and imperial administration.",
+                "sections": [
+                    {"num": "5.1", "title": "The Mauryan Empire"},
+                    {"num": "5.2", "title": "Administration & Ashoka's Dhamma"},
+                    {"num": "5.3", "title": "Imperial economy & trade"}
+                ]
+            },
+            {
+                "num": 6,
+                "title": "The Age of Reorganisation",
+                "desc": "Part 1 Theme B – Tapestry of the Past: Post-Mauryan political changes, regional dynasties, and land grants.",
+                "sections": [
+                    {"num": "6.1", "title": "Political changes"},
+                    {"num": "6.2", "title": "New dynasties & regional powers"},
+                    {"num": "6.3", "title": "Society & land grants"}
+                ]
+            },
+            {
+                "num": 7,
+                "title": "The Gupta Era: An Age of Tireless Creativity",
+                "desc": "Part 1 Theme B – Tapestry of the Past: Imperial expansion, advances in science, literature, art, and temple architecture.",
+                "sections": [
+                    {"num": "7.1", "title": "Gupta rulers & expansion"},
+                    {"num": "7.2", "title": "Golden age of Science & Literature"},
+                    {"num": "7.3", "title": "Art, architecture & temples"}
+                ]
+            },
+            {
+                "num": 8,
+                "title": "How the Land Becomes Sacred",
+                "desc": "Part 1 Theme C – Our Cultural Heritage: Sacred geography, pilgrimage sites, traditions, and cultural unity.",
+                "sections": [
+                    {"num": "8.1", "title": "Sacred geography & pilgrimage"},
+                    {"num": "8.2", "title": "Places of worship & traditions"},
+                    {"num": "8.3", "title": "Cultural unity in diversity"}
+                ]
+            },
+            {
+                "num": 9,
+                "title": "From the Rulers to the Ruled: Types of Governments",
+                "desc": "Part 1 Theme D – Governance and Democracy: Monarchy, oligarchy, democracy, rights, and duties.",
+                "sections": [
+                    {"num": "9.1", "title": "Monarchy, Oligarchy, Democracy"},
+                    {"num": "9.2", "title": "Key features of democratic rule"},
+                    {"num": "9.3", "title": "Citizen rights & responsibilities"}
+                ]
+            },
+            {
+                "num": 10,
+                "title": "The Constitution of India – An Introduction",
+                "desc": "Part 1 Theme D – Governance and Democracy: Preamble, fundamental rights, duties, and rule of law.",
+                "sections": [
+                    {"num": "10.1", "title": "Preamble and core values"},
+                    {"num": "10.2", "title": "Fundamental Rights & Duties"},
+                    {"num": "10.3", "title": "Rule of law & governance"}
+                ]
+            },
+            {
+                "num": 11,
+                "title": "From Barter to Money",
+                "desc": "Part 1 Theme E – Economic Life: Evolution of trade, currency development, and modern payment methods.",
+                "sections": [
+                    {"num": "11.1", "title": "Evolution of exchange system"},
+                    {"num": "11.2", "title": "Forms of money through history"},
+                    {"num": "11.3", "title": "Modern currency & digital pay"}
+                ]
+            },
+            {
+                "num": 12,
+                "title": "Understanding Markets",
+                "desc": "Part 1 Theme E – Economic Life: Local markets, wholesale vs retail, supply chains, and consumer access.",
+                "sections": [
+                    {"num": "12.1", "title": "Weekly markets & neighborhood shops"},
+                    {"num": "12.2", "title": "Wholesale vs Retail traders"},
+                    {"num": "12.3", "title": "Market chains & equality"}
+                ]
+            },
+            {
+                "num": 13,
+                "title": "The Story of Indian Farming",
+                "desc": "Part 2 Theme A – India and the World: Explore how farming shapes life, food systems, and livelihoods across India.",
+                "sections": [
+                    {"num": "13.1", "title": "Agriculture and livelihoods"},
+                    {"num": "13.2", "title": "Crops, seasons, and land"},
+                    {"num": "13.3", "title": "Irrigation, tools, and change"}
+                ]
+            },
+            {
+                "num": 14,
+                "title": "India and Her Neighbours",
+                "desc": "Part 2 Theme A – India and the World: Study India's location, nearby countries, and cross-border relationships.",
+                "sections": [
+                    {"num": "14.1", "title": "India on the map"},
+                    {"num": "14.2", "title": "Neighbouring countries"},
+                    {"num": "14.3", "title": "Connections across borders"}
+                ]
+            },
+            {
+                "num": 15,
+                "title": "Empires and Kingdoms: 6th to 10th Centuries",
+                "desc": "Part 2 Theme B – Tapestry of the Past: Track major kingdoms, administration, and early medieval culture.",
+                "sections": [
+                    {"num": "15.1", "title": "Rise of kingdoms"},
+                    {"num": "15.2", "title": "Administration and society"},
+                    {"num": "15.3", "title": "Art, architecture, and inscriptions"}
+                ]
+            },
+            {
+                "num": 16,
+                "title": "Turning Tides: 11th and 12th Centuries",
+                "desc": "Part 2 Theme B – Tapestry of the Past: Understand trade, new powers, and changing political worlds.",
+                "sections": [
+                    {"num": "16.1", "title": "Trade and travel"},
+                    {"num": "16.2", "title": "New powers and alliances"},
+                    {"num": "16.3", "title": "Cultural exchange"}
+                ]
+            },
+            {
+                "num": 17,
+                "title": "India, a Home to Many",
+                "desc": "Part 2 Theme C – Our Cultural Heritage: Learn how India's communities, languages, and traditions live together.",
+                "sections": [
+                    {"num": "17.1", "title": "Diversity in daily life"},
+                    {"num": "17.2", "title": "Shared heritage"},
+                    {"num": "17.3", "title": "Living together with respect"}
+                ]
+            },
+            {
+                "num": 18,
+                "title": "The State, the Government, and You",
+                "desc": "Part 2 Theme D – Governance and Democracy: Understand civics, state machinery, governance, and citizen roles.",
+                "sections": [
+                    {"num": "18.1", "title": "How state governments work"},
+                    {"num": "18.2", "title": "Role of citizens"}
+                ]
+            },
+            {
+                "num": 19,
+                "title": "Infrastructure: Engine of India's Development",
+                "desc": "Part 2 Theme E – Economic Life: The role of transport, energy, and communication in national development.",
+                "sections": [
+                    {"num": "19.1", "title": "Transport and communication"},
+                    {"num": "19.2", "title": "Energy and power"}
+                ]
+            },
+            {
+                "num": 20,
+                "title": "Banks and the Magic of Finance",
+                "desc": "Part 2 Theme E – Economic Life: Introduction to money, banking systems, savings, and basic financial concepts.",
+                "sections": [
+                    {"num": "20.1", "title": "Introduction to banks"},
+                    {"num": "20.2", "title": "Financial literacy"}
+                ]
+            }
+        ]
+    },
+    "English": {
+        "book_title": "Poorvi",
+        "chapters": [
+            {
+                "num": 1,
+                "title": "Unit 1: Learning Together",
+                "desc": "Unit on collaborative learning, poetry, and stories highlighting human connection.",
+                "sections": [
+                    {"num": "1.1", "title": "The Day the River Spoke"},
+                    {"num": "1.2", "title": "Try Again"},
+                    {"num": "1.3", "title": "Three Days to See"}
+                ]
+            },
+            {
+                "num": 2,
+                "title": "Unit 2: Wit and Humour",
+                "desc": "Folk tales, humorous anecdotes, and light-hearted prose.",
+                "sections": [
+                    {"num": "2.1", "title": "Animals, Birds, and Dr. Dolittle"},
+                    {"num": "2.2", "title": "A Funny Man"},
+                    {"num": "2.3", "title": "Say the Right Thing"}
+                ]
+            },
+            {
+                "num": 3,
+                "title": "Unit 3: Dreams and Discoveries",
+                "desc": "Inspirational accounts of scientific discoveries and personal achievements.",
+                "sections": [
+                    {"num": "3.1", "title": "My Brother's Great Invention"},
+                    {"num": "3.2", "title": "Paper Boats"},
+                    {"num": "3.3", "title": "North, South, East, West"}
+                ]
+            },
+            {
+                "num": 4,
+                "title": "Unit 4: Travel and Adventure",
+                "desc": "Travelogues, exploratory journeys, and poems of adventure.",
+                "sections": [
+                    {"num": "4.1", "title": "The Tunnel"},
+                    {"num": "4.2", "title": "Travel"},
+                    {"num": "4.3", "title": "Conquering the Summit"}
+                ]
+            },
+            {
+                "num": 5,
+                "title": "Unit 5: Bravehearts",
+                "desc": "Stories of valour, courage, and historic heroes of India.",
+                "sections": [
+                    {"num": "5.1", "title": "A Homage to Our Brave Soldiers"},
+                    {"num": "5.2", "title": "My Dear Soldiers"},
+                    {"num": "5.3", "title": "Rani Abbakka"}
+                ]
+            }
+        ]
+    },
+}
+
+
+
+def seed_grade_7_nodes(board_id: int) -> None:
+    # Delete existing grade 7 nodes under source_provider = 'NCERT Official' to prevent duplicates
+    execute("DELETE FROM syllabus_nodes WHERE source_provider = 'NCERT Official' AND grade = 7")
+
+    grade_id = execute(
+        """
+        INSERT INTO syllabus_nodes (
+            parent_id, node_type, source_provider, board, grade, title, content, order_index
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (board_id, "grade", "NCERT Official", "CBSE", 7, "Grade 7", "Official NCERT Grade 7 curriculum", 7),
+    )
+
+    for subject_name, subject_data in GRADE_7_SYLLABUS.items():
+        book_title = subject_data["book_title"]
+        subject_id = execute(
+            """
+            INSERT INTO syllabus_nodes (
+                parent_id, node_type, source_provider, board, grade, subject, title, content, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (grade_id, "subject", "NCERT Official", "CBSE", 7, subject_name, subject_name, "", 1),
+        )
+
+        book_id = execute(
+            """
+            INSERT INTO syllabus_nodes (
+                parent_id, node_type, source_provider, board, grade, subject, book_title, title, content, order_index
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                subject_id,
+                "book",
+                "NCERT Official",
+                "CBSE",
+                7,
+                subject_name,
+                book_title,
+                book_title,
+                f"Official Grade 7 {subject_name} book.",
+                1,
+            ),
+        )
+
+        for ch_index, ch in enumerate(subject_data["chapters"], start=1):
+            ch_id = execute(
+                """
+                INSERT INTO syllabus_nodes (
+                    parent_id, node_type, source_provider, board, grade, subject, book_title,
+                    chapter_number, title, content, order_index
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    book_id,
+                    "chapter",
+                    "NCERT Official",
+                    "CBSE",
+                    7,
+                    subject_name,
+                    book_title,
+                    ch["num"],
+                    ch["title"],
+                    ch["desc"],
+                    ch_index,
+                ),
+            )
+
+            for sec_index, sec in enumerate(ch["sections"], start=1):
+                try:
+                    sec_num = int(sec["num"].split(".")[-1])
+                except:
+                    sec_num = sec_index
+
+                execute(
+                    """
+                    INSERT INTO syllabus_nodes (
+                        parent_id, node_type, source_provider, board, grade, subject, book_title,
+                        chapter_number, section_number, title, content, order_index
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        ch_id,
+                        "section",
+                        "NCERT Official",
+                        "CBSE",
+                        7,
+                        subject_name,
+                        book_title,
+                        ch["num"],
+                        sec_num,
+                        sec["title"],
+                        f"Section {sec['num']}: {sec['title']}",
+                        sec_index,
+                    ),
+                )
+
+
 def seed_official_curriculum_catalog() -> None:
     """Seed an official-textbook syllabus tree from the NCERT manifest."""
 
-    if not NCERT_MANIFEST_PATH.exists():
-        return
-
+    # First, load the manifest catalog if not already loaded
     existing = fetch_one(
         """
         SELECT COUNT(*) AS total
@@ -228,125 +725,146 @@ def seed_official_curriculum_catalog() -> None:
         WHERE source_provider = 'NCERT Official'
         """
     )
-    if existing and int(existing["total"]) > 0:
-        return
+    board_id = None
+    if not existing or int(existing["total"]) == 0:
+        if NCERT_MANIFEST_PATH.exists():
+            manifest = json.loads(NCERT_MANIFEST_PATH.read_text(encoding="utf-8"))
+            classes = manifest.get("classes", [])
+            if classes:
+                execute("DELETE FROM syllabus_nodes WHERE source_provider = 'NCERT Official'")
 
-    manifest = json.loads(NCERT_MANIFEST_PATH.read_text(encoding="utf-8"))
-    classes = manifest.get("classes", [])
-    if not classes:
-        return
-
-    execute("DELETE FROM syllabus_nodes WHERE source_provider = 'NCERT Official'")
-
-    board_id = execute(
-        """
-        INSERT INTO syllabus_nodes (
-            node_type, source_provider, board, title, content, source_url, order_index
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
-        """,
-        ("board", "NCERT Official", "CBSE", "CBSE", "Official NCERT textbook catalog metadata.", manifest.get("source", ""), 1),
-    )
-
-    for class_entry in classes:
-        grade = class_entry.get("grade")
-        if grade is None or int(grade) < 6 or int(grade) > 10:
-            continue
-
-        grade_id = execute(
-            """
-            INSERT INTO syllabus_nodes (
-                parent_id, node_type, source_provider, board, grade, title, content, source_url, order_index
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                board_id,
-                "grade",
-                "NCERT Official",
-                "CBSE",
-                int(grade),
-                f"Grade {grade}",
-                class_entry.get("label", ""),
-                manifest.get("source", ""),
-                int(grade),
-            ),
-        )
-
-        for subject_index, subject_entry in enumerate(class_entry.get("subjects", []), start=1):
-            subject_name = subject_entry.get("subject", "")
-            if int(grade) == 10 and subject_name.lower() == "science":
-                continue
-
-            subject_id = execute(
-                """
-                INSERT INTO syllabus_nodes (
-                    parent_id, node_type, source_provider, board, grade, subject, title, content, source_url, order_index
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    grade_id,
-                    "subject",
-                    "NCERT Official",
-                    "CBSE",
-                    int(grade),
-                    subject_name,
-                    subject_name,
-                    "",
-                    manifest.get("source", ""),
-                    subject_index,
-                ),
-            )
-
-            for book_index, book_entry in enumerate(subject_entry.get("books", []), start=1):
-                book_title = book_entry.get("title", "")
-                book_id = execute(
+                board_id = execute(
                     """
                     INSERT INTO syllabus_nodes (
-                        parent_id, node_type, source_provider, board, grade, subject, book_title, title,
-                        content, source_url, order_index
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        node_type, source_provider, board, title, content, source_url, order_index
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
                     """,
-                    (
-                        subject_id,
-                        "book",
-                        "NCERT Official",
-                        "CBSE",
-                        int(grade),
-                        subject_name,
-                        book_title,
-                        book_title,
-                        "Official textbook metadata only.",
-                        book_entry.get("page_url", ""),
-                        book_index,
-                    ),
+                    ("board", "NCERT Official", "CBSE", "CBSE", "Official NCERT textbook catalog metadata.", manifest.get("source", ""), 1),
                 )
 
-                for chapter_index, chapter_entry in enumerate(book_entry.get("chapters", []), start=1):
-                    chapter_label = clean_text(chapter_entry.get("label", f"Chapter {chapter_index}"))
-                    execute(
+                for class_entry in classes:
+                    grade = class_entry.get("grade")
+                    if grade is None or int(grade) < 6 or int(grade) > 10:
+                        continue
+
+                    grade_id = execute(
                         """
                         INSERT INTO syllabus_nodes (
-                            parent_id, node_type, source_provider, board, grade, subject, book_title,
-                            chapter_number, title, content, source_url, pdf_url, order_index
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            parent_id, node_type, source_provider, board, grade, title, content, source_url, order_index
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (
-                            book_id,
-                            "chapter",
+                            board_id,
+                            "grade",
                             "NCERT Official",
                             "CBSE",
                             int(grade),
-                            subject_name,
-                            book_title,
-                            chapter_index,
-                            chapter_label,
-                            f"Official NCERT chapter link for {subject_name} {book_title}.",
-                            chapter_entry.get("page_url", ""),
-                            chapter_entry.get("pdf_url", ""),
-                            chapter_index,
+                            f"Grade {grade}",
+                            class_entry.get("label", ""),
+                            manifest.get("source", ""),
+                            int(grade),
                         ),
                     )
 
-    # Keep the Grade 10 Science demo chapters with real chapter names and official links.
+                    for subject_index, subject_entry in enumerate(class_entry.get("subjects", []), start=1):
+                        subject_name = subject_entry.get("subject", "")
+                        if int(grade) == 10 and subject_name.lower() == "science":
+                            continue
+
+                        subject_id = execute(
+                            """
+                            INSERT INTO syllabus_nodes (
+                                parent_id, node_type, source_provider, board, grade, subject, title, content, source_url, order_index
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """,
+                            (
+                                grade_id,
+                                "subject",
+                                "NCERT Official",
+                                "CBSE",
+                                int(grade),
+                                subject_name,
+                                subject_name,
+                                "",
+                                manifest.get("source", ""),
+                                subject_index,
+                            ),
+                        )
+
+                        for book_index, book_entry in enumerate(subject_entry.get("books", []), start=1):
+                            book_title = book_entry.get("title", "")
+                            book_id = execute(
+                                """
+                                INSERT INTO syllabus_nodes (
+                                    parent_id, node_type, source_provider, board, grade, subject, book_title, title,
+                                    content, source_url, order_index
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """,
+                                (
+                                    subject_id,
+                                    "book",
+                                    "NCERT Official",
+                                    "CBSE",
+                                    int(grade),
+                                    subject_name,
+                                    book_title,
+                                    book_title,
+                                    "Official textbook metadata only.",
+                                    book_entry.get("page_url", ""),
+                                    book_index,
+                                ),
+                            )
+
+                            for chapter_index, chapter_entry in enumerate(book_entry.get("chapters", []), start=1):
+                                chapter_label = clean_text(chapter_entry.get("label", f"Chapter {chapter_index}"))
+                                execute(
+                                    """
+                                    INSERT INTO syllabus_nodes (
+                                        parent_id, node_type, source_provider, board, grade, subject, book_title,
+                                        chapter_number, title, content, source_url, pdf_url, order_index
+                                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    """,
+                                    (
+                                        book_id,
+                                        "chapter",
+                                        "NCERT Official",
+                                        "CBSE",
+                                        int(grade),
+                                        subject_name,
+                                        book_title,
+                                        chapter_index,
+                                        chapter_label,
+                                        f"Official NCERT chapter link for {subject_name} {book_title}.",
+                                        chapter_entry.get("page_url", ""),
+                                        chapter_entry.get("pdf_url", ""),
+                                        chapter_index,
+                                    ),
+                                )
+
+    # Now, check if Grade 7 is seeded. If not, seed it.
+    grade7_existing = fetch_one(
+        """
+        SELECT COUNT(*) AS total
+        FROM syllabus_nodes
+        WHERE source_provider = 'NCERT Official' AND grade = 7
+        """
+    )
+    if not grade7_existing or int(grade7_existing["total"]) == 0:
+        if board_id is None:
+            board_row = fetch_one("SELECT id FROM syllabus_nodes WHERE source_provider = 'NCERT Official' AND node_type = 'board' LIMIT 1")
+            if board_row:
+                board_id = board_row["id"]
+            else:
+                board_id = execute(
+                    """
+                    INSERT INTO syllabus_nodes (
+                        node_type, source_provider, board, title, content, source_url, order_index
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    ("board", "NCERT Official", "CBSE", "CBSE", "Official NCERT textbook catalog metadata.", "https://ncert.nic.in/textbook.php", 1),
+                )
+        seed_grade_7_nodes(board_id)
+
     manual_science = fetch_one(
         """
         SELECT COUNT(*) AS total
@@ -583,6 +1101,7 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
         if score > 0 and should_keep:
             scored.append((score, entry))
 
+
     scored.sort(key=lambda pair: (-pair[0], pair[1]["grade"], pair[1]["subject"], pair[1]["chapter_number"]))
     if grade is not None:
       same_grade = [pair for pair in scored if int(pair[1].get("grade") or 0) == int(grade)]
@@ -593,9 +1112,9 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
 
 def format_knowledge_context(entries: list[dict]) -> str:
     if not entries:
-        return "No matching syllabus entries were found in the local CBSE knowledge base."
+        return "No matching syllabus entries were found in the local SCERT knowledge base."
 
-    lines = ["Relevant CBSE/NCERT syllabus context:"]
+    lines = ["Relevant SCERT syllabus context:"]
     for entry in entries:
         lines.append(
             f"- Grade {entry['grade']} {entry['subject']} | {entry['book_title']} Ch {entry['chapter_number']}: "
@@ -608,7 +1127,7 @@ def offline_answer(query: str, entries: list[dict]) -> str:
     if not entries:
         return (
             "I do not have enough local syllabus detail for that yet. "
-            "Try asking about the official NCERT chapters that have been imported, "
+            "Try asking about the official SCERT chapters that have been imported, "
             "or connect the local LLM for broader answers."
         )
 
@@ -631,7 +1150,13 @@ def offline_answer(query: str, entries: list[dict]) -> str:
     )
 
 
-def search_syllabus_nodes(query: str, grade: int | None = None, subject: str | None = None, limit: int = 8) -> list[dict]:
+def search_syllabus_nodes(
+    query: str,
+    grade: int | None = None,
+    subject: str | None = None,
+    board: str | None = None,
+    limit: int = 8,
+) -> list[dict]:
     """Search the full imported syllabus tree for matching titles and content."""
 
     tokens = [token for token in _tokenize(query) if len(token) > 2]
@@ -652,11 +1177,18 @@ def search_syllabus_nodes(query: str, grade: int | None = None, subject: str | N
         where_sql = f"({where_sql}) AND (subject IS NULL OR LOWER(subject) LIKE ?)"
         params.append(f"%{subject.lower().strip()}%")
 
+    board_order = ""
+    order_params = []
+    if board:
+        board_order = "CASE WHEN LOWER(board) = ? THEN 1 ELSE 2 END,"
+        order_params.append(board.lower().strip())
+
     rows = fetch_all(
         f"""
         SELECT * FROM syllabus_nodes
         WHERE {where_sql}
         ORDER BY
+          {board_order}
           CASE node_type
             WHEN 'section' THEN 1
             WHEN 'chapter' THEN 2
@@ -672,7 +1204,7 @@ def search_syllabus_nodes(query: str, grade: int | None = None, subject: str | N
           section_number
         LIMIT ?
         """,
-        (*params, limit),
+        (*params, *order_params, limit),
     )
     return rows
 

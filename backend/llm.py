@@ -33,12 +33,12 @@ OLLAMA_MODEL_PREFERENCE = _dedupe_models(
     [
         os.getenv("STUDYPILOT_OLLAMA_MODEL", "").strip(),
         os.getenv("STUDYPILOT_LLM_MODEL", "").strip(),
+        "qwen2.5:1.5b",
         "gemma3:4b",
         "gemma3:1b",
         "gemma3:12b",
         "gemma2:9b",
         "gemma2:2b",
-        "qwen2.5:1.5b",
         "qwen3:8b",
         "llama3.1:8b",
         "phi4",
@@ -46,7 +46,7 @@ OLLAMA_MODEL_PREFERENCE = _dedupe_models(
     ]
 )
 OLLAMA_MODEL = OLLAMA_MODEL_PREFERENCE[0] if OLLAMA_MODEL_PREFERENCE else "gemma3:4b"
-OLLAMA_REQUEST_TIMEOUT = float(os.getenv("STUDYPILOT_OLLAMA_TIMEOUT", "4"))
+OLLAMA_REQUEST_TIMEOUT = float(os.getenv("STUDYPILOT_OLLAMA_TIMEOUT", "20"))
 
 
 def _is_meaningful_json_response(response: str) -> bool:
@@ -185,13 +185,15 @@ def generate_with_ollama(
     payload = {
         "model": model or OLLAMA_MODEL,
         "stream": False,
+        "keep_alive": "10m",
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
         "options": {
             "temperature": 0.2,
-            "num_predict": 240 if json_mode else 120,
+            "num_predict": 512 if json_mode else 768,
+            "num_ctx": 4096,
         },
     }
     if json_mode:
@@ -235,7 +237,7 @@ def generate_with_ollama_fallbacks(
         if model not in candidate_models:
             candidate_models.append(model)
 
-    candidate_models = candidate_models[:1]
+    candidate_models = candidate_models[:3]
 
     if not candidate_models:
         candidate_models = [OLLAMA_MODEL]
@@ -275,6 +277,8 @@ def generate_tutor_response_with_choice(
 ) -> tuple[str | None, str]:
     requested_provider = (provider or LLM_PROVIDER or "auto").strip().lower()
     requested_model = (model or "").strip()
+    if requested_model.lower() == "auto":
+        requested_model = ""
 
     if requested_provider in {"ollama", "auto", ""}:
         if not ollama_is_available():

@@ -1,0 +1,289 @@
+/* ======================================================== */
+/* StudyPilot Parent Portal Stylings                        */
+/* ======================================================== */
+
+.parent-grid-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .parent-grid-container {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+}
+
+/* Glassmorphic Overview Cards */
+.parent-overview-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(240, 253, 250, 0.4) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+[data-theme-tone="dark"] .parent-overview-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(20, 30, 40, 0.4) 100%);
+}
+
+.parent-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+}
+
+.parent-metric-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  text-align: center;
+  transition: transform var(--transition-fast);
+}
+
+.parent-metric-box:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.parent-metric-num {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 0.25rem;
+}
+
+.parent-metric-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Parent Alerts & Reminders */
+.parent-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.parent-alert-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.parent-alert-info {
+  background-color: var(--primary-light);
+  border-color: var(--border-focus);
+  color: var(--text-main);
+}
+
+.parent-alert-success {
+  background-color: var(--accent-light);
+  border-color: rgba(13, 148, 136, 0.2);
+  color: var(--text-main);
+}
+
+.parent-alert-warning {
+  background-color: var(--color-warning-bg);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: var(--text-main);
+}
+
+.parent-alert-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+}
+
+/* AI Parent Coach Chat UI */
+.parent-coach-card {
+  display: flex;
+  flex-direction: column;
+  height: 480px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+.parent-coach-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.parent-coach-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.parent-coach-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.parent-coach-subtitle {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.parent-coach-messages {
+  flex-grow: 1;
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: var(--bg-app);
+}
+
+.parent-message {
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.parent-message.bot {
+  align-self: flex-start;
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+}
+
+.parent-message.user {
+  align-self: flex-end;
+  background-color: var(--primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.parent-chat-input-bar {
+  display: flex;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-card);
+  border-top: 1px solid var(--border-color);
+  gap: 0.5rem;
+}
+
+.parent-chat-input-bar input {
+  flex-grow: 1;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  outline: none;
+  font-size: 0.85rem;
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  transition: var(--transition-fast);
+}
+
+.parent-chat-input-bar input:focus {
+  border-color: var(--primary);
+  background-color: var(--bg-card);
+}
+
+/* Quick Questions Grid */
+.parent-quick-prompts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .parent-quick-prompts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.parent-prompt-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.parent-prompt-btn:hover {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--border-focus);
+}
+
+/* Syllabus details styling */
+.parent-subject-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast);
+}
+
+.parent-subject-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.parent-subject-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Custom list items for parent coaching tips */
+.parent-coaching-tips-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+}
+
+.parent-coaching-tips-list li {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.parent-coaching-tips-list li::before {
+  content: "✦";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: bold;
+}
