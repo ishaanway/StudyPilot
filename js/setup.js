@@ -42,9 +42,8 @@
       const curriculum = window.StudyPilotDB.getCurriculum(grade, stream);
       const subjects = curriculum.subjects;
 
-      grid.innerHTML = subjects.map((sub, i) => {
-        // Pre-check first 4 subjects by default
-        const checked = i < 4 ? "checked" : "";
+      grid.innerHTML = subjects.map((sub) => {
+        const checked = "checked";
         return `
           <label class="subject-chip ${checked ? 'checked' : ''}">
             <input type="checkbox" value="${escapeHTML(sub)}" ${checked}> ${escapeHTML(sub)}

@@ -93,95 +93,74 @@
     ncert: {
       6: {
         Mathematics: {
-          bookTitle: "Ganita Prakash",
+          bookTitle: "Ganita Prakash (Class 6 Mathematics)",
           pdfUrl: "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
           pageUrl: "https://ncert.nic.in/textbook.php?fegp1=0-10",
           localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-mathematics-ganita-prakash.pdf`,
           sourceLabel: "Official NCERT Grade 6 Mathematics textbook",
         },
+        Science: {
+          bookTitle: "Curiosity (Class 6 Science)",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/fesc1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?fesc1=0-12",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-science-curiosity.pdf`,
+          sourceLabel: "Official NCERT Grade 6 Science textbook",
+        },
+        "Social Science": {
+          bookTitle: "Exploring Society: India and Beyond (Class 6)",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/fess1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?fess1=0-14",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-social-science.pdf`,
+          sourceLabel: "Official NCERT Grade 6 Social Science textbook",
+        },
+        English: {
+          bookTitle: "Poorvi (Class 6 English)",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/fepr1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?fepr1=0-5",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade6-english-poorvi.pdf`,
+          sourceLabel: "Official NCERT Grade 6 English textbook",
+        },
       },
       7: {
         Science: {
-          bookTitle: "Curiosity",
+          bookTitle: "Curiosity (Class 7 Science)",
           pdfUrl: "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
           pageUrl: "https://ncert.nic.in/textbook.php?gecu1=0-12",
           localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-science-curiosity.pdf`,
           sourceLabel: "Official NCERT Grade 7 Science textbook",
+        },
+        Mathematics: {
+          bookTitle: "Mathematics (Class 7)",
+          pdfUrl: "https://ncert.nic.in/textbook/pdf/gemh1ps.pdf",
+          pageUrl: "https://ncert.nic.in/textbook.php?gemh1=0-15",
+          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-mathematics.pdf`,
+          sourceLabel: "Official NCERT Grade 7 Mathematics textbook",
         },
         "Social Science": [
           {
             bookTitle: "Exploring Society: India and Beyond Part 1",
             pdfUrl: "https://ncert.nic.in/textbook/pdf/gees1ps.pdf",
             pageUrl: "https://ncert.nic.in/textbook.php?gees1=0-12",
-            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-science-part1.pdf`,
+            localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-social-science-part1.pdf`,
             sourceLabel: "Official NCERT Grade 7 Social Science textbook, Part 1",
           },
           {
             bookTitle: "Exploring Society: India and Beyond Part 2",
             pdfUrl: "https://ncert.nic.in/textbook/pdf/gees2ps.pdf",
             pageUrl: "https://ncert.nic.in/textbook.php?gees2=0-8",
-            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-science-part2.pdf`,
+            localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-social-science-part2.pdf`,
             sourceLabel: "Official NCERT Grade 7 Social Science textbook, Part 2",
           },
         ],
         English: [
           {
-            bookTitle: "Poorvi",
+            bookTitle: "Poorvi (Class 7 English)",
             pdfUrl: "https://ncert.nic.in/textbook/pdf/gepr1ps.pdf",
             pageUrl: "https://ncert.nic.in/textbook.php?gepr1=0-11",
-            localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-english-poorvi.pdf`,
+            localPdfUrl: `${LOCAL_BOOK_ROOT}/grade7-english-poorvi.pdf`,
             sourceLabel: "Official NCERT Grade 7 English textbook",
           },
         ],
-      },
-      10: {
-        Science: {
-          bookTitle: "Science",
-          pdfUrl: "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
-          pageUrl: "https://ncert.nic.in/textbook.php?jesc1=1-16",
-          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-science.pdf`,
-          sourceLabel: "Official NCERT Grade 10 Science textbook",
-        },
-        English: {
-          bookTitle: "First Flight",
-          pdfUrl: "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
-          pageUrl: "https://ncert.nic.in/textbook.php?jeff1=0-11",
-          localPdfUrl: `${LOCAL_BOOK_ROOT}/grade10-english-first-flight.pdf`,
-          sourceLabel: "Official NCERT Grade 10 English textbook",
-        },
-      },
-    },
-
-      7: {
-        
-        Science: {
-          bookTitle: "Samacheer Kalvi Science",
-          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
-          pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-science-scert.pdf`,
-          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Science textbook",
-        },
-        Mathematics: {
-          bookTitle: "Samacheer Kalvi Mathematics",
-          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
-          pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-maths-scert.pdf`,
-          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Mathematics textbook",
-        },
-        "Social Science": {
-          bookTitle: "Samacheer Kalvi Social Science",
-          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
-          pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-social-scert.pdf`,
-          sourceLabel: "Official Tamil Nadu SCERT Grade 7 Social Science textbook",
-        },
-        English: {
-          bookTitle: "Samacheer Kalvi English",
-          pdfUrl: "https://textbookcorp.in/textbook/schools/books",
-          pageUrl: "https://textbookcorp.in/textbook/schools/books",
-          localPdfUrl: `${PLANNER_BOOK_ROOT}/grade7-english-scert.pdf`,
-          sourceLabel: "Official Tamil Nadu SCERT Grade 7 English textbook",
-        },
       },
     },
   };

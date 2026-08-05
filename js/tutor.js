@@ -22,7 +22,16 @@
         "germinate": "<h3>Science: Germination</h3><p>Germination is the process where a baby plant (embryo) grows out of a seed. A seed needs three main things to wake up: <strong>Water</strong> (to soften the shell), <strong>Oxygen/Air</strong> (to breathe), and <strong>Warmth/Sunlight</strong> (to activate growth cells).</p>"
       }
     },
-    // Middle school fallback (Grade 7 - Curiosity & Ganita Prakash)
+    // Middle school fallback (Grade 6 & Grade 7 - Curiosity & Ganita Prakash)
+    "6": {
+      prompts: ["Explain Patterns in Mathematics Ch 1", "Explain Diversity in Living World Ch 2", "Explain Exploring Magnets Ch 4", "Explain Locating Places on Earth Ch 1"],
+      responses: {
+        "patterns": "<h3>Mathematics: Ch 1 Patterns in Mathematics</h3><p>Patterns are repeating sequences of shapes or numbers. Understanding pattern rules helps solve algebraic sequences and visual puzzles!</p>",
+        "diversity": "<h3>Science: Ch 2 Diversity in the Living World</h3><p>Earth is home to millions of plant and animal species. We group living things by physical traits, habitats, and feeding habits!</p>",
+        "magnets": "<h3>Science: Ch 4 Exploring Magnets</h3><p>Magnets attract magnetic materials like iron and nickel. Every magnet has a <strong>North Pole</strong> and a <strong>South Pole</strong>. Like poles repel; opposite poles attract!</p>",
+        "locating": "<h3>Social Science: Ch 1 Locating Places on Earth</h3><p>We locate places on Earth using a grid of <strong>Latitudes</strong> (horizontal lines) and <strong>Longitudes</strong> (vertical lines).</p>"
+      }
+    },
     "7": {
       prompts: ["Explain Acids & Bases Ch 2", "Explain Electric Circuits Ch 3", "Explain Parallel Lines Ch 5", "Explain BODMAS rules Ch 2"],
       responses: {
@@ -63,8 +72,26 @@
         ]
       }
     },
+    "6": {
+      subjects: ["Science", "Mathematics", "Social Science", "English"],
+      questions: {
+        Science: [
+          { q: "Which part of a magnet has the strongest magnetic attraction?", options: ["Center", "Poles (North & South)", "Side edges", "Everywhere equally"], answer: 1, explain: "The magnetic field concentration is strongest near the North and South poles of a magnet." },
+          { q: "What tool is used to measure temperature?", options: ["Barometer", "Thermometer", "Speedometer", "Protractor"], answer: 1, explain: "A thermometer measures temperature in degrees Celsius or Fahrenheit." }
+        ],
+        Mathematics: [
+          { q: "What is the perimeter of a square with side length 5 cm?", options: ["10 cm", "20 cm", "25 cm", "15 cm"], answer: 1, explain: "Perimeter of a square = 4 × side length = 4 × 5 = 20 cm." }
+        ],
+        "Social Science": [
+          { q: "Which imaginary line divides the Earth into Northern and Southern Hemispheres?", options: ["Prime Meridian", "Tropic of Cancer", "Equator", "Tropic of Capricorn"], answer: 2, explain: "The Equator is the 0° latitude line dividing the Earth into Northern and Southern Hemispheres." }
+        ],
+        English: [
+          { q: "What type of story uses animal characters to teach a moral lesson?", options: ["Fable", "Biography", "Encyclopedia", "Dictionary"], answer: 0, explain: "A fable is a short story, typically with animals as characters, conveying a moral." }
+        ]
+      }
+    },
     "7": {
-      subjects: ["Science", "Mathematics"],
+      subjects: ["Science", "Mathematics", "Social Science", "English"],
       questions: {
         Science: [
           { q: "What is a battery in an electrical circuit?", options: ["A single cell generating voltage", "A combination of two or more cells connected together", "A device that measures current", "A fuse wire"], answer: 1, explain: "A battery is a combination of two or more cells joined in series (positive terminal of one cell connected to negative terminal of the next)." },
@@ -141,11 +168,8 @@
 
       if (promptsBox) {
         // Resolve grade group for quick prompts
-        let group = "7";
+        let group = String(profile.grade || "7");
         if (profile.grade === "prekg" || profile.grade === "lkg" || profile.grade === "ukg") group = "prekg";
-        else if (profile.grade === "5") group = "5";
-        else if (profile.grade === "10") group = "10";
-        else if (profile.grade === "11" || profile.grade === "12") group = "12";
 
         const pData = LOCAL_KNOWLEDGE[group] || LOCAL_KNOWLEDGE["7"];
         

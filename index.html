@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="styles/tutor.css">
   <link rel="stylesheet" href="styles/toolbox.css">
   <link rel="stylesheet" href="styles/parents.css">
+  <link rel="stylesheet" href="styles/books.css">
 </head>
 <body>
 
@@ -49,6 +50,7 @@
           <div class="input-group">
             <label for="setup-grade">Grade</label>
             <select id="setup-grade" onchange="window.StudyPilotSetup.handleGradeChange(this.value)">
+              <option value="6">Grade 6</option>
               <option value="7" selected>Grade 7</option>
             </select>
           </div>
@@ -61,7 +63,7 @@
           <div class="input-group">
             <label for="setup-board">School Board</label>
             <select id="setup-board">
-              <option value="State Board" selected>Tamil Nadu State Board</option>
+              <option value="CBSE" selected>CBSE (NCERT)</option>
             </select>
           </div>
         </div>
@@ -157,6 +159,10 @@
         <button class="nav-item" data-screen="tutor">
           <i data-lucide="graduation-cap"></i>
           <span>AI Tutor</span>
+        </button>
+        <button class="nav-item" data-screen="books">
+          <i data-lucide="book-open"></i>
+          <span>CBSE Books Library</span>
         </button>
         <button class="nav-item" data-screen="toolbox">
           <i data-lucide="briefcase"></i>
@@ -686,6 +692,24 @@
         </div>
       </section>
 
+      <!-- SCREEN: CBSE BOOKS LIBRARY -->
+      <section id="screen-books" class="screen-view hidden">
+        <div class="toolbox-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <h1>CBSE Books & Textbooks Library</h1>
+            <p>Access official NCERT textbooks by subject and chapter. Download books for offline reading anytime.</p>
+          </div>
+          <div class="header-actions">
+            <span class="badge badge-indigo" id="books-grade-pill">Grade 7</span>
+          </div>
+        </div>
+
+        <div class="books-layout-grid" style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div id="books-selector-root"></div>
+          <div id="books-link-root"></div>
+        </div>
+      </section>
+
       <!-- SCREEN: TOOLBOX -->
       <section id="screen-toolbox" class="screen-view hidden">
         <div class="toolbox-header">
@@ -804,6 +828,7 @@
                   <div class="input-group">
                     <label for="profile-edit-grade">Grade</label>
                     <select id="profile-edit-grade" onchange="window.StudyPilotApp.handleProfileGradeChange(this.value)">
+                      <option value="6">Grade 6</option>
                       <option value="7" selected>Grade 7</option>
                     </select>
                   </div>
@@ -816,7 +841,7 @@
                   <div class="input-group">
                     <label for="profile-edit-board">School Board</label>
                     <select id="profile-edit-board">
-                      <option value="State Board" selected>Tamil Nadu State Board</option>
+                      <option value="CBSE" selected>CBSE (NCERT)</option>
                     </select>
                   </div>
                   <div class="input-group">
@@ -1194,6 +1219,25 @@
     </div>
   </div>
 
+  <!-- Book Viewer Modal (Offline NCERT Reader) -->
+  <div id="book-viewer-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-lg animate-fade-in" style="width: 90vw; max-width: 1100px; height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e2e8f0);">
+        <div>
+          <h3 id="book-viewer-title" style="margin: 0; font-size: 1.1rem; font-weight: 700;">NCERT Book Viewer</h3>
+          <p id="book-viewer-subtitle" class="text-muted text-xs" style="margin: 0.2rem 0 0 0;">Offline PDF Reader</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button class="btn btn-outline btn-xs" type="button" onclick="window.StudyPilotBooks.openViewerExternal()">Open External <i data-lucide="external-link"></i></button>
+          <button class="modal-close" type="button" onclick="window.StudyPilotBooks.closeViewer()"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="modal-body" style="flex: 1; padding: 0; overflow: hidden; position: relative;">
+        <iframe id="book-viewer-frame" style="width: 100%; height: 100%; border: none;" src="about:blank"></iframe>
+      </div>
+    </div>
+  </div>
+
   <!-- LaTeX Render Support via KaTeX (Local fallback or light CDN link) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -1201,6 +1245,8 @@
 
   <!-- Application Modules -->
   <script src="js/db.js?v=20260728-1"></script>
+  <script src="js/curriculum.js?v=20260728-1"></script>
+  <script src="js/books.js?v=20260728-1"></script>
   <script src="js/setup.js?v=20260728-1"></script>
   <script src="js/dashboard.js?v=20260728-1"></script>
   <script src="js/planner.js?v=20260728-1"></script>

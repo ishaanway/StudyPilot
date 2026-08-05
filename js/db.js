@@ -84,8 +84,7 @@ window.getStudyPilotApiBaseUrl = function () {
           { id: "g6_en_u3", num: 3, title: "Unit 3 – Nurturing Nature", desc: "Poorvi Unit 3", sections: [{ id: "g6_en_u3_1", num: "3.1", title: "Neem Baba" }, { id: "g6_en_u3_2", num: "3.2", title: "What a Bird Thought" }, { id: "g6_en_u3_3", num: "3.3", title: "Spices that Heal Us" }] },
           { id: "g6_en_u4", num: 4, title: "Unit 4 – Sports and Wellness", desc: "Poorvi Unit 4", sections: [{ id: "g6_en_u4_1", num: "4.1", title: "Change of Heart" }, { id: "g6_en_u4_2", num: "4.2", title: "The Winner" }, { id: "g6_en_u4_3", num: "4.3", title: "Yoga – A Way of Life" }] },
           { id: "g6_en_u5", num: 5, title: "Unit 5 – Culture and Tradition", desc: "Poorvi Unit 5", sections: [{ id: "g6_en_u5_1", num: "5.1", title: "Hamara Bharat – Incredible India!" }, { id: "g6_en_u5_2", num: "5.2", title: "The Kites" }, { id: "g6_en_u5_3", num: "5.3", title: "Ila Sachani: Embroidering Dreams" }, { id: "g6_en_u5_4", num: "5.4", title: "National War Memorial" }] }
-        ],
-
+        ]
       }
     },
     "7": {
@@ -401,7 +400,7 @@ window.getStudyPilotApiBaseUrl = function () {
       name: "",
       grade: "7",
       stream: "Science", 
-      board: "State Board",
+      board: "CBSE",
       subjects: ["Science", "Mathematics", "Social Science", "English"],
       dailyHours: 2,
       goal: "Improve overall grades",
@@ -674,6 +673,14 @@ window.getStudyPilotApiBaseUrl = function () {
     // Profile API
     getProfile: function () {
       return get("profile");
+    },
+    getCurriculum: function (grade, stream) {
+      const g = String(grade || "7");
+      const curriculum = CBSE_CURRICULUM[g] || CBSE_CURRICULUM["7"];
+      return {
+        subjects: curriculum.subjects || ["Science", "Mathematics", "Social Science", "English"],
+        chapters: curriculum.chapters || {}
+      };
     },
     saveProfile: function (profileData) {
       const normalizedProfile = normalizeProfile(profileData);

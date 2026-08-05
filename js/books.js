@@ -37,8 +37,8 @@
   };
 
   const SUBJECT_FALLBACKS = {
-    ncert: ["Science", "Mathematics", "Social Science", "English", "Hindi", "Computer Science"],
-    tamil: ["English", "Mathematics", "Science", "Social Science", "Computer Science"],
+    ncert: ["Science", "Mathematics", "Social Science", "English"],
+    tamil: ["English", "Mathematics", "Science", "Social Science"],
   };
 
   const TAMIL_CLASS_PAGE_BY_GRADE = {
@@ -50,7 +50,7 @@
   };
 
   window.StudyPilotBooks = {
-    selectedBoard: "tamil",
+    selectedBoard: "ncert",
     selectedGrade: "7",
     selectedSubject: "Science",
     selectedBookKey: "",
@@ -80,7 +80,7 @@
         : null;
 
       const board = this.normalizeBoard(profile && profile.board);
-      const grade = String(profile && profile.grade ? profile.grade : "10");
+      const grade = String(profile && profile.grade ? profile.grade : "7");
       const subjects = this.getSubjects(board, grade);
       const profileSignature = `${board}:${grade}:${String(profile && profile.dreamCareer ? profile.dreamCareer : "")}`;
       const profileChanged = this.lastProfileSignature !== profileSignature;
@@ -108,8 +108,6 @@
     },
 
     normalizeBoard: function (boardValue) {
-      const value = String(boardValue || "").toLowerCase();
-      if (value.includes("state") || value.includes("tamil")) return "tamil";
       return "ncert";
     },
 
@@ -542,15 +540,158 @@
     this.render();
   };
 
+  function buildDefaultCbseCatalog() {
+    const catalog = [];
+    const g6Data = [
+      {
+        subject: "Mathematics",
+        book_title: "Ganita Prakash (Class 6 Mathematics)",
+        page_url: "https://ncert.nic.in/textbook.php?fegp1=0-10",
+        chapters: [
+          "Ch 1: Patterns in Mathematics", "Ch 2: Lines and Angles", "Ch 3: Number Play",
+          "Ch 4: Data Handling and Presentation", "Ch 5: Prime Time", "Ch 6: Perimeter and Area",
+          "Ch 7: Fractions", "Ch 8: Playing with Constructions", "Ch 9: Symmetry", "Ch 10: The Other Side of Zero"
+        ]
+      },
+      {
+        subject: "Science",
+        book_title: "Curiosity (Class 6 Science)",
+        page_url: "https://ncert.nic.in/textbook.php?fesc1=0-12",
+        chapters: [
+          "Ch 1: The Wonderful World of Science", "Ch 2: Diversity in the Living World", "Ch 3: Mindful Eating: A Path to a Healthy Body",
+          "Ch 4: Exploring Magnets", "Ch 5: Measurement of Length and Motion", "Ch 6: Materials Around Us",
+          "Ch 7: Temperature and its Measurement", "Ch 8: A Journey through States of Water", "Ch 9: Methods of Separation in Everyday Life",
+          "Ch 10: Living Creatures: Exploring their Characteristics", "Ch 11: Nature's Treasures", "Ch 12: Beyond Earth"
+        ]
+      },
+      {
+        subject: "Social Science",
+        book_title: "Exploring Society: India and Beyond (Class 6)",
+        page_url: "https://ncert.nic.in/textbook.php?fess1=0-14",
+        chapters: [
+          "Ch 1: Locating Places on the Earth", "Ch 2: Oceans and Continents", "Ch 3: Landforms and Life",
+          "Ch 4: Timeline and Sources of History", "Ch 5: India, That Is Bharat", "Ch 6: The Beginnings of Indian Civilisation",
+          "Ch 7: India's Cultural Roots", "Ch 8: Unity in Diversity, or 'Many in the One'", "Ch 9: Family and Community",
+          "Ch 10: Grassroots Democracy – Governance", "Ch 11: Local Government in Rural Areas", "Ch 12: Local Government in Urban Areas",
+          "Ch 13: The Value of Work", "Ch 14: Economic Activities Around Us"
+        ]
+      },
+      {
+        subject: "English",
+        book_title: "Poorvi (Class 6 English)",
+        page_url: "https://ncert.nic.in/textbook.php?fepr1=0-5",
+        chapters: [
+          "Unit 1: Fables and Folk Tales", "Unit 2: Friendship", "Unit 3: Nurturing Nature",
+          "Unit 4: Sports and Wellness", "Unit 5: Culture and Tradition"
+        ]
+      }
+    ];
+
+    const g7Data = [
+      {
+        subject: "Science",
+        book_title: "Curiosity (Class 7 Science)",
+        page_url: "https://ncert.nic.in/textbook.php?gecu1=0-12",
+        chapters: [
+          "Ch 1: The Ever-Evolving World of Science", "Ch 2: Exploring Substances: Acidic, Basic, Neutral",
+          "Ch 3: Electricity: Circuits and Components", "Ch 4: The World of Metals and Non-metals",
+          "Ch 5: Changes Around Us: Physical and Chemical", "Ch 6: Adolescence: A Stage of Growth and Change",
+          "Ch 7: Heat Transfer in Nature", "Ch 8: Measurement of Time and Motion",
+          "Ch 9: Life Processes in Animals", "Ch 10: Life Processes in Plants",
+          "Ch 11: Light: Shadows and Reflections", "Ch 12: Earth, Moon, and the Sun"
+        ]
+      },
+      {
+        subject: "Mathematics",
+        book_title: "Mathematics (Class 7)",
+        page_url: "https://ncert.nic.in/textbook.php?gemh1=0-15",
+        chapters: [
+          "Ch 1: Large Numbers Around Us", "Ch 2: Arithmetic Expressions & Order of Operations",
+          "Ch 3: A Peek Beyond the Point (Decimals)", "Ch 4: Expressions using Letter-Numbers (Algebra)",
+          "Ch 5: Parallel and Intersecting Lines", "Ch 6: Number Play (Factors & Multiples)",
+          "Ch 7: Properties of Triangles", "Ch 8: Working with Fractions",
+          "Ch 9: Geometric Twins (Congruence)", "Ch 10: Operations with Integers",
+          "Ch 11: Data Handling (Mean, Median, Mode)", "Ch 12: Percentages & Ratios",
+          "Ch 13: Probability & Chance", "Ch 14: Geometric Constructions",
+          "Ch 15: Finding the Unknown (Simple Equations)"
+        ]
+      },
+      {
+        subject: "Social Science",
+        book_title: "Exploring Society: India and Beyond Part 1 & 2",
+        page_url: "https://ncert.nic.in/textbook.php?gees1=0-12",
+        chapters: [
+          "Ch 1: Geographical Diversity of India", "Ch 2: Understanding the Weather", "Ch 3: Climate of India",
+          "Ch 4: New Beginnings: Cities and States", "Ch 5: The Rise of Empires", "Ch 6: The Age of Reorganisation",
+          "Ch 7: The Gupta Era: Age of Tireless Creativity", "Ch 8: How the Land Becomes Sacred",
+          "Ch 9: Types of Governments", "Ch 10: The Constitution of India", "Ch 11: From Barter to Money",
+          "Ch 12: Understanding Markets", "Ch 13: The Story of Indian Farming", "Ch 14: India and Her Neighbours",
+          "Ch 15: Empires and Kingdoms (6th to 10th C)", "Ch 16: Turning Tides (11th and 12th C)",
+          "Ch 17: India, a Home to Many", "Ch 18: State Government and You",
+          "Ch 19: Infrastructure and National Growth", "Ch 20: Banks and Financial Literacy"
+        ]
+      },
+      {
+        subject: "English",
+        book_title: "Poorvi (Class 7 English)",
+        page_url: "https://ncert.nic.in/textbook.php?gepr1=0-11",
+        chapters: [
+          "Unit 1: Learning Together", "Unit 2: Wit and Humour", "Unit 3: Dreams and Discoveries",
+          "Unit 4: Travel and Adventure", "Unit 5: Bravehearts"
+        ]
+      }
+    ];
+
+    [6, 7].forEach(grade => {
+      const list = grade === 6 ? g6Data : g7Data;
+      list.forEach(bookItem => {
+        bookItem.chapters.forEach((chLabel, idx) => {
+          const chNum = idx + 1;
+          const id = `cbse_g${grade}_${bookItem.subject.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_ch${chNum}`;
+          catalog.push({
+            id: id,
+            grade: grade,
+            grade_label: `Class ${grade}`,
+            subject: bookItem.subject,
+            book_title: bookItem.book_title,
+            chapter_label: chLabel,
+            chapter_index: chNum,
+            page_url: bookItem.page_url,
+            pdf_url: bookItem.page_url,
+            local_url: `/assets/books/ncert/planner_chapters/g${grade}_${bookItem.subject.toLowerCase().substring(0,2)}_ch${chNum}.pdf`,
+            downloaded: false
+          });
+        });
+      });
+    });
+
+    return catalog;
+  }
+
+  window.StudyPilotBooks.getDownloadedIds = function () {
+    try {
+      const data = localStorage.getItem("studypilot_downloaded_books");
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
   window.StudyPilotBooks.getBooks = function (boardKey, grade, subject) {
     if (boardKey !== "ncert") return [];
-    const books = Array.isArray(this.libraryCatalog) ? this.libraryCatalog : [];
+    let books = Array.isArray(this.libraryCatalog) && this.libraryCatalog.length > 0
+      ? this.libraryCatalog
+      : buildDefaultCbseCatalog();
+
+    const downloadedIds = this.getDownloadedIds();
+
     return books.filter(book => {
       const matchesGrade = String(book.grade || "") === String(grade);
       const matchesSubject = !subject || String(book.subject || "").toLowerCase() === String(subject || "").toLowerCase();
+      const isDownloaded = downloadedIds.includes(book.id) || Boolean(book.downloaded);
       const matchesDownload = this.libraryDownloadedFilter === "all"
-        || (this.libraryDownloadedFilter === "downloaded" && book.downloaded)
-        || (this.libraryDownloadedFilter === "online" && !book.downloaded);
+        || (this.libraryDownloadedFilter === "downloaded" && isDownloaded)
+        || (this.libraryDownloadedFilter === "online" && !isDownloaded);
       const query = String(this.libraryQuery || "").toLowerCase();
       const queryMatch = !query || [
         book.grade_label,
@@ -559,7 +700,10 @@
         book.chapter_label,
       ].join(" ").toLowerCase().includes(query);
       return matchesGrade && matchesSubject && matchesDownload && queryMatch;
-    }).map(book => ({ ...book, key: book.id }));
+    }).map(book => {
+      const isDownloaded = downloadedIds.includes(book.id) || Boolean(book.downloaded);
+      return { ...book, key: book.id, downloaded: isDownloaded };
+    });
   };
 
   window.StudyPilotBooks.getSelectedBook = function () {
@@ -568,8 +712,15 @@
   };
 
   window.StudyPilotBooks.getBookById = function (bookId) {
-    const books = Array.isArray(this.libraryCatalog) ? this.libraryCatalog : [];
-    return books.find(book => book.id === bookId) || this.getBooks(this.selectedBoard, this.selectedGrade, this.selectedSubject).find(book => book.id === bookId) || null;
+    const books = Array.isArray(this.libraryCatalog) && this.libraryCatalog.length > 0
+      ? this.libraryCatalog
+      : buildDefaultCbseCatalog();
+    const found = books.find(book => book.id === bookId);
+    if (found) {
+      const isDownloaded = this.getDownloadedIds().includes(found.id) || Boolean(found.downloaded);
+      return { ...found, downloaded: isDownloaded, key: found.id };
+    }
+    return null;
   };
 
   window.StudyPilotBooks.setBoard = function (boardKey) {
@@ -604,29 +755,44 @@
   };
 
   window.StudyPilotBooks.downloadBook = function (bookId) {
+    const downloadedIds = this.getDownloadedIds();
+    if (!downloadedIds.includes(bookId)) {
+      downloadedIds.push(bookId);
+      try {
+        localStorage.setItem("studypilot_downloaded_books", JSON.stringify(downloadedIds));
+      } catch (e) {}
+    }
     const apiBase = this.getApiBaseUrl();
-    return fetch(`${apiBase}/api/library/books/${encodeURIComponent(bookId)}/download`, {
+    fetch(`${apiBase}/api/library/books/${encodeURIComponent(bookId)}/download`, {
       method: "POST",
       mode: "cors",
-    })
-      .then(async res => {
-        if (!res.ok) throw new Error("Download failed");
-        return res.json();
-      })
-      .then(() => this.loadLibraryCatalog(true));
+    }).catch(() => null);
+
+    this.render();
+    if (window.StudyPilotDB) {
+      window.StudyPilotDB.addNotification("Book chapter downloaded for offline reading.", "success");
+    }
+    return Promise.resolve();
   };
 
   window.StudyPilotBooks.deleteBook = function (bookId) {
+    let downloadedIds = this.getDownloadedIds();
+    downloadedIds = downloadedIds.filter(id => id !== bookId);
+    try {
+      localStorage.setItem("studypilot_downloaded_books", JSON.stringify(downloadedIds));
+    } catch (e) {}
+
     const apiBase = this.getApiBaseUrl();
-    return fetch(`${apiBase}/api/library/books/${encodeURIComponent(bookId)}`, {
+    fetch(`${apiBase}/api/library/books/${encodeURIComponent(bookId)}`, {
       method: "DELETE",
       mode: "cors",
-    })
-      .then(async res => {
-        if (!res.ok) throw new Error("Delete failed");
-        return res.json();
-      })
-      .then(() => this.loadLibraryCatalog(true));
+    }).catch(() => null);
+
+    this.render();
+    if (window.StudyPilotDB) {
+      window.StudyPilotDB.addNotification("Book chapter removed from offline downloads.", "info");
+    }
+    return Promise.resolve();
   };
 
   window.StudyPilotBooks.openViewer = function (book) {
@@ -634,8 +800,7 @@
     if (!resolvedBook) return;
 
     if (!resolvedBook.downloaded) {
-      this.downloadBook(resolvedBook.id).then(() => this.openViewer(this.getBookById(resolvedBook.id))).catch(() => null);
-      return;
+      this.downloadBook(resolvedBook.id);
     }
 
     const modal = document.getElementById("book-viewer-modal");
@@ -645,8 +810,8 @@
     if (!modal || !title || !subtitle || !frame) return;
 
     title.textContent = `${resolvedBook.book_title || "NCERT Book"} - ${resolvedBook.chapter_label || "Book"}`;
-    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject}`;
-    frame.src = resolvedBook.local_url || resolvedBook.page_url || "";
+    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject} (Offline Reader)`;
+    frame.src = resolvedBook.page_url || resolvedBook.local_url || "https://ncert.nic.in/textbook.php";
     modal.classList.remove("hidden");
     this.viewerBook = resolvedBook;
   };
@@ -702,7 +867,7 @@
           <div class="input-group">
             <label for="books-grade-select">Class</label>
             <select id="books-grade-select" onchange="window.StudyPilotBooks.setGrade(this.value)">
-              ${[6, 7, 8, 9, 10].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Class ${grade}</option>`).join("")}
+              ${[6, 7].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Class ${grade}</option>`).join("")}
             </select>
           </div>
           <div class="input-group">

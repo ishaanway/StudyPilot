@@ -282,6 +282,10 @@
         } else {
           window.StudyPilotParents.init();
         }
+      } else if (screenId === "books") {
+        if (window.StudyPilotBooks) {
+          window.StudyPilotBooks.init();
+        }
       } else if (screenId === "profile") {
         this.loadUserProfile();
       }
@@ -379,11 +383,13 @@
       }
 
       window.StudyPilotDB.saveProfile(profile);
+      window.dispatchEvent(new CustomEvent("studypilot_profile_updated"));
       this.loadUserProfile();
       
       // Force reload other screens
       if (window.StudyPilotPlanner) window.StudyPilotPlanner.init();
       if (window.StudyPilotTutor) window.StudyPilotTutor.init();
+      if (window.StudyPilotBooks) window.StudyPilotBooks.init();
       
       window.StudyPilotDB.addNotification("Profile settings updated successfully.", "success");
       alert("Settings saved successfully!");
