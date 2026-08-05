@@ -4,6 +4,24 @@
 /* ======================================================== */
 
 (function () {
+  function resolvePdfUrl(rawUrl) {
+    if (!rawUrl) return "";
+    let url = String(rawUrl).trim();
+
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("blob:") || url.startsWith("data:")) {
+      return url;
+    }
+
+    const cleanPath = url.replace(/^\/+/, "");
+    try {
+      const href = window.location.href;
+      const baseDir = href.substring(0, href.lastIndexOf('/') + 1);
+      return new URL(cleanPath, baseDir).href;
+    } catch (e) {
+      return cleanPath;
+    }
+  }
+
   const BOOK_PORTALS = {
     ncert: [
       {
@@ -225,15 +243,24 @@
       const title = document.getElementById("book-viewer-title");
       const subtitle = document.getElementById("book-viewer-subtitle");
       const frame = document.getElementById("book-viewer-frame");
+      const errorBox = document.getElementById("book-viewer-error");
       if (!modal || !title || !subtitle || !frame) return;
 
       const resolvedBook = book || this.getSelectedBook();
       if (!resolvedBook) return;
 
       this.viewerBook = resolvedBook;
-      title.textContent = resolvedBook.title || "NCERT Book";
+      title.textContent = resolvedBook.book_title || resolvedBook.title || "NCERT Book";
       subtitle.textContent = resolvedBook.description || "Local PDF loaded from the StudyPilot library.";
-      frame.src = resolvedBook.localPdfUrl || resolvedBook.pdfUrl || resolvedBook.pageUrl || "";
+
+      const rawPath = resolvedBook.local_url || resolvedBook.localPdfUrl || resolvedBook.pdf_url || resolvedBook.pdfUrl || resolvedBook.page_url || "";
+      const pdfUrl = resolvePdfUrl(rawPath);
+
+      console.log("[StudyPilot Offline Reader] Loading PDF path:", pdfUrl);
+
+      if (errorBox) errorBox.classList.add("hidden");
+      frame.style.display = "block";
+      frame.src = pdfUrl;
       modal.classList.remove("hidden");
     },
 
@@ -643,12 +670,23 @@
       }
     ];
 
+    function getSubjectPrefix(subject) {
+      const s = String(subject || "").toLowerCase();
+      if (s.includes("social")) return "ss_ch";
+      if (s.includes("science")) return "s_ch";
+      if (s.includes("math")) return "m_ch";
+      if (s.includes("english")) return "en_u";
+      return "ch";
+    }
+
     [6, 7].forEach(grade => {
       const list = grade === 6 ? g6Data : g7Data;
       list.forEach(bookItem => {
+        const prefix = getSubjectPrefix(bookItem.subject);
         bookItem.chapters.forEach((chLabel, idx) => {
           const chNum = idx + 1;
-          const id = `cbse_g${grade}_${bookItem.subject.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_ch${chNum}`;
+          const cid = grade === 6 ? `g6_${prefix}${chNum}` : `${prefix}${chNum}`;
+          const id = `cbse_g${grade}_${cid}`;
           catalog.push({
             id: id,
             grade: grade,
@@ -659,7 +697,7 @@
             chapter_index: chNum,
             page_url: bookItem.page_url,
             pdf_url: bookItem.page_url,
-            local_url: `/assets/books/ncert/planner_chapters/g${grade}_${bookItem.subject.toLowerCase().substring(0,2)}_ch${chNum}.pdf`,
+            local_url: `assets/books/ncert/planner_chapters/${cid}.pdf`,
             downloaded: false
           });
         });
@@ -796,6 +834,23 @@
     return Promise.resolve();
   };
 
+  window.StudyPilotBooks.showViewerError = function (path, book) {
+    const frame = document.getElementById("book-viewer-frame");
+    const errorBox = document.getElementById("book-viewer-error");
+    const errorPath = document.getElementById("book-viewer-error-path");
+    const portalBtn = document.getElementById("book-viewer-portal-btn");
+
+    if (frame) frame.style.display = "none";
+    if (errorBox) errorBox.classList.remove("hidden");
+    if (errorPath) errorPath.textContent = `Attempted PDF Path: ${path}`;
+    if (portalBtn) {
+      portalBtn.onclick = () => {
+        const url = (book && (book.page_url || book.pdf_url || book.pageUrl || book.pdfUrl)) || "https://ncert.nic.in/textbook.php";
+        window.open(url, "_blank", "noopener,noreferrer");
+      };
+    }
+  };
+
   window.StudyPilotBooks.openViewer = function (book) {
     const resolvedBook = book || this.getSelectedBook();
     if (!resolvedBook) return;
@@ -808,19 +863,43 @@
     const title = document.getElementById("book-viewer-title");
     const subtitle = document.getElementById("book-viewer-subtitle");
     const frame = document.getElementById("book-viewer-frame");
+    const errorBox = document.getElementById("book-viewer-error");
     if (!modal || !title || !subtitle || !frame) return;
 
-    title.textContent = `${resolvedBook.book_title || "NCERT Book"} - ${resolvedBook.chapter_label || "Book"}`;
-    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject} (Offline Reader)`;
-    frame.src = resolvedBook.page_url || resolvedBook.local_url || "https://ncert.nic.in/textbook.php";
-    modal.classList.remove("hidden");
     this.viewerBook = resolvedBook;
+    title.textContent = `${resolvedBook.book_title || resolvedBook.title || "NCERT Book"} - ${resolvedBook.chapter_label || "Book"}`;
+    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject || ""} (Offline Reader)`;
+
+    // Prioritize local PDF URL for offline reading
+    const rawPath = resolvedBook.local_url || resolvedBook.localPdfUrl || resolvedBook.pdf_url || resolvedBook.pdfUrl || resolvedBook.page_url || "";
+    const pdfUrl = resolvePdfUrl(rawPath);
+
+    console.log("[StudyPilot Offline Reader] Loading PDF path:", pdfUrl);
+
+    if (errorBox) errorBox.classList.add("hidden");
+    frame.style.display = "block";
+    frame.src = pdfUrl;
+    modal.classList.remove("hidden");
+
+    if (pdfUrl && !pdfUrl.startsWith("http://") && !pdfUrl.startsWith("https://")) {
+      fetch(pdfUrl, { method: "HEAD" }).then(res => {
+        if (!res.ok) {
+          console.warn("[StudyPilot Offline Reader] Local PDF HEAD check returned status:", res.status, pdfUrl);
+          this.showViewerError(pdfUrl, resolvedBook);
+        }
+      }).catch(err => {
+        console.warn("[StudyPilot Offline Reader] Local PDF fetch error:", err, pdfUrl);
+        this.showViewerError(pdfUrl, resolvedBook);
+      });
+    }
   };
 
   window.StudyPilotBooks.closeViewer = function () {
     const modal = document.getElementById("book-viewer-modal");
     const frame = document.getElementById("book-viewer-frame");
+    const errorBox = document.getElementById("book-viewer-error");
     if (frame) frame.src = "about:blank";
+    if (errorBox) errorBox.classList.add("hidden");
     if (modal) modal.classList.add("hidden");
     this.viewerBook = null;
   };
