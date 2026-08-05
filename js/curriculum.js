@@ -86,7 +86,6 @@
     Mathematics: "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/Maths_Sec_2025-26.pdf",
     "Social Science": "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/Social_Science_Sec_2025-26.pdf",
     English: "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/English_LL_2025-26.pdf",
-    "Computer Science": "https://cbseacademic.nic.in/web_material/CurriculumMain26/Sec/Computer_Applications_Sec_2025-26.pdf",
   };
 
   const TEXTBOOK_CATALOG = {
@@ -449,11 +448,6 @@
         ["Reading", "What do we do in comprehension?", "Read and understand the passage."],
         ["Writing", "What is a sentence?", "A group of words that makes complete sense."],
       ],
-      "Computer Science": [
-        ["Devices", "What is a computer used for?", "Processing information and helping with tasks."],
-        ["Files", "What is a folder?", "A place to organize files."],
-        ["Safety", "Why should we be careful online?", "To protect personal information."],
-      ],
     },
     7: {
       Science: [
@@ -475,11 +469,6 @@
         ["Tenses", "Why do we use tenses?", "To show the time of an action."],
         ["Writing", "What is a notice?", "A short formal message."],
         ["Reading", "What is the main idea?", "The most important point of a text."],
-      ],
-      "Computer Science": [
-        ["Hardware", "What is hardware?", "The physical parts of a computer."],
-        ["Internet", "What is a browser?", "Software used to open websites."],
-        ["Spreadsheets", "What does a cell contain?", "Data such as text, number, or formula."],
       ],
     },
     8: {
@@ -503,11 +492,6 @@
         ["Writing", "What should a formal letter include?", "Clear format, purpose, and respectful tone."],
         ["Literature", "Why do we discuss theme?", "To understand the deeper message of the text."],
       ],
-      "Computer Science": [
-        ["Networks", "What is a network?", "A group of connected computers."],
-        ["Presentations", "Why use slides?", "To present information clearly."],
-        ["Algorithms", "What is an algorithm?", "A step-by-step way to solve a problem."],
-      ],
     },
     9: {
       Science: [
@@ -530,11 +514,6 @@
         ["Writing Skills", "What does a formal letter usually include?", "Address, date, subject, salutation, body, and closing."],
         ["Grammar", "Why do we revise subject-verb agreement?", "To match the verb with the subject correctly."],
       ],
-      "Computer Science": [
-        ["Basics of IT", "What is the difference between RAM and ROM?", "RAM is temporary memory; ROM is permanent memory."],
-        ["Cyber Safety", "Why are strong passwords important?", "They protect accounts and personal data."],
-        ["Office Tools", "What does a spreadsheet help you do?", "Store data and calculate values like sum and average."],
-      ],
     },
     10: {
       Science: [
@@ -556,11 +535,6 @@
         ["Reading Skills", "What is the main goal of reading comprehension?", "To understand and interpret the text accurately."],
         ["Writing Skills", "What should a formal letter keep?", "A clear format, tone, and purpose."],
         ["Literature", "Why do we study theme and message?", "To understand what the writer wants to convey."],
-      ],
-      "Computer Science": [
-        ["Networking", "What is the World Wide Web?", "A system of linked web pages accessed through browsers."],
-        ["HTML", "What does the href attribute do?", "It defines the destination of a link."],
-        ["Cyber Ethics", "What is netiquette?", "Good and respectful online behaviour."],
       ],
     },
   };

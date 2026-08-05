@@ -126,7 +126,8 @@
         : [];
       const profileSubjects = profile && Array.isArray(profile.subjects) ? profile.subjects : [];
       const fallback = SUBJECT_FALLBACKS[boardKey] || SUBJECT_FALLBACKS.ncert;
-      return this.uniqueList([...curriculumSubjects, ...profileSubjects, ...fallback]);
+      return this.uniqueList([...curriculumSubjects, ...profileSubjects, ...fallback])
+        .filter(s => s !== "Computer Science" && s !== "Hindi");
     },
 
     getBooks: function (boardKey, grade, subject) {

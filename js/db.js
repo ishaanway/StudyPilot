@@ -465,7 +465,7 @@ window.getStudyPilotApiBaseUrl = function () {
     const source = Array.isArray(subjects) ? subjects : fallback;
     return source
       .map((subject) => String(subject || "").trim())
-      .filter(Boolean);
+      .filter((sub) => Boolean(sub) && sub !== "Computer Science" && sub !== "Hindi");
   }
 
   function normalizeProfile(profileData) {
@@ -672,7 +672,15 @@ window.getStudyPilotApiBaseUrl = function () {
 
     // Profile API
     getProfile: function () {
-      return get("profile");
+      const profile = get("profile");
+      if (profile && Array.isArray(profile.subjects)) {
+        const filtered = profile.subjects.filter(s => s !== "Computer Science" && s !== "Hindi");
+        if (filtered.length !== profile.subjects.length) {
+          profile.subjects = filtered.length > 0 ? filtered : ["Science", "Mathematics", "Social Science", "English"];
+          set("profile", profile);
+        }
+      }
+      return profile;
     },
     getCurriculum: function (grade, stream) {
       const g = String(grade || "7");
