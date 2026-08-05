@@ -413,39 +413,41 @@
       if (!select || !statusLbl) return;
 
       try {
-        statusLbl.innerText = "Connecting...";
+        statusLbl.innerText = "Checking backend...";
         statusLbl.style.color = "var(--text-muted)";
 
         const apiBase = window.StudyPilotTutor ? window.StudyPilotTutor.getApiBaseUrl() : "http://127.0.0.1:5000";
-        const response = await fetch(`${apiBase}/api/tutor/models`);
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data && data.ok) {
-          const profile = window.StudyPilotDB.getProfile();
-          const savedModel = profile.ollamaModel || "auto";
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 600);
 
-          // Clear choices, keep auto as fallback
-          select.innerHTML = "";
-          
-          data.items.forEach(item => {
-            const val = item.provider === "auto" ? "auto" : item.model;
-            const selected = val === savedModel ? "selected" : "";
-            const cleanLabel = String(item.label).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const cleanVal = String(val).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            select.innerHTML += `<option value="${cleanVal}" ${selected}>${cleanLabel}</option>`;
-          });
+        const response = await fetch(`${apiBase}/api/tutor/models`, { signal: controller.signal }).catch(() => null);
+        clearTimeout(timer);
 
-          statusLbl.innerText = "Connected (Ollama Active)";
-          statusLbl.style.color = "#166534";
-        } else {
-          throw new Error("Unable to fetch models");
+        if (response && response.ok) {
+          const data = await response.json();
+          if (data && data.ok) {
+            const profile = window.StudyPilotDB.getProfile();
+            const savedModel = profile.ollamaModel || "auto";
+
+            select.innerHTML = "";
+            data.items.forEach(item => {
+              const val = item.provider === "auto" ? "auto" : item.model;
+              const selected = val === savedModel ? "selected" : "";
+              const cleanLabel = String(item.label).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+              const cleanVal = String(val).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+              select.innerHTML += `<option value="${cleanVal}" ${selected}>${cleanLabel}</option>`;
+            });
+
+            statusLbl.innerText = "Connected (Ollama Active)";
+            statusLbl.style.color = "#166534";
+            return;
+          }
         }
+        statusLbl.innerText = "Offline (Local Browser Mode)";
+        statusLbl.style.color = "var(--text-muted)";
       } catch (error) {
-        console.error("Failed to connect to Ollama backend:", error);
-        statusLbl.innerText = "Offline (Make sure backend is running)";
-        statusLbl.style.color = "var(--red-text)";
+        statusLbl.innerText = "Offline (Local Browser Mode)";
+        statusLbl.style.color = "var(--text-muted)";
       }
     },
 

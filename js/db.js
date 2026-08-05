@@ -584,7 +584,32 @@ window.getStudyPilotApiBaseUrl = function () {
     };
   }
 
+  let backendCheckPromise = null;
+
+  async function checkBackendOnline() {
+    if (window.location.protocol === "file:") return false;
+    if (backendCheckPromise !== null) return backendCheckPromise;
+    backendCheckPromise = (async () => {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 600);
+        const res = await fetch(`${window.getStudyPilotApiBaseUrl()}/api/health`, {
+          method: "GET",
+          signal: controller.signal
+        }).catch(() => null);
+        clearTimeout(timer);
+        return Boolean(res && res.ok);
+      } catch (e) {
+        return false;
+      }
+    })();
+    return backendCheckPromise;
+  }
+
   async function syncProfileToBackend(profileData) {
+    const online = await checkBackendOnline();
+    if (!online) return null;
+
     const profile = normalizeProfile(profileData);
     const payload = buildProfilePayload(profile);
 
@@ -617,7 +642,7 @@ window.getStudyPilotApiBaseUrl = function () {
 
       return item;
     } catch (error) {
-      console.warn("[StudyPilotDB] Unable to sync profile to backend:", error);
+      console.debug("[StudyPilotDB] Unable to sync profile to backend:", error);
       return null;
     }
   }
@@ -793,9 +818,12 @@ window.getStudyPilotApiBaseUrl = function () {
     },
 
     bootstrapFromBackend: async function () {
+      const online = await checkBackendOnline();
+      if (!online) return;
+
       try {
         const response = await fetch(`${window.getStudyPilotApiBaseUrl()}/api/bootstrap`);
-        if (!response.ok) throw new Error(`Bootstrap failed with status ${response.status}`);
+        if (!response.ok) return;
         const data = await response.json();
         if (!data || !data.ok || !data.student) return;
 
@@ -818,7 +846,7 @@ window.getStudyPilotApiBaseUrl = function () {
 
         window.dispatchEvent(new CustomEvent("studypilot_bootstrap"));
       } catch (err) {
-        console.warn("[StudyPilotDB] Failed to bootstrap from backend:", err);
+        console.debug("[StudyPilotDB] Bootstrap skipped (local mode)");
       }
     },
 
@@ -982,6 +1010,9 @@ window.getStudyPilotApiBaseUrl = function () {
       const studentId = profile.backendStudentId;
       if (!studentId) return;
 
+      const online = await checkBackendOnline();
+      if (!online) return;
+
       try {
         const response = await fetch(`${window.getStudyPilotApiBaseUrl()}/api/curriculum?student_id=${studentId}`);
         if (!response.ok) throw new Error(`Fetch failed with status ${response.status}`);
@@ -1030,7 +1061,7 @@ window.getStudyPilotApiBaseUrl = function () {
           }
         }
       } catch (err) {
-        console.warn("[StudyPilotDB] Failed to sync curriculum from backend:", err);
+        console.debug("[StudyPilotDB] Curriculum sync skipped (local mode)");
       }
     },
 
