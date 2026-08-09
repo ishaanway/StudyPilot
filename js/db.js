@@ -1246,20 +1246,29 @@ window.getStudyPilotApiBaseUrl = function () {
       const yesterday = new Date(Date.now() - 86400000);
       const yesterdayStr = yesterday.toISOString().split("T")[0];
 
+      let changed = false;
       if (!profile.lastActive) {
         profile.lastActive = todayStr;
         profile.streak = Math.max(1, parseInt(profile.streak, 10) || 1);
-        this.saveProfile(profile);
+        changed = true;
       } else if (profile.lastActive === todayStr) {
-        profile.streak = Math.max(1, parseInt(profile.streak, 10) || 1);
+        const currStreak = Math.max(1, parseInt(profile.streak, 10) || 1);
+        if (profile.streak !== currStreak) {
+          profile.streak = currStreak;
+          changed = true;
+        }
       } else if (profile.lastActive === yesterdayStr) {
         profile.streak = (parseInt(profile.streak, 10) || 0) + 1;
         profile.lastActive = todayStr;
-        this.saveProfile(profile);
+        changed = true;
       } else {
         profile.streak = 1;
         profile.lastActive = todayStr;
-        this.saveProfile(profile);
+        changed = true;
+      }
+
+      if (changed) {
+        set("profile", profile);
       }
       this.updateStreakDisplay();
     },

@@ -1,0 +1,19 @@
+{
+  "liveServer.settings.ignoreFiles": [
+    ".vscode/**",
+    "**/*.db",
+    "**/*.db-journal",
+    "**/*.db-wal",
+    "**/*.db-shm",
+    "**/*.log",
+    "**/*.pyc",
+    "**/__pycache__/**",
+    "scratch/**",
+    "studypilot.db",
+    "studypilot.db*",
+    "studypilot-err.log",
+    "studypilot-out.log",
+    "logs/**"
+  ],
+  "liveServer.settings.donotShowInfoMsg": true
+}
