@@ -627,6 +627,9 @@ body {
 
 .hidden {
   display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 /* 6. Base Component Styles (Buttons, Cards, Inputs, Badges) */
@@ -890,9 +893,10 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   width: 90%;
-  max-width: 500px;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
   border: 1px solid var(--border-color);
-  overflow: hidden;
 }
 
 .modal-header {

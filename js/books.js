@@ -213,7 +213,13 @@
     },
 
     setGrade: function (grade) {
-      this.selectedGrade = String(grade);
+      const g = String(grade);
+      this.selectedGrade = g;
+      const profile = window.StudyPilotDB ? window.StudyPilotDB.getProfile() : null;
+      if (profile && profile.grade !== g && window.StudyPilotApp && typeof window.StudyPilotApp.switchGlobalGrade === "function") {
+        window.StudyPilotApp.switchGlobalGrade(g);
+        return;
+      }
       const subjects = this.getSubjects(this.selectedBoard, this.selectedGrade);
       this.selectedSubject = this.getPreferredSubject(this.selectedBoard, this.selectedGrade, subjects);
       const books = this.getBooks(this.selectedBoard, this.selectedGrade, this.selectedSubject);
@@ -404,18 +410,11 @@
           <button class="btn btn-primary btn-sm" type="button" onclick="window.StudyPilotBooks.openSelectedSource()">${localBookAvailable ? "Open in app" : "Open source"}</button>
         </div>
 
-        <div class="input-group books-board-group">
-          <label>Board</label>
-          <div class="books-board-toggle">
-            <button type="button" class="books-board-pill ${this.selectedBoard === "tamil" ? "active" : ""}" onclick="window.StudyPilotBooks.setBoard('tamil')">Tamil Nadu</button>
-          </div>
-        </div>
-
         <div class="input-row books-input-row">
           <div class="input-group">
             <label for="books-grade-select">Grade</label>
             <select id="books-grade-select" onchange="window.StudyPilotBooks.setGrade(this.value)">
-              ${[7].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Grade ${grade}</option>`).join("")}
+              ${[6, 7, 8, 9, 10].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Grade ${grade}</option>`).join("")}
             </select>
           </div>
           <div class="input-group">
@@ -670,6 +669,27 @@
       }
     ];
 
+    const g8Data = [
+      { subject: "Mathematics", book_title: "Mathematics (Class 8)", page_url: "https://ncert.nic.in/textbook.php?hemh1=0-13", localPdf: "assets/books/ncert/grade8-mathematics.pdf", chapters: ["Ch 1: Rational Numbers", "Ch 2: Linear Equations in One Variable", "Ch 3: Understanding Quadrilaterals", "Ch 4: Data Handling", "Ch 5: Square and Square Roots", "Ch 6: Cube and Cube Roots", "Ch 7: Comparing Quantities", "Ch 8: Algebraic Expressions and Identities", "Ch 9: Mensuration", "Ch 10: Exponents and Powers", "Ch 11: Direct and Inverse Proportions", "Ch 12: Factorisation", "Ch 13: Introduction to Graphs"] },
+      { subject: "Science", book_title: "Science (Class 8)", page_url: "https://ncert.nic.in/textbook.php?hesc1=0-13", localPdf: "assets/books/ncert/grade8-science.pdf", chapters: ["Ch 1: Crop Production and Management", "Ch 2: Microorganisms: Friend and Foe", "Ch 3: Coal and Petroleum", "Ch 4: Combustion and Flame", "Ch 5: Conservation of Plants and Animals", "Ch 6: Reproduction in Animals", "Ch 7: Reaching the Age of Adolescence", "Ch 8: Force and Pressure", "Ch 9: Friction", "Ch 10: Sound", "Ch 11: Chemical Effects of Electric Current", "Ch 12: Some Natural Phenomena", "Ch 13: Light"] },
+      { subject: "Social Science", book_title: "Social Science (Class 8)", page_url: "https://ncert.nic.in/textbook.php?hess1=0-10", localPdf: "assets/books/ncert/grade8-social-science.pdf", chapters: ["Ch 1: Resources", "Ch 2: Land, Soil, Water, Natural Vegetation", "Ch 3: Agriculture", "Ch 4: Industries", "Ch 5: Human Resources", "Ch 6: How, When and Where", "Ch 7: From Trade to Territory", "Ch 8: Ruling the Countryside", "Ch 9: Tribals, Dikus and Vision of Golden Age", "Ch 10: Indian Constitution & Secularism"] },
+      { subject: "English", book_title: "Honeydew (Class 8 English)", page_url: "https://ncert.nic.in/textbook.php?hehd1=0-10", localPdf: "assets/books/ncert/grade8-english-honeydew.pdf", chapters: ["Unit 1: The Best Christmas Present in the World", "Unit 2: The Tsunami", "Unit 3: Glimpses of the Past", "Unit 4: Bepin Choudhury's Lapse of Memory", "Unit 5: The Summit Within", "Unit 6: This is Jody's Fawn"] }
+    ];
+
+    const g9Data = [
+      { subject: "Mathematics", book_title: "Mathematics (Class 9)", page_url: "https://ncert.nic.in/textbook.php?iemh1=0-12", localPdf: "assets/books/ncert/grade9-mathematics.pdf", chapters: ["Ch 1: Number Systems", "Ch 2: Polynomials", "Ch 3: Coordinate Geometry", "Ch 4: Linear Equations in Two Variables", "Ch 5: Introduction to Euclid's Geometry", "Ch 6: Lines and Angles", "Ch 7: Triangles", "Ch 8: Quadrilaterals", "Ch 9: Circles", "Ch 10: Heron's Formula", "Ch 11: Surface Areas and Volumes", "Ch 12: Statistics"] },
+      { subject: "Science", book_title: "Science (Class 9)", page_url: "https://ncert.nic.in/textbook.php?iesc1=0-12", localPdf: "assets/books/ncert/grade9-science.pdf", chapters: ["Ch 1: Matter in Our Surroundings", "Ch 2: Is Matter Around Us Pure", "Ch 3: Atoms and Molecules", "Ch 4: Structure of the Atom", "Ch 5: The Fundamental Unit of Life", "Ch 6: Tissues", "Ch 7: Motion", "Ch 8: Force and Laws of Motion", "Ch 9: Gravitation", "Ch 10: Work and Energy", "Ch 11: Sound", "Ch 12: Improvement in Food Resources"] },
+      { subject: "Social Science", book_title: "Social Science (Class 9)", page_url: "https://ncert.nic.in/textbook.php?iess1=0-6", localPdf: "assets/books/ncert/grade9-social-science.pdf", chapters: ["Ch 1: The French Revolution", "Ch 2: Socialism in Europe and Russian Revolution", "Ch 3: Nazism and the Rise of Hitler", "Ch 4: India - Size and Location", "Ch 5: Physical Features of India", "Ch 6: Drainage", "Ch 7: Climate", "Ch 8: What is Democracy? Why Democracy?", "Ch 9: Constitutional Design", "Ch 10: The Story of Village Palampur"] },
+      { subject: "English", book_title: "Beehive (Class 9 English)", page_url: "https://ncert.nic.in/textbook.php?iebe1=0-11", localPdf: "assets/books/ncert/grade9-english-beehive.pdf", chapters: ["Unit 1: The Fun They Had", "Unit 2: The Sound of Music", "Unit 3: The Little Girl", "Unit 4: A Truly Beautiful Mind", "Unit 5: The Snake and the Mirror", "Unit 6: My Childhood"] }
+    ];
+
+    const g10Data = [
+      { subject: "Mathematics", book_title: "Mathematics (Class 10)", page_url: "https://ncert.nic.in/textbook.php?jemh1=0-14", localPdf: "assets/books/ncert/grade10-mathematics.pdf", chapters: ["Ch 1: Real Numbers", "Ch 2: Polynomials", "Ch 3: Pair of Linear Equations in Two Variables", "Ch 4: Quadratic Equations", "Ch 5: Arithmetic Progressions", "Ch 6: Triangles", "Ch 7: Coordinate Geometry", "Ch 8: Introduction to Trigonometry", "Ch 9: Some Applications of Trigonometry", "Ch 10: Circles", "Ch 11: Areas Related to Circles", "Ch 12: Surface Areas and Volumes", "Ch 13: Statistics", "Ch 14: Probability"] },
+      { subject: "Science", book_title: "Science (Class 10)", page_url: "https://ncert.nic.in/textbook.php?jesc1=1-16", localPdf: "assets/books/ncert/grade10-science.pdf", chapters: ["Ch 1: Chemical Reactions and Equations", "Ch 2: Acids, Bases and Salts", "Ch 3: Metals and Non-metals", "Ch 4: Carbon and Its Compounds", "Ch 5: Life Processes", "Ch 6: Control and Coordination", "Ch 7: How do Organisms Reproduce?", "Ch 8: Heredity and Evolution", "Ch 9: Light - Reflection and Refraction", "Ch 10: The Human Eye and Colourful World", "Ch 11: Electricity", "Ch 12: Magnetic Effects of Electric Current", "Ch 13: Our Environment"] },
+      { subject: "Social Science", book_title: "Social Science (Class 10)", page_url: "https://ncert.nic.in/textbook.php?jess1=0-5", localPdf: "assets/books/ncert/grade10-social-science.pdf", chapters: ["Ch 1: The Rise of Nationalism in Europe", "Ch 2: Nationalism in India", "Ch 3: The Making of a Global World", "Ch 4: Resources and Development", "Ch 5: Forest and Wildlife Resources", "Ch 6: Water Resources", "Ch 7: Agriculture", "Ch 8: Power Sharing", "Ch 9: Federalism", "Ch 10: Development"] },
+      { subject: "English", book_title: "First Flight (Class 10 English)", page_url: "https://ncert.nic.in/textbook.php?jeff1=0-11", localPdf: "assets/books/ncert/grade10-english-first-flight.pdf", chapters: ["Unit 1: A Letter to God", "Unit 2: Nelson Mandela: Long Walk to Freedom", "Unit 3: Two Stories about Flying", "Unit 4: From the Diary of Anne Frank", "Unit 5: Glimpses of India", "Unit 6: Mijbil the Otter"] }
+    ];
+
     function getSubjectPrefix(subject) {
       const s = String(subject || "").toLowerCase();
       if (s.includes("social")) return "ss_ch";
@@ -679,13 +699,20 @@
       return "ch";
     }
 
-    [6, 7].forEach(grade => {
-      const list = grade === 6 ? g6Data : g7Data;
+    [6, 7, 8, 9, 10].forEach(grade => {
+      let list = g6Data;
+      if (grade === 7) list = g7Data;
+      else if (grade === 8) list = g8Data;
+      else if (grade === 9) list = g9Data;
+      else if (grade === 10) list = g10Data;
+
       list.forEach(bookItem => {
         const prefix = getSubjectPrefix(bookItem.subject);
+        const fallbackPdf = bookItem.localPdf || `assets/books/ncert/grade${grade}-${bookItem.subject.toLowerCase().replace(/[^a-z0-9]+/g, "")}.pdf`;
+
         bookItem.chapters.forEach((chLabel, idx) => {
           const chNum = idx + 1;
-          const cid = grade === 6 ? `g6_${prefix}${chNum}` : `${prefix}${chNum}`;
+          const cid = `g${grade}_${prefix}${chNum}`;
           const id = `cbse_g${grade}_${cid}`;
           catalog.push({
             id: id,
@@ -697,8 +724,8 @@
             chapter_index: chNum,
             page_url: bookItem.page_url,
             pdf_url: bookItem.page_url,
-            local_url: `assets/books/ncert/planner_chapters/${cid}.pdf`,
-            downloaded: false
+            local_url: fallbackPdf,
+            downloaded: true
           });
         });
       });
@@ -913,13 +940,68 @@
     this.openViewer(book);
   };
 
-  window.StudyPilotBooks.openSelectedPage = function () {
-    const book = this.getSelectedBook();
-    if (!book) {
-      this.openBoardPortal();
-      return;
+  window.StudyPilotBooks.downloadDirectPdf = function (bookId) {
+    const book = this.getBookById(bookId);
+    if (!book) return;
+    const pdfUrl = book.localPdfUrl || book.pdfUrl || book.localPdf || "";
+    if (pdfUrl) {
+      const a = document.createElement("a");
+      a.href = pdfUrl;
+      a.download = `${book.subject || "Book"}_Class${book.grade}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.StudyPilotDB.addNotification(`Started downloading ${book.book_title || "PDF"}.`, "success");
+    } else if (book.page_url) {
+      window.open(book.page_url, "_blank", "noopener,noreferrer");
     }
-    this.openViewer(book);
+  };
+
+  window.StudyPilotBooks.toggleBookSummary = function (bookId) {
+    const drawer = document.getElementById(`book-summary-${bookId}`);
+    if (drawer) {
+      const isOpening = drawer.classList.contains("hidden");
+      drawer.classList.toggle("hidden");
+      if (window.StudyPilotAudio) window.StudyPilotAudio.playClickSound();
+      if (isOpening && typeof window.renderMathInElement === "function") {
+        try {
+          window.renderMathInElement(drawer, {
+            delimiters: [
+              { left: "$$", right: "$$", display: true },
+              { left: "$", right: "$", display: false }
+            ],
+            throwOnError: false
+          });
+        } catch (e) {}
+      }
+    }
+  };
+
+  window.StudyPilotBooks.getCompletedChapterIds = function () {
+    try {
+      const data = localStorage.getItem("studypilot_completed_chapters");
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  window.StudyPilotBooks.toggleChapterCompletion = function (bookId) {
+    let completed = this.getCompletedChapterIds();
+    const isNowDone = !completed.includes(bookId);
+    if (completed.includes(bookId)) {
+      completed = completed.filter(id => id !== bookId);
+      if (window.StudyPilotDB) window.StudyPilotDB.addNotification("Chapter marked as pending.", "info");
+    } else {
+      completed.push(bookId);
+      if (window.StudyPilotAudio) window.StudyPilotAudio.playChime("complete");
+      if (window.StudyPilotDB) window.StudyPilotDB.addNotification("Chapter marked COMPLETED! Parent report updated. 🔥", "success");
+    }
+    localStorage.setItem("studypilot_completed_chapters", JSON.stringify(completed));
+    this.render();
+    if (window.StudyPilotParents && typeof window.StudyPilotParents.render === "function") {
+      window.StudyPilotParents.render();
+    }
   };
 
   window.StudyPilotBooks.render = function () {
@@ -935,6 +1017,7 @@
     const subjects = this.getSubjects(this.selectedBoard, this.selectedGrade);
     const books = this.getBooks(this.selectedBoard, this.selectedGrade, this.selectedSubject);
     const boardLabel = this.getBoardLabel(this.selectedBoard);
+    const completedIds = this.getCompletedChapterIds();
 
     selectorRoot.innerHTML = `
       <div class="books-filter-stack">
@@ -947,7 +1030,7 @@
           <div class="input-group">
             <label for="books-grade-select">Class</label>
             <select id="books-grade-select" onchange="window.StudyPilotBooks.setGrade(this.value)">
-              ${[6, 7].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Class ${grade}</option>`).join("")}
+              ${[6, 7, 8, 9, 10].map(grade => `<option value="${grade}" ${String(grade) === String(this.selectedGrade) ? "selected" : ""}>Class ${grade}</option>`).join("")}
             </select>
           </div>
           <div class="input-group">
@@ -975,22 +1058,70 @@
       </div>
     `;
 
-    const cards = books.length ? books.map(book => `
-      <article class="books-chapter-card">
-        <div>
-          <span class="books-kicker">${escapeHTML(book.grade_label || `Class ${book.grade}`)} · ${escapeHTML(book.subject)}</span>
-          <h4>${escapeHTML(book.book_title)}</h4>
-          <p>${escapeHTML(book.chapter_label)}</p>
-        </div>
-        <div class="books-chapter-actions">
-          <button class="btn btn-primary btn-sm" type="button" onclick="window.StudyPilotBooks.openViewer(window.StudyPilotBooks.getBookById('${escapeHTML(book.id)}'))">${book.downloaded ? "Open offline" : "Download & open"}</button>
-          ${book.downloaded
-            ? `<button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotBooks.deleteBook('${escapeHTML(book.id)}')">Delete</button>`
-            : `<button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotBooks.downloadBook('${escapeHTML(book.id)}')">Download</button>`}
-          <button class="btn btn-secondary btn-sm" type="button" onclick="window.open('${escapeHTML(book.page_url || "https://ncert.nic.in/textbook.php")}', '_blank', 'noopener,noreferrer')">Portal</button>
-        </div>
-      </article>
-    `).join("") : `
+    const cards = books.length ? books.map(book => {
+      const isCompleted = completedIds.includes(book.id);
+      const summaryData = window.StudyPilotCurriculum && typeof window.StudyPilotCurriculum.getChapterSummary === "function"
+        ? window.StudyPilotCurriculum.getChapterSummary(book.grade, book.subject, book.chapter_label, book.chapter_index)
+        : null;
+
+      const points = summaryData && Array.isArray(summaryData.points) ? summaryData.points : [
+        `Master foundational NCERT principles and definitions for ${escapeHTML(book.chapter_label || book.book_title)}.`,
+        `Focus on standard units, derivations, and structural properties.`,
+        `Review solved textbook examples and practice end-of-chapter problems.`
+      ];
+
+      return `
+        <article class="books-chapter-card" style="border: ${isCompleted ? '2px solid #10b981' : '1px solid var(--border-color)'}; background: ${isCompleted ? 'rgba(16,185,129,0.05)' : 'var(--bg-card)'};">
+          <div>
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span class="books-kicker">${escapeHTML(book.grade_label || `Class ${book.grade}`)} · ${escapeHTML(book.subject)}</span>
+              ${isCompleted ? '<span class="badge badge-accent" style="background:#10b981; color:#ffffff; font-weight:700;">✓ Completed</span>' : ''}
+            </div>
+            <h4 style="margin-top:0.25rem;">${escapeHTML(book.book_title)}</h4>
+            <p>${escapeHTML(book.chapter_label)}</p>
+          </div>
+          <div class="books-chapter-actions" style="display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center;">
+            <button class="btn ${isCompleted ? 'btn-success' : 'btn-outline'} btn-sm" type="button" onclick="window.StudyPilotBooks.toggleChapterCompletion('${escapeHTML(book.id)}')" style="font-weight:700;">
+              ${isCompleted ? '✓ Completed' : 'Mark Completed ✓'}
+            </button>
+            <button class="btn btn-accent btn-sm" type="button" onclick="window.StudyPilotBooks.toggleBookSummary('${escapeHTML(book.id)}')" style="display:inline-flex; align-items:center; gap:0.25rem; font-weight:700;">
+              ✨ AI Summary
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="window.open('${escapeHTML(book.page_url || "https://ncert.nic.in/textbook.php")}', '_blank', 'noopener,noreferrer')" style="display:inline-flex; align-items:center; gap:0.25rem;">🌐 Open Portal</button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="window.StudyPilotBooks.downloadDirectPdf('${escapeHTML(book.id)}')" style="display:inline-flex; align-items:center; gap:0.25rem;">📥 Download PDF</button>
+            <button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotBooks.openViewer(window.StudyPilotBooks.getBookById('${escapeHTML(book.id)}'))">View Reader</button>
+          </div>
+
+          <!-- Expandable AI Lesson Summary Drawer with Actual Topic Summary in POINTS -->
+          <div id="book-summary-${escapeHTML(book.id)}" class="hidden" style="margin-top:0.75rem; padding:0.9rem 1.1rem; background:var(--bg-app, #f8fafc); border-radius:10px; border-left:4px solid var(--primary-color, #6366f1); font-size:0.85rem; line-height:1.5;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span class="badge badge-accent" style="font-size:0.75rem; font-weight:700;">NCERT Official Lesson Summary in POINTS</span>
+              <button class="btn-icon" style="font-size:0.8rem; cursor:pointer;" onclick="window.StudyPilotBooks.toggleBookSummary('${escapeHTML(book.id)}')">✕</button>
+            </div>
+            <h5 style="margin:0.25rem 0 0.4rem 0; font-weight:800; font-size:0.92rem; color:var(--text-main);">${escapeHTML(summaryData && summaryData.title ? summaryData.title : book.book_title)}</h5>
+            ${summaryData && summaryData.concept ? `<p style="margin-bottom:0.6rem; color:var(--text-muted); font-size:0.83rem;"><em>${escapeHTML(summaryData.concept)}</em></p>` : ''}
+            <ul style="margin-left:1.25rem; margin-bottom:0.6rem; color:var(--text-main); line-height:1.6;">
+              ${points.map(pt => `<li>${escapeHTML(pt)}</li>`).join("")}
+            </ul>
+            ${summaryData && summaryData.formula ? `<div style="background:rgba(99,102,241,0.08); padding:0.4rem 0.6rem; border-radius:6px; font-size:0.82rem; margin-bottom:0.5rem; word-break:break-word;"><strong>Formula / Equation:</strong> <code>${escapeHTML(summaryData.formula)}</code></div>` : ''}
+            ${summaryData && summaryData.sample_question ? `
+              <div style="background:rgba(239,68,68,0.08); border-left:3px solid #ef4444; padding:0.5rem 0.75rem; border-radius:6px; font-size:0.8rem; margin-bottom:0.5rem;">
+                <strong style="color:#ef4444;">❓ Sample Exam Question:</strong> ${escapeHTML(summaryData.sample_question)}<br>
+                <span style="color:var(--text-muted); margin-top:0.2rem; display:block;"><strong>Answer Key:</strong> ${escapeHTML(summaryData.sample_answer || "State primary definition and verified NCERT formula.")}</span>
+              </div>
+            ` : ''}
+            ${summaryData && summaryData.memory_hook ? `
+              <div style="background:rgba(16,185,129,0.08); border-left:3px solid #10b981; padding:0.4rem 0.6rem; border-radius:6px; font-size:0.8rem; margin-bottom:0.5rem; color:var(--text-main);">
+                <strong style="color:#059669;">💡 Memory Trick / Hook:</strong> ${escapeHTML(summaryData.memory_hook)}
+              </div>
+            ` : ''}
+            <button class="btn btn-outline btn-xs" onclick="window.StudyPilotApp.switchScreen('tutor'); window.StudyPilotTutor.askDoubtForBook('${escapeHTML(book.subject)}', '${escapeHTML(book.chapter_label || book.book_title)}');">
+              💬 Ask AI Tutor about this chapter
+            </button>
+          </div>
+        </article>
+      `;
+    }).join("") : `
       <div class="books-empty-state books-empty-state--wide">
         ${this.libraryLoading ? "Loading the NCERT catalog..." : "No books match this class, subject, or search."}
       </div>

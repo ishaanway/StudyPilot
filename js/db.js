@@ -87,6 +87,170 @@ window.getStudyPilotApiBaseUrl = function () {
         ]
       }
     },
+    "8": {
+      subjects: ["Science", "Mathematics", "Social Science", "English"],
+      chapters: {
+        "Science": [
+          { id: "g8_s_ch1", num: 1, title: "Crop Production and Management", desc: "Honeydew Science Ch 1", sections: [{ id: "g8_s_ch1_1", num: "1.1", title: "Agricultural Practices" }, { id: "g8_s_ch1_2", num: "1.2", title: "Basic Practices of Crop Production" }] },
+          { id: "g8_s_ch2", num: 2, title: "Microorganisms: Friend and Foe", desc: "NCERT Science Ch 2", sections: [{ id: "g8_s_ch2_1", num: "2.1", title: "Microorganisms" }, { id: "g8_s_ch2_2", num: "2.2", title: "Where do Microorganisms Live?" }] },
+          { id: "g8_s_ch3", num: 3, title: "Coal and Petroleum", desc: "NCERT Science Ch 3", sections: [{ id: "g8_s_ch3_1", num: "3.1", title: "Coal" }, { id: "g8_s_ch3_2", num: "3.2", title: "Petroleum" }] },
+          { id: "g8_s_ch4", num: 4, title: "Combustion and Flame", desc: "NCERT Science Ch 4", sections: [{ id: "g8_s_ch4_1", num: "4.1", title: "What is Combustion?" }, { id: "g8_s_ch4_2", num: "4.2", title: "How Do We Control Fire?" }] },
+          { id: "g8_s_ch5", num: 5, title: "Conservation of Plants and Animals", desc: "NCERT Science Ch 5", sections: [{ id: "g8_s_ch5_1", num: "5.1", title: "Deforestation and Its Causes" }, { id: "g8_s_ch5_2", num: "5.2", title: "Biosphere Reserve" }] },
+          { id: "g8_s_ch6", num: 6, title: "Reproduction in Animals", desc: "NCERT Science Ch 6", sections: [{ id: "g8_s_ch6_1", num: "6.1", title: "Modes of Reproduction" }, { id: "g8_s_ch6_2", num: "6.2", title: "Sexual Reproduction" }] },
+          { id: "g8_s_ch7", num: 7, title: "Reaching the Age of Adolescence", desc: "NCERT Science Ch 7", sections: [{ id: "g8_s_ch7_1", num: "7.1", title: "Adolescence and Puberty" }, { id: "g8_s_ch7_2", num: "7.2", title: "Changes at Puberty" }] },
+          { id: "g8_s_ch8", num: 8, title: "Force and Pressure", desc: "NCERT Science Ch 8", sections: [{ id: "g8_s_ch8_1", num: "8.1", title: "Force: A Push or a Pull" }, { id: "g8_s_ch8_2", num: "8.2", title: "Forces are due to an Interaction" }] },
+          { id: "g8_s_ch9", num: 9, title: "Friction", desc: "NCERT Science Ch 9", sections: [{ id: "g8_s_ch9_1", num: "9.1", title: "Force of Friction" }, { id: "g8_s_ch9_2", num: "9.2", title: "Factors affecting Friction" }] },
+          { id: "g8_s_ch10", num: 10, title: "Sound", desc: "NCERT Science Ch 10", sections: [{ id: "g8_s_ch10_1", num: "10.1", title: "Sound is Produced by a Vibrating Body" }, { id: "g8_s_ch10_2", num: "10.2", title: "Sound Produced by Humans" }] },
+          { id: "g8_s_ch11", num: 11, title: "Chemical Effects of Electric Current", desc: "NCERT Science Ch 11", sections: [{ id: "g8_s_ch11_1", num: "11.1", title: "Do Liquids Conduct Electricity?" }, { id: "g8_s_ch11_2", num: "11.2", title: "Electroplating" }] },
+          { id: "g8_s_ch12", num: 12, title: "Some Natural Phenomena", desc: "NCERT Science Ch 12", sections: [{ id: "g8_s_ch12_1", num: "12.1", title: "Lightning" }, { id: "g8_s_ch12_2", num: "12.2", title: "Earthquakes" }] },
+          { id: "g8_s_ch13", num: 13, title: "Light", desc: "NCERT Science Ch 13", sections: [{ id: "g8_s_ch13_1", num: "13.1", title: "What Makes Things Visible" }, { id: "g8_s_ch13_2", num: "13.2", title: "Laws of Reflection" }] }
+        ],
+        "Mathematics": [
+          { id: "g8_m_ch1", num: 1, title: "Rational Numbers", desc: "NCERT Math Ch 1", sections: [{ id: "g8_m_ch1_1", num: "1.1", title: "Properties of Rational Numbers" }, { id: "g8_m_ch1_2", num: "1.2", title: "Representation on Number Line" }] },
+          { id: "g8_m_ch2", num: 2, title: "Linear Equations in One Variable", desc: "NCERT Math Ch 2", sections: [{ id: "g8_m_ch2_1", num: "2.1", title: "Solving Equations" }, { id: "g8_m_ch2_2", num: "2.2", title: "Applications" }] },
+          { id: "g8_m_ch3", num: 3, title: "Understanding Quadrilaterals", desc: "NCERT Math Ch 3", sections: [{ id: "g8_m_ch3_1", num: "3.1", title: "Polygons" }, { id: "g8_m_ch3_2", num: "3.2", title: "Sum of Angles" }] },
+          { id: "g8_m_ch4", num: 4, title: "Data Handling", desc: "NCERT Math Ch 4", sections: [{ id: "g8_m_ch4_1", num: "4.1", title: "Organising Data" }, { id: "g8_m_ch4_2", num: "4.2", title: "Pie Charts" }] },
+          { id: "g8_m_ch5", num: 5, title: "Square and Square Roots", desc: "NCERT Math Ch 5", sections: [{ id: "g8_m_ch5_1", num: "5.1", title: "Properties of Square Numbers" }, { id: "g8_m_ch5_2", num: "5.2", title: "Finding Square Roots" }] },
+          { id: "g8_m_ch6", num: 6, title: "Cube and Cube Roots", desc: "NCERT Math Ch 6", sections: [{ id: "g8_m_ch6_1", num: "6.1", title: "Cubes" }, { id: "g8_m_ch6_2", num: "6.2", title: "Cube Roots" }] },
+          { id: "g8_m_ch7", num: 7, title: "Comparing Quantities", desc: "NCERT Math Ch 7", sections: [{ id: "g8_m_ch7_1", num: "7.1", title: "Ratios & Percentages" }, { id: "g8_m_ch7_2", num: "7.2", title: "Compound Interest" }] },
+          { id: "g8_m_ch8", num: 8, title: "Algebraic Expressions and Identities", desc: "NCERT Math Ch 8", sections: [{ id: "g8_m_ch8_1", num: "8.1", title: "Monomials, Binomials, Polynomials" }, { id: "g8_m_ch8_2", num: "8.2", title: "Standard Identities" }] },
+          { id: "g8_m_ch9", num: 9, title: "Mensuration", desc: "NCERT Math Ch 9", sections: [{ id: "g8_m_ch9_1", num: "9.1", title: "Area of Trapezium & Polygons" }, { id: "g8_m_ch9_2", num: "9.2", title: "Surface Area & Volume" }] },
+          { id: "g8_m_ch10", num: 10, title: "Exponents and Powers", desc: "NCERT Math Ch 10", sections: [{ id: "g8_m_ch10_1", num: "10.1", title: "Powers with Negative Exponents" }, { id: "g8_m_ch10_2", num: "10.2", title: "Laws of Exponents" }] },
+          { id: "g8_m_ch11", num: 11, title: "Direct and Inverse Proportions", desc: "NCERT Math Ch 11", sections: [{ id: "g8_m_ch11_1", num: "11.1", title: "Direct Proportion" }, { id: "g8_m_ch11_2", num: "11.2", title: "Inverse Proportion" }] },
+          { id: "g8_m_ch12", num: 12, title: "Factorisation", desc: "NCERT Math Ch 12", sections: [{ id: "g8_m_ch12_1", num: "12.1", title: "Factors of Natural Numbers & Algebraic Expressions" }, { id: "g8_m_ch12_2", num: "12.2", title: "Division of Algebraic Expressions" }] },
+          { id: "g8_m_ch13", num: 13, title: "Introduction to Graphs", desc: "NCERT Math Ch 13", sections: [{ id: "g8_m_ch13_1", num: "13.1", title: "A Line Graph" }, { id: "g8_m_ch13_2", num: "13.2", title: "Linear Graphs & Coordinates" }] }
+        ],
+        "Social Science": [
+          { id: "g8_ss_ch1", num: 1, title: "Resources", desc: "NCERT Geography Ch 1", sections: [{ id: "g8_ss_ch1_1", num: "1.1", title: "Types of Resources" }, { id: "g8_ss_ch1_2", num: "1.2", title: "Conserving Resources" }] },
+          { id: "g8_ss_ch2", num: 2, title: "Land, Soil, Water, Natural Vegetation", desc: "NCERT Geography Ch 2", sections: [{ id: "g8_ss_ch2_1", num: "2.1", title: "Land & Soil Resources" }, { id: "g8_ss_ch2_2", num: "2.2", title: "Water & Vegetation" }] },
+          { id: "g8_ss_ch3", num: 3, title: "Agriculture", desc: "NCERT Geography Ch 3", sections: [{ id: "g8_ss_ch3_1", num: "3.1", title: "Farm Systems" }, { id: "g8_ss_ch3_2", num: "3.2", title: "Major Crops" }] },
+          { id: "g8_ss_ch4", num: 4, title: "Industries", desc: "NCERT Geography Ch 4", sections: [{ id: "g8_ss_ch4_1", num: "4.1", title: "Classification of Industries" }, { id: "g8_ss_ch4_2", num: "4.2", title: "Industrial Regions" }] },
+          { id: "g8_ss_ch5", num: 5, title: "Human Resources", desc: "NCERT Geography Ch 5", sections: [{ id: "g8_ss_ch5_1", num: "5.1", title: "Distribution of Population" }, { id: "g8_ss_ch5_2", num: "5.2", title: "Population Change" }] },
+          { id: "g8_ss_ch6", num: 6, title: "How, When and Where", desc: "NCERT History Ch 1", sections: [{ id: "g8_ss_ch6_1", num: "6.1", title: "How Important are Dates?" }, { id: "g8_ss_ch6_2", num: "6.2", title: "How do we Periodise?" }] },
+          { id: "g8_ss_ch7", num: 7, title: "From Trade to Territory", desc: "NCERT History Ch 2", sections: [{ id: "g8_ss_ch7_1", num: "7.1", title: "East India Company Comes East" }, { id: "g8_ss_ch7_2", num: "7.2", title: "Company Rule Expands" }] },
+          { id: "g8_ss_ch8", num: 8, title: "Ruling the Countryside", desc: "NCERT History Ch 3", sections: [{ id: "g8_ss_ch8_1", num: "8.1", title: "The Company Becomes the Diwan" }, { id: "g8_ss_ch8_2", num: "8.2", title: "Crops for Europe" }] },
+          { id: "g8_ss_ch9", num: 9, title: "Tribals, Dikus and Vision of Golden Age", desc: "NCERT History Ch 4", sections: [{ id: "g8_ss_ch9_1", num: "9.1", title: "How Tribal Groups Lived" }, { id: "g8_ss_ch9_2", num: "9.2", title: "Birsa Munda" }] },
+          { id: "g8_ss_ch10", num: 10, title: "The Indian Constitution & Secularism", desc: "NCERT Civics Ch 1", sections: [{ id: "g8_ss_ch10_1", num: "10.1", title: "Why Does a Country Need a Constitution?" }, { id: "g8_ss_ch10_2", num: "10.2", title: "Understanding Secularism" }] }
+        ],
+        "English": [
+          { id: "g8_en_ch1", num: 1, title: "The Best Christmas Present in the World", desc: "Honeydew Ch 1", sections: [{ id: "g8_en_ch1_1", num: "1.1", title: "The Letter from the Trench" }, { id: "g8_en_ch1_2", num: "1.2", title: "The Ant and the Cricket (Poem)" }] },
+          { id: "g8_en_ch2", num: 2, title: "The Tsunami", desc: "Honeydew Ch 2", sections: [{ id: "g8_en_ch2_1", num: "2.1", title: "Stories of Survival" }, { id: "g8_en_ch2_2", num: "2.2", title: "Geography Lesson (Poem)" }] },
+          { id: "g8_en_ch3", num: 3, title: "Glimpses of the Past", desc: "Honeydew Ch 3", sections: [{ id: "g8_en_ch3_1", num: "3.1", title: "Pictorial History 1757-1857" }, { id: "g8_en_ch3_2", num: "3.2", title: "Macavity: The Mystery Cat (Poem)" }] },
+          { id: "g8_en_ch4", num: 4, title: "Bepin Choudhury's Lapse of Memory", desc: "Honeydew Ch 4", sections: [{ id: "g8_en_ch4_1", num: "4.1", title: "The Ranchi Visit Puzzle" }, { id: "g8_en_ch4_2", num: "4.2", title: "The Last Bargain (Poem)" }] },
+          { id: "g8_en_ch5", num: 5, title: "The Summit Within", desc: "Honeydew Ch 5", sections: [{ id: "g8_en_ch5_1", num: "5.1", title: "Major H.P.S. Ahluwalia's Everest Expedition" }, { id: "g8_en_ch5_2", num: "5.2", title: "The School Boy (Poem)" }] },
+          { id: "g8_en_ch6", num: 6, title: "This is Jody's Fawn", desc: "Honeydew Ch 6", sections: [{ id: "g8_en_ch6_1", num: "6.1", title: "Saving the Fawn" }, { id: "g8_en_ch6_2", num: "6.2", title: "A Short Monsoon Diary" }] }
+        ]
+      }
+    },
+    "9": {
+      subjects: ["Science", "Mathematics", "Social Science", "English"],
+      chapters: {
+        "Science": [
+          { id: "g9_s_ch1", num: 1, title: "Matter in Our Surroundings", desc: "NCERT Science Ch 1", sections: [{ id: "g9_s_ch1_1", num: "1.1", title: "Physical Nature of Matter" }, { id: "g9_s_ch1_2", num: "1.2", title: "States of Matter" }] },
+          { id: "g9_s_ch2", num: 2, title: "Is Matter Around Us Pure", desc: "NCERT Science Ch 2", sections: [{ id: "g9_s_ch2_1", num: "2.1", title: "What is a Mixture?" }, { id: "g9_s_ch2_2", num: "2.2", title: "Types of Solutions" }] },
+          { id: "g9_s_ch3", num: 3, title: "Atoms and Molecules", desc: "NCERT Science Ch 3", sections: [{ id: "g9_s_ch3_1", num: "3.1", title: "Laws of Chemical Combination" }, { id: "g9_s_ch3_2", num: "3.2", title: "What is an Atom?" }] },
+          { id: "g9_s_ch4", num: 4, title: "Structure of the Atom", desc: "NCERT Science Ch 4", sections: [{ id: "g9_s_ch4_1", num: "4.1", title: "Charged Particles in Matter" }, { id: "g9_s_ch4_2", num: "4.2", title: "Structure of Atom Models" }] },
+          { id: "g9_s_ch5", num: 5, title: "The Fundamental Unit of Life", desc: "NCERT Science Ch 5", sections: [{ id: "g9_s_ch5_1", num: "5.1", title: "What are Living Organisms Made of?" }, { id: "g9_s_ch5_2", num: "5.2", title: "Cell Structure & Organelles" }] },
+          { id: "g9_s_ch6", num: 6, title: "Tissues", desc: "NCERT Science Ch 6", sections: [{ id: "g9_s_ch6_1", num: "6.1", title: "Plant Tissues" }, { id: "g9_s_ch6_2", num: "6.2", title: "Animal Tissues" }] },
+          { id: "g9_s_ch7", num: 7, title: "Motion", desc: "NCERT Science Ch 7", sections: [{ id: "g9_s_ch7_1", num: "7.1", title: "Describing Motion" }, { id: "g9_s_ch7_2", num: "7.2", title: "Equations of Motion" }] },
+          { id: "g9_s_ch8", num: 8, title: "Force and Laws of Motion", desc: "NCERT Science Ch 8", sections: [{ id: "g9_s_ch8_1", num: "8.1", title: "Balanced and Unbalanced Forces" }, { id: "g9_s_ch8_2", num: "8.2", title: "Newton's Three Laws" }] },
+          { id: "g9_s_ch9", num: 9, title: "Gravitation", desc: "NCERT Science Ch 9", sections: [{ id: "g9_s_ch9_1", num: "9.1", title: "Universal Law of Gravitation" }, { id: "g9_s_ch9_2", num: "9.2", title: "Mass and Weight" }] },
+          { id: "g9_s_ch10", num: 10, title: "Work and Energy", desc: "NCERT Science Ch 10", sections: [{ id: "g9_s_ch10_1", num: "10.1", title: "Work Done by a Force" }, { id: "g9_s_ch10_2", num: "10.2", title: "Forms of Energy & Power" }] },
+          { id: "g9_s_ch11", num: 11, title: "Sound", desc: "NCERT Science Ch 11", sections: [{ id: "g9_s_ch11_1", num: "11.1", title: "Production & Propagation of Sound" }, { id: "g9_s_ch11_2", num: "11.2", title: "Structure of Human Ear" }] },
+          { id: "g9_s_ch12", num: 12, title: "Improvement in Food Resources", desc: "NCERT Science Ch 12", sections: [{ id: "g9_s_ch12_1", num: "12.1", title: "Crop Yield Improvement" }, { id: "g9_s_ch12_2", num: "12.2", title: "Animal Husbandry" }] }
+        ],
+        "Mathematics": [
+          { id: "g9_m_ch1", num: 1, title: "Number Systems", desc: "NCERT Math Ch 1", sections: [{ id: "g9_m_ch1_1", num: "1.1", title: "Irrational Numbers" }, { id: "g9_m_ch1_2", num: "1.2", title: "Real Numbers & Exponents" }] },
+          { id: "g9_m_ch2", num: 2, title: "Polynomials", desc: "NCERT Math Ch 2", sections: [{ id: "g9_m_ch2_1", num: "2.1", title: "Polynomials in One Variable" }, { id: "g9_m_ch2_2", num: "2.2", title: "Factor Theorem & Algebraic Identities" }] },
+          { id: "g9_m_ch3", num: 3, title: "Coordinate Geometry", desc: "NCERT Math Ch 3", sections: [{ id: "g9_m_ch3_1", num: "3.1", title: "Cartesian Plane" }, { id: "g9_m_ch3_2", num: "3.2", title: "Plotting Points" }] },
+          { id: "g9_m_ch4", num: 4, title: "Linear Equations in Two Variables", desc: "NCERT Math Ch 4", sections: [{ id: "g9_m_ch4_1", num: "4.1", title: "Linear Equations" }, { id: "g9_m_ch4_2", num: "4.2", title: "Graph of Linear Equations" }] },
+          { id: "g9_m_ch5", num: 5, title: "Introduction to Euclid's Geometry", desc: "NCERT Math Ch 5", sections: [{ id: "g9_m_ch5_1", num: "5.1", title: "Euclid's Definitions & Axioms" }, { id: "g9_m_ch5_2", num: "5.2", title: "Postulates" }] },
+          { id: "g9_m_ch6", num: 6, title: "Lines and Angles", desc: "NCERT Math Ch 6", sections: [{ id: "g9_m_ch6_1", num: "6.1", title: "Intersecting & Parallel Lines" }, { id: "g9_m_ch6_2", num: "6.2", title: "Angle Sum Property of a Triangle" }] },
+          { id: "g9_m_ch7", num: 7, title: "Triangles", desc: "NCERT Math Ch 7", sections: [{ id: "g9_m_ch7_1", num: "7.1", title: "Congruence of Triangles" }, { id: "g9_m_ch7_2", num: "7.2", title: "Inequalities in a Triangle" }] },
+          { id: "g9_m_ch8", num: 8, title: "Quadrilaterals", desc: "NCERT Math Ch 8", sections: [{ id: "g9_m_ch8_1", num: "8.1", title: "Properties of Parallelograms" }, { id: "g9_m_ch8_2", num: "8.2", title: "Mid-point Theorem" }] },
+          { id: "g9_m_ch9", num: 9, title: "Circles", desc: "NCERT Math Ch 9", sections: [{ id: "g9_m_ch9_1", num: "9.1", title: "Chords & Angles Subtended" }, { id: "g9_m_ch9_2", num: "9.2", title: "Cyclic Quadrilaterals" }] },
+          { id: "g9_m_ch10", num: 10, title: "Heron's Formula", desc: "NCERT Math Ch 10", sections: [{ id: "g9_m_ch10_1", num: "10.1", title: "Area of Triangle by Heron's Formula" }, { id: "g9_m_ch10_2", num: "10.2", title: "Applications" }] },
+          { id: "g9_m_ch11", num: 11, title: "Surface Areas and Volumes", desc: "NCERT Math Ch 11", sections: [{ id: "g9_m_ch11_1", num: "11.1", title: "Cone, Sphere & Hemisphere Surface Areas" }, { id: "g9_m_ch11_2", num: "11.2", title: "Volumes of Sphere & Cone" }] },
+          { id: "g9_m_ch12", num: 12, title: "Statistics", desc: "NCERT Math Ch 12", sections: [{ id: "g9_m_ch12_1", num: "12.1", title: "Graphical Representation of Data" }, { id: "g9_m_ch12_2", num: "12.2", title: "Histograms & Frequency Polygons" }] }
+        ],
+        "Social Science": [
+          { id: "g9_ss_ch1", num: 1, title: "The French Revolution", desc: "NCERT History Ch 1", sections: [{ id: "g9_ss_ch1_1", num: "1.1", title: "French Society During Late 18th C" }, { id: "g9_ss_ch1_2", num: "1.2", title: "Abolition of Monarchy" }] },
+          { id: "g9_ss_ch2", num: 2, title: "Socialism in Europe and Russian Revolution", desc: "NCERT History Ch 2", sections: [{ id: "g9_ss_ch2_1", num: "2.1", title: "Age of Social Change" }, { id: "g9_ss_ch2_2", num: "2.2", title: "The Russian Revolution 1917" }] },
+          { id: "g9_ss_ch3", num: 3, title: "Nazism and the Rise of Hitler", desc: "NCERT History Ch 3", sections: [{ id: "g9_ss_ch3_1", num: "3.1", title: "Weimar Republic" }, { id: "g9_ss_ch3_2", num: "3.2", title: "Hitler's Rise to Power" }] },
+          { id: "g9_ss_ch4", num: 4, title: "India - Size and Location", desc: "NCERT Geography Ch 1", sections: [{ id: "g9_ss_ch4_1", num: "4.1", title: "Location & Size" }, { id: "g9_ss_ch4_2", num: "4.2", title: "India and the World" }] },
+          { id: "g9_ss_ch5", num: 5, title: "Physical Features of India", desc: "NCERT Geography Ch 2", sections: [{ id: "g9_ss_ch5_1", num: "5.1", title: "Major Physiographic Divisions" }, { id: "g9_ss_ch5_2", num: "5.2", title: "Himalayas, Plains, Peninsular Plateau" }] },
+          { id: "g9_ss_ch6", num: 6, title: "Drainage", desc: "NCERT Geography Ch 3", sections: [{ id: "g9_ss_ch6_1", num: "6.1", title: "Himalayan & Peninsular River Systems" }, { id: "g9_ss_ch6_2", num: "6.2", title: "Lakes & Role of Rivers" }] },
+          { id: "g9_ss_ch7", num: 7, title: "Climate", desc: "NCERT Geography Ch 4", sections: [{ id: "g9_ss_ch7_1", num: "7.1", title: "Climate Controls & Monsoons" }, { id: "g9_ss_ch7_2", num: "7.2", title: "Seasons of India" }] },
+          { id: "g9_ss_ch8", num: 8, title: "What is Democracy? Why Democracy?", desc: "NCERT Civics Ch 1", sections: [{ id: "g9_ss_ch8_1", num: "8.1", title: "Features of Democracy" }, { id: "g9_ss_ch8_2", num: "8.2", title: "Arguments for Democracy" }] },
+          { id: "g9_ss_ch9", num: 9, title: "Constitutional Design", desc: "NCERT Civics Ch 2", sections: [{ id: "g9_ss_ch9_1", num: "9.1", title: "Democratic Constitution in South Africa" }, { id: "g9_ss_ch9_2", num: "9.2", title: "Making of Indian Constitution" }] },
+          { id: "g9_ss_ch10", num: 10, title: "The Story of Village Palampur", desc: "NCERT Economics Ch 1", sections: [{ id: "g9_ss_ch10_1", num: "10.1", title: "Organization of Production" }, { id: "g9_ss_ch10_2", num: "10.2", title: "Farming in Palampur" }] }
+        ],
+        "English": [
+          { id: "g9_en_ch1", num: 1, title: "The Fun They Had", desc: "Beehive Ch 1", sections: [{ id: "g9_en_ch1_1", num: "1.1", title: "Margie and Tommy's Computerized School" }, { id: "g9_en_ch1_2", num: "1.2", title: "The Road Not Taken (Poem)" }] },
+          { id: "g9_en_ch2", num: 2, title: "The Sound of Music", desc: "Beehive Ch 2", sections: [{ id: "g9_en_ch2_1", num: "2.1", title: "Evelyn Glennie Listens to Sound Without Hearing It" }, { id: "g9_en_ch2_2", num: "2.2", title: "Bismillah Khan (Shehnai)" }] },
+          { id: "g9_en_ch3", num: 3, title: "The Little Girl", desc: "Beehive Ch 3", sections: [{ id: "g9_en_ch3_1", num: "3.1", title: "Kezia and Her Father" }, { id: "g9_en_ch3_2", num: "3.2", title: "Rain on the Roof (Poem)" }] },
+          { id: "g9_en_ch4", num: 4, title: "A Truly Beautiful Mind", desc: "Beehive Ch 4", sections: [{ id: "g9_en_ch4_1", num: "4.1", title: "Life of Albert Einstein" }, { id: "g9_en_ch4_2", num: "4.2", title: "The Lake Isle of Innisfree (Poem)" }] },
+          { id: "g9_en_ch5", num: 5, title: "The Snake and the Mirror", desc: "Beehive Ch 5", sections: [{ id: "g9_en_ch5_1", num: "5.1", title: "Homeopathic Doctor's Story" }, { id: "g9_en_ch5_2", num: "5.2", title: "A Legend of the Northland (Poem)" }] },
+          { id: "g9_en_ch6", num: 6, title: "My Childhood", desc: "Beehive Ch 6", sections: [{ id: "g9_en_ch6_1", num: "6.1", title: "APJ Abdul Kalam's Early Life" }, { id: "g9_en_ch6_2", num: "6.2", title: "No Men Are Foreign (Poem)" }] }
+        ]
+      }
+    },
+    "10": {
+      subjects: ["Science", "Mathematics", "Social Science", "English"],
+      chapters: {
+        "Science": [
+          { id: "g10_s_ch1", num: 1, title: "Chemical Reactions and Equations", desc: "NCERT Science Ch 1", sections: [{ id: "g10_s_ch1_1", num: "1.1", title: "Chemical Equations" }, { id: "g10_s_ch1_2", num: "1.2", title: "Types of Chemical Reactions" }] },
+          { id: "g10_s_ch2", num: 2, title: "Acids, Bases and Salts", desc: "NCERT Science Ch 2", sections: [{ id: "g10_s_ch2_1", num: "2.1", title: "Chemical Properties of Acids & Bases" }, { id: "g10_s_ch2_2", num: "2.2", title: "pH Scale & Salts" }] },
+          { id: "g10_s_ch3", num: 3, title: "Metals and Non-metals", desc: "NCERT Science Ch 3", sections: [{ id: "g10_s_ch3_1", num: "3.1", title: "Physical & Chemical Properties" }, { id: "g10_s_ch3_2", num: "3.2", title: "Occurrence & Extraction of Metals" }] },
+          { id: "g10_s_ch4", num: 4, title: "Carbon and Its Compounds", desc: "NCERT Science Ch 4", sections: [{ id: "g10_s_ch4_1", num: "4.1", title: "Covalent Bonding in Carbon" }, { id: "g10_s_ch4_2", num: "4.2", title: "Versatile Nature & Functional Groups" }] },
+          { id: "g10_s_ch5", num: 5, title: "Life Processes", desc: "NCERT Science Ch 5", sections: [{ id: "g10_s_ch5_1", num: "5.1", title: "Nutrition & Respiration" }, { id: "g10_s_ch5_2", num: "5.2", title: "Transportation & Excretion" }] },
+          { id: "g10_s_ch6", num: 6, title: "Control and Coordination", desc: "NCERT Science Ch 6", sections: [{ id: "g10_s_ch6_1", num: "6.1", title: "Nervous System & Reflex Arc" }, { id: "g10_s_ch6_2", num: "6.2", title: "Hormones in Animals & Plants" }] },
+          { id: "g10_s_ch7", num: 7, title: "How do Organisms Reproduce?", desc: "NCERT Science Ch 7", sections: [{ id: "g10_s_ch7_1", num: "7.1", title: "Asexual Reproduction" }, { id: "g10_s_ch7_2", num: "7.2", title: "Sexual Reproduction in Plants & Humans" }] },
+          { id: "g10_s_ch8", num: 8, title: "Heredity and Evolution", desc: "NCERT Science Ch 8", sections: [{ id: "g10_s_ch8_1", num: "8.1", title: "Accumulation of Variation" }, { id: "g10_s_ch8_2", num: "8.2", title: "Mendel's Laws of Inheritance" }] },
+          { id: "g10_s_ch9", num: 9, title: "Light - Reflection and Refraction", desc: "NCERT Science Ch 9", sections: [{ id: "g10_s_ch9_1", num: "9.1", title: "Reflection of Light & Spherical Mirrors" }, { id: "g10_s_ch9_2", num: "9.2", title: "Refraction & Lenses Formula" }] },
+          { id: "g10_s_ch10", num: 10, title: "The Human Eye and Colourful World", desc: "NCERT Science Ch 10", sections: [{ id: "g10_s_ch10_1", num: "10.1", title: "Structure of Human Eye & Defects" }, { id: "g10_s_ch10_2", num: "10.2", title: "Prism Dispersion & Atmospheric Refraction" }] },
+          { id: "g10_s_ch11", num: 11, title: "Electricity", desc: "NCERT Science Ch 11", sections: [{ id: "g10_s_ch11_1", num: "11.1", title: "Ohm's Law & Resistance" }, { id: "g10_s_ch11_2", num: "11.2", title: "Series & Parallel Combination of Resistors" }] },
+          { id: "g10_s_ch12", num: 12, title: "Magnetic Effects of Electric Current", desc: "NCERT Science Ch 12", sections: [{ id: "g10_s_ch12_1", num: "12.1", title: "Magnetic Field & Field Lines" }, { id: "g10_s_ch12_2", num: "12.2", title: "Solenoid, Electromagnet & Domestic Circuits" }] },
+          { id: "g10_s_ch13", num: 13, title: "Our Environment", desc: "NCERT Science Ch 13", sections: [{ id: "g10_s_ch13_1", num: "13.1", title: "Ecosystem & Food Chains" }, { id: "g10_s_ch13_2", num: "13.2", title: "Ozone Layer Depletion & Waste Management" }] }
+        ],
+        "Mathematics": [
+          { id: "g10_m_ch1", num: 1, title: "Real Numbers", desc: "NCERT Math Ch 1", sections: [{ id: "g10_m_ch1_1", num: "1.1", title: "Fundamental Theorem of Arithmetic" }, { id: "g10_m_ch1_2", num: "1.2", title: "Revisiting Irrational Numbers" }] },
+          { id: "g10_m_ch2", num: 2, title: "Polynomials", desc: "NCERT Math Ch 2", sections: [{ id: "g10_m_ch2_1", num: "2.1", title: "Geometrical Meaning of Zeroes" }, { id: "g10_m_ch2_2", num: "2.2", title: "Relationship between Zeroes & Coefficients" }] },
+          { id: "g10_m_ch3", num: 3, title: "Pair of Linear Equations in Two Variables", desc: "NCERT Math Ch 3", sections: [{ id: "g10_m_ch3_1", num: "3.1", title: "Graphical Method of Solution" }, { id: "g10_m_ch3_2", num: "3.2", title: "Algebraic Methods: Substitution & Elimination" }] },
+          { id: "g10_m_ch4", num: 4, title: "Quadratic Equations", desc: "NCERT Math Ch 4", sections: [{ id: "g10_m_ch4_1", num: "4.1", title: "Solution by Factorisation" }, { id: "g10_m_ch4_2", num: "4.2", title: "Quadratic Formula & Nature of Roots" }] },
+          { id: "g10_m_ch5", num: 5, title: "Arithmetic Progressions", desc: "NCERT Math Ch 5", sections: [{ id: "g10_m_ch5_1", num: "5.1", title: "nth Term of an AP" }, { id: "g10_m_ch5_2", num: "5.2", title: "Sum of First n Terms of an AP" }] },
+          { id: "g10_m_ch6", num: 6, title: "Triangles", desc: "NCERT Math Ch 6", sections: [{ id: "g10_m_ch6_1", num: "6.1", title: "Similar Figures & Basic Proportionality Theorem" }, { id: "g10_m_ch6_2", num: "6.2", title: "Criteria for Similarity of Triangles" }] },
+          { id: "g10_m_ch7", num: 7, title: "Coordinate Geometry", desc: "NCERT Math Ch 7", sections: [{ id: "g10_m_ch7_1", num: "7.1", title: "Distance Formula" }, { id: "g10_m_ch7_2", num: "7.2", title: "Section Formula" }] },
+          { id: "g10_m_ch8", num: 8, title: "Introduction to Trigonometry", desc: "NCERT Math Ch 8", sections: [{ id: "g10_m_ch8_1", num: "8.1", title: "Trigonometric Ratios" }, { id: "g10_m_ch8_2", num: "8.2", title: "Values at 0, 30, 45, 60, 90 & Identities" }] },
+          { id: "g10_m_ch9", num: 9, title: "Some Applications of Trigonometry", desc: "NCERT Math Ch 9", sections: [{ id: "g10_m_ch9_1", num: "9.1", title: "Heights and Distances" }, { id: "g10_m_ch9_2", num: "9.2", title: "Angle of Elevation & Depression" }] },
+          { id: "g10_m_ch10", num: 10, title: "Circles", desc: "NCERT Math Ch 10", sections: [{ id: "g10_m_ch10_1", num: "10.1", title: "Tangent to a Circle" }, { id: "g10_m_ch10_2", num: "10.2", title: "Number of Tangents from a Point" }] },
+          { id: "g10_m_ch11", num: 11, title: "Areas Related to Circles", desc: "NCERT Math Ch 11", sections: [{ id: "g10_m_ch11_1", num: "11.1", title: "Area of Sector and Segment of a Circle" }, { id: "g10_m_ch11_2", num: "11.2", title: "Combination of Plane Figures" }] },
+          { id: "g10_m_ch12", num: 12, title: "Surface Areas and Volumes", desc: "NCERT Math Ch 12", sections: [{ id: "g10_m_ch12_1", num: "12.1", title: "Surface Area of Combination of Solids" }, { id: "g10_m_ch12_2", num: "12.2", title: "Volume of Combination of Solids" }] },
+          { id: "g10_m_ch13", num: 13, title: "Statistics", desc: "NCERT Math Ch 13", sections: [{ id: "g10_m_ch13_1", num: "13.1", title: "Mean of Grouped Data" }, { id: "g10_m_ch13_2", num: "13.2", title: "Mode & Median of Grouped Data" }] },
+          { id: "g10_m_ch14", num: 14, title: "Probability", desc: "NCERT Math Ch 14", sections: [{ id: "g10_m_ch14_1", num: "14.1", title: "Theoretical Approach to Probability" }, { id: "g10_m_ch14_2", num: "14.2", title: "Events & Sample Spaces" }] }
+        ],
+        "Social Science": [
+          { id: "g10_ss_ch1", num: 1, title: "The Rise of Nationalism in Europe", desc: "NCERT History Ch 1", sections: [{ id: "g10_ss_ch1_1", num: "1.1", title: "The French Revolution and Idea of Nation" }, { id: "g10_ss_ch1_2", num: "1.2", title: "Making of Nationalism in Europe" }] },
+          { id: "g10_ss_ch2", num: 2, title: "Nationalism in India", desc: "NCERT History Ch 2", sections: [{ id: "g10_ss_ch2_1", num: "2.1", title: "The First World War & Non-Cooperation" }, { id: "g10_ss_ch2_2", num: "2.2", title: "Towards Civil Disobedience" }] },
+          { id: "g10_ss_ch3", num: 3, title: "The Making of a Global World", desc: "NCERT History Ch 3", sections: [{ id: "g10_ss_ch3_1", num: "3.1", title: "Pre-modern World & Silk Routes" }, { id: "g10_ss_ch3_2", num: "3.2", title: "Nineteenth Century 1815-1914" }] },
+          { id: "g10_ss_ch4", num: 4, title: "Resources and Development", desc: "NCERT Geography Ch 1", sections: [{ id: "g10_ss_ch4_1", num: "4.1", title: "Types & Development of Resources" }, { id: "g10_ss_ch4_2", num: "4.2", title: "Land Resources & Soil Erosion" }] },
+          { id: "g10_ss_ch5", num: 5, title: "Forest and Wildlife Resources", desc: "NCERT Geography Ch 2", sections: [{ id: "g10_ss_ch5_1", num: "5.1", title: "Flora and Fauna in India" }, { id: "g10_ss_ch5_2", num: "5.2", title: "Conservation of Forests" }] },
+          { id: "g10_ss_ch6", num: 6, title: "Water Resources", desc: "NCERT Geography Ch 3", sections: [{ id: "g10_ss_ch6_1", num: "6.1", title: "Water Scarcity & Management" }, { id: "g10_ss_ch6_2", num: "6.2", title: "Multi-Purpose River Projects" }] },
+          { id: "g10_ss_ch7", num: 7, title: "Agriculture", desc: "NCERT Geography Ch 4", sections: [{ id: "g10_ss_ch7_1", num: "7.1", title: "Types of Farming" }, { id: "g10_ss_ch7_2", num: "7.2", title: "Cropping Pattern & Major Crops" }] },
+          { id: "g10_ss_ch8", num: 8, title: "Power Sharing", desc: "NCERT Civics Ch 1", sections: [{ id: "g10_ss_ch8_1", num: "8.1", title: "Stories of Belgium & Sri Lanka" }, { id: "g10_ss_ch8_2", num: "8.2", title: "Forms of Power Sharing" }] },
+          { id: "g10_ss_ch9", num: 9, title: "Federalism", desc: "NCERT Civics Ch 2", sections: [{ id: "g10_ss_ch9_1", num: "9.1", title: "What is Federalism?" }, { id: "g10_ss_ch9_2", num: "9.2", title: "Decentralisation in India" }] },
+          { id: "g10_ss_ch10", num: 10, title: "Development", desc: "NCERT Economics Ch 1", sections: [{ id: "g10_ss_ch10_1", num: "10.1", title: "What Development Promises" }, { id: "g10_ss_ch10_2", num: "10.2", title: "National Income & Sustainable Development" }] }
+        ],
+        "English": [
+          { id: "g10_en_ch1", num: 1, title: "A Letter to God", desc: "First Flight Ch 1", sections: [{ id: "g10_en_ch1_1", num: "1.1", title: "Lencho's Faith in God" }, { id: "g10_en_ch1_2", num: "1.2", title: "Dust of Snow (Poem)" }] },
+          { id: "g10_en_ch2", num: 2, title: "Nelson Mandela: Long Walk to Freedom", desc: "First Flight Ch 2", sections: [{ id: "g10_en_ch2_1", num: "2.1", title: "Inauguration Day Speech" }, { id: "g10_en_ch2_2", num: "2.2", title: "A Tiger in the Zoo (Poem)" }] },
+          { id: "g10_en_ch3", num: 3, title: "Two Stories about Flying", desc: "First Flight Ch 3", sections: [{ id: "g10_en_ch3_1", num: "3.1", title: "His First Flight (Seagull)" }, { id: "g10_en_ch3_2", num: "3.2", title: "Black Aeroplane" }] },
+          { id: "g10_en_ch4", num: 4, title: "From the Diary of Anne Frank", desc: "First Flight Ch 4", sections: [{ id: "g10_en_ch4_1", num: "4.1", title: "Anne's Diary Entries" }, { id: "g10_en_ch4_2", num: "4.2", title: "Amanda! (Poem)" }] },
+          { id: "g10_en_ch5", num: 5, title: "Glimpses of India", desc: "First Flight Ch 5", sections: [{ id: "g10_en_ch5_1", num: "5.1", title: "A Baker from Goa" }, { id: "g10_en_ch5_2", num: "5.2", title: "Coorg" }, { id: "g10_en_ch5_3", num: "5.3", title: "Tea from Assam" }] },
+          { id: "g10_en_ch6", num: 6, title: "Mijbil the Otter", desc: "First Flight Ch 6", sections: [{ id: "g10_en_ch6_1", num: "6.1", title: "Gavin Maxwell's Pet Otter" }, { id: "g10_en_ch6_2", num: "6.2", title: "Fog (Poem)" }] }
+        ]
+      }
+    },
     "7": {
       subjects: ["Science", "Mathematics", "Social Science", "English"],
       chapters: {
@@ -408,6 +572,8 @@ window.getStudyPilotApiBaseUrl = function () {
       lastActive: "",
       setupComplete: false,
       careerUnlocked: false,
+      aiMode: "online",
+      mode: "online",
       ollamaModel: "auto",
       backendStudentId: null,
       targetDate: "",
@@ -486,6 +652,8 @@ window.getStudyPilotApiBaseUrl = function () {
       lastActive: String(profile.lastActive ?? fallback.lastActive ?? ""),
       setupComplete: Boolean(profile.setupComplete),
       careerUnlocked: Boolean(profile.careerUnlocked),
+      aiMode: String(profile.aiMode ?? profile.mode ?? fallback.aiMode ?? "online"),
+      mode: String(profile.mode ?? profile.aiMode ?? fallback.mode ?? "online"),
       ollamaModel: String(profile.ollamaModel ?? fallback.ollamaModel ?? "auto"),
       backendStudentId: toNumberOrNull(profile.backendStudentId ?? profile.student_id ?? profile.id),
       targetDate: String(profile.targetDate ?? fallback.targetDate ?? ""),
@@ -651,7 +819,12 @@ window.getStudyPilotApiBaseUrl = function () {
   window.StudyPilotDB = {
     // Expose curriculum database
     getCurriculum: function (grade, stream) {
-      const profileGrade = String((this.getProfile() || {}).grade || "7"); return CBSE_CURRICULUM[profileGrade] || CBSE_CURRICULUM["7"];
+      const g = String(grade || (this.getProfile() || {}).grade || "7");
+      const curriculum = CBSE_CURRICULUM[g] || CBSE_CURRICULUM["7"];
+      return {
+        subjects: curriculum.subjects || ["Science", "Mathematics", "Social Science", "English"],
+        chapters: curriculum.chapters || {}
+      };
     },
 
     init: function () {
@@ -706,14 +879,6 @@ window.getStudyPilotApiBaseUrl = function () {
         }
       }
       return profile;
-    },
-    getCurriculum: function (grade, stream) {
-      const g = String(grade || "7");
-      const curriculum = CBSE_CURRICULUM[g] || CBSE_CURRICULUM["7"];
-      return {
-        subjects: curriculum.subjects || ["Science", "Mathematics", "Social Science", "English"],
-        chapters: curriculum.chapters || {}
-      };
     },
     saveProfile: function (profileData) {
       const normalizedProfile = normalizeProfile(profileData);
@@ -828,7 +993,13 @@ window.getStudyPilotApiBaseUrl = function () {
         if (!data || !data.ok || !data.student) return;
 
         const currentProfile = this.getProfile();
+        const activeLocalGrade = currentProfile && currentProfile.grade ? String(currentProfile.grade) : null;
         const mergedProfile = normalizeProfile(Object.assign({}, currentProfile, data.student));
+
+        if (activeLocalGrade) {
+          mergedProfile.grade = activeLocalGrade;
+        }
+
         set("profile", mergedProfile);
 
         if (Array.isArray(data.tasks)) {

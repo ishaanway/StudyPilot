@@ -147,7 +147,7 @@
           }
           this.updateTimerUI();
         }, 1000);
-        
+        if (window.StudyPilotAudio) window.StudyPilotAudio.playChime("start");
         window.StudyPilotDB.addNotification(`Timer started: ${this.pomodoroMode === 'focus' ? 'Focusing' : 'Resting'}.`, "info");
       }
     },
@@ -156,6 +156,7 @@
       this.pomodoroIsRunning = false;
       clearInterval(this.pomodoroInterval);
       document.getElementById("pomodoro-start-btn").innerText = "Start";
+      if (window.StudyPilotAudio) window.StudyPilotAudio.stopAmbientSound();
     },
 
     resetPomodoro: function () {
@@ -185,8 +186,9 @@
 
     completePomodoroSession: function () {
       this.pausePomodoro();
+      if (window.StudyPilotAudio) window.StudyPilotAudio.playChime("complete");
       if (this.pomodoroMode === "focus") {
-        window.StudyPilotDB.addNotification("Pomodoro focus session completed!", "success");
+        window.StudyPilotDB.addNotification("Pomodoro focus session completed! Great job!", "success");
         this.togglePomodoroMode();
       } else {
         window.StudyPilotDB.addNotification("Rest break completed. Ready to focus?", "info");
@@ -195,9 +197,14 @@
     },
 
     changeAmbientSound: function () {
-      const sound = document.getElementById("timer-ambient-select").value;
-      if (sound !== "none") {
-        window.StudyPilotDB.addNotification(`Ambient sound "${sound}" playing in background.`, "info");
+      const soundSelect = document.getElementById("timer-ambient-select");
+      if (!soundSelect) return;
+      const sound = soundSelect.value;
+      if (sound === "none") {
+        if (window.StudyPilotAudio) window.StudyPilotAudio.stopAmbientSound();
+      } else {
+        if (window.StudyPilotAudio) window.StudyPilotAudio.startAmbientSound(sound);
+        window.StudyPilotDB.addNotification(`Offline Web Audio ambient sound "${sound}" playing.`, "info");
       }
     },
 
@@ -314,37 +321,60 @@
       
       if (!titleEl || !bodyEl) return;
 
+      const profile = window.StudyPilotDB.getProfile();
+      const currentGrade = profile.grade || grade || "7";
+
       let html = "";
-      if (grade === "12") {
-        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: Physics Chapter 2 (Electricity)`;
+      if (currentGrade === "6") {
+        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: CBSE Grade 6 Science & Mathematics`;
         html = `
           <h5>Key Concepts</h5>
           <ul>
-            <li><strong>Kirchhoff's Current Law (KCL):</strong> The junction rule states that current entering is equal to current leaving.</li>
-            <li><strong>Kirchhoff's Voltage Law (KVL):</strong> The loop rule states that the potential sum in a closed network is zero.</li>
+            <li><strong>Patterns & Numbers:</strong> Sequences, place values, and factors.</li>
+            <li><strong>Materials & Magnets:</strong> Magnetic poles, transparency, and states of water.</li>
+          </ul>
+        `;
+      } else if (currentGrade === "8") {
+        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: CBSE Grade 8 Science (Crop Production & Microbes)`;
+        html = `
+          <h5>Key Concepts</h5>
+          <ul>
+            <li><strong>Crop Management:</strong> Soil preparation, sowing, irrigation, and grain storage.</li>
+            <li><strong>Microorganisms:</strong> Beneficial yeast in baking and disease-causing pathogens.</li>
+          </ul>
+        `;
+      } else if (currentGrade === "9") {
+        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: CBSE Grade 9 Science (Matter & Motion)`;
+        html = `
+          <h5>Key Concepts</h5>
+          <ul>
+            <li><strong>States of Matter:</strong> Solid, liquid, gas, diffusion, and evaporation.</li>
+            <li><strong>Laws of Motion:</strong> Inertia, momentum, and Newton's three laws of motion.</li>
           </ul>
           <h5>Important Formulas</h5>
-          <p class="formula-box">\\[\\sum I_{in} = \\sum I_{out}\\]</p>
-          <p class="formula-box">\\[\\sum V = 0\\]</p>
+          <p class="formula-box">\\[F = m \\times a\\]</p>
+          <p class="formula-box">\\[p = m \\times v\\]</p>
         `;
-      } else if (grade === "prekg" || grade === "lkg" || grade === "ukg") {
-        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: English Numbers & Alphabet`;
+      } else if (currentGrade === "10") {
+        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: CBSE Grade 10 Science (Electricity & Light)`;
         html = `
           <h5>Key Concepts</h5>
           <ul>
-            <li><strong>Tracing Lines:</strong> Practice straight vertical lines (standing) and horizontal lines (sleeping).</li>
-            <li><strong>Fruits Counting:</strong> Associate numbers with physical objects (2 apples, 3 oranges).</li>
+            <li><strong>Ohm's Law:</strong> Current is directly proportional to voltage at constant temperature.</li>
+            <li><strong>Refraction & Lenses:</strong> Laws of reflection, Snell's law, and focal length.</li>
           </ul>
+          <h5>Important Formulas</h5>
+          <p class="formula-box">\\[V = I \\times R\\]</p>
+          <p class="formula-box">\\[\\frac{1}{f} = \\frac{1}{v} - \\frac{1}{u}\\]</p>
         `;
       } else {
         // Grade 7 default
-        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: Curiosity Chapter 3 (Electricity)`;
+        titleEl.innerHTML = `<i data-lucide="file-check"></i> Extracted Summary: CBSE Grade 7 Science (Acids, Bases & Circuits)`;
         html = `
           <h5>Key Concepts</h5>
           <ul>
-            <li><strong>Electric Current:</strong> The flow of electric charge through a conductor (e.g. copper wire).</li>
-            <li><strong>Fuses:</strong> Overheats and melts to break the circuit in short circuit scenarios.</li>
-            <li><strong>Electromagnets:</strong> Coil turns of wire wrapped around iron nail carrying voltage.</li>
+            <li><strong>Acids and Bases:</strong> Sour acids turn blue litmus red; soapy bases turn red litmus blue.</li>
+            <li><strong>Electric Circuits:</strong> Closed path, batteries in series, and protective fuse wires.</li>
           </ul>
           <h5>Important Formulas</h5>
           <p class="formula-box">\\[\\text{Current } (I) = \\frac{\\text{Charge } (Q)}{\\text{Time } (t)}\\]</p>

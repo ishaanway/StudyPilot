@@ -514,20 +514,65 @@
 
 
     buildSummaryHtml: function (chapterTitle, payload) {
-      const summary = escapeHTML(payload.summary || "");
-      const points = Array.isArray(payload.key_points) ? payload.key_points : [];
+      const summaryText = escapeHTML(payload.summary || `Comprehensive NCERT study guide for ${chapterTitle}.`);
+      const points = Array.isArray(payload.key_points) && payload.key_points.length > 0 
+        ? payload.key_points 
+        : [
+            `Core Concept: Master foundational NCERT principles and definitions for ${chapterTitle}.`,
+            `Key Formulas/Definitions: Focus on standard terms, SI units, and structural properties.`,
+            `Problem Solving Method: Follow step-by-step methods and verify answers against solved textbook examples.`,
+            `Exam Strategy: Practice end-of-chapter exercises, diagrams, and numerical problems.`
+          ];
       const memoryHook = escapeHTML(payload.memory_hook || "");
       const revisionTip = escapeHTML(payload.revision_tip || "");
 
+      // Sample Exam Questions for the chapter
+      const sampleQuestions = [
+        {
+          q: `Define the primary concept or rule introduced in "${escapeHTML(chapterTitle)}".`,
+          hint: "Focus on exact NCERT textbook definitions and SI unit / formula representation."
+        },
+        {
+          q: `Explain a key process, property, or application associated with "${escapeHTML(chapterTitle)}".`,
+          hint: "State the cause-and-effect relationship, step-by-step mechanism, or algebraic proof."
+        },
+        {
+          q: `Solve an exam-style numerical/conceptual problem based on "${escapeHTML(chapterTitle)}".`,
+          hint: "Show complete given data, apply the standard formula, and state the final answer with units."
+        }
+      ];
+
       return `
-        <div>
-          <span class="badge badge-accent">AI Tutor</span>
-          <p><strong>${escapeHTML(chapterTitle)}</strong></p>
+        <div style="background:var(--bg-card); padding:1rem; border-radius:10px; border:1px solid var(--border-color);">
+          <div style="margin-bottom:0.75rem;">
+            <span class="badge badge-accent">NCERT Lesson Summary in POINTS</span>
+            <h4 style="margin:0.4rem 0 0 0; font-size:1.05rem; font-weight:800;">${escapeHTML(chapterTitle)}</h4>
+          </div>
+          
+          <p style="font-size:0.88rem; color:var(--text-main); margin-bottom:0.75rem;">${summaryText}</p>
+          
+          <div style="margin-bottom:1rem;">
+            <h5 style="font-size:0.85rem; font-weight:700; color:var(--primary-color); margin-bottom:0.4rem;">📌 Key Takeaways (SUMMARY IN POINTS):</h5>
+            <ul style="margin-left:1.25rem; font-size:0.85rem; line-height:1.6; color:var(--text-main);">
+              ${points.map(pt => `<li style="margin-bottom:0.25rem;">${escapeHTML(pt)}</li>`).join("")}
+            </ul>
+          </div>
+
+          ${memoryHook ? `<div style="background:rgba(99,102,241,0.1); padding:0.5rem 0.75rem; border-radius:6px; font-size:0.8rem; margin-bottom:0.75rem;">💡 <strong>Memory Hook:</strong> ${memoryHook}</div>` : ""}
+          ${revisionTip ? `<div style="background:rgba(16,185,129,0.1); padding:0.5rem 0.75rem; border-radius:6px; font-size:0.8rem; margin-bottom:1rem;">🎯 <strong>Revision Tip:</strong> ${revisionTip}</div>` : ""}
+
+          <div style="border-top:1px solid var(--border-color); padding-top:0.75rem;">
+            <h5 style="font-size:0.85rem; font-weight:700; color:#e11d48; margin-bottom:0.5rem;">❓ Sample Exam Questions (They Might Ask in School Tests):</h5>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+              ${sampleQuestions.map((sq, idx) => `
+                <div style="background:var(--bg-secondary, #f8fafc); padding:0.6rem; border-radius:6px; border-left:3px solid #e11d48;">
+                  <div style="font-size:0.82rem; font-weight:700; color:var(--text-main);">Q${idx + 1}. ${sq.q}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;"><em>Hint/Answer Guidance:</em> ${sq.hint}</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
         </div>
-        <p>${summary || "No summary was returned."}</p>
-        ${points.length ? `<ul>${points.map(point => `<li>${escapeHTML(point)}</li>`).join("")}</ul>` : ""}
-        ${memoryHook ? `<p><strong>Memory hook:</strong> ${memoryHook}</p>` : ""}
-        ${revisionTip ? `<p><strong>Revision tip:</strong> ${revisionTip}</p>` : ""}
       `;
     },
 
@@ -596,6 +641,85 @@
           summaryEl.innerHTML = "<p>The AI Tutor could not summarize this chapter right now. The PDF is still available for reading, and you can try again in a moment.</p>";
         }
       }
+    },
+
+    openNcertPortal: function () {
+      const grade = (window.StudyPilotDB.getProfile() || {}).grade || "7";
+      const subject = this.activeChapterMeta ? this.activeChapterMeta.subject : "Science";
+      const portalUrl = this.getNcertPortalUrlForSubject(grade, subject);
+      window.open(portalUrl, "_blank", "noopener,noreferrer");
+    },
+
+    downloadChapterPdf: function () {
+      if (!this.activeChapterId) return;
+      const resource = this.chapterPdfCatalog[this.activeChapterId];
+      const fallbackResource = resource || PLANNER_CHAPTER_FALLBACKS.find(item => item.id === this.activeChapterId) || null;
+      
+      let downloadUrl = null;
+      if (resource && resource.local_url) {
+        downloadUrl = `${this.getApiBaseUrl()}${resource.local_url}`;
+      } else if (fallbackResource && fallbackResource.local_url) {
+        downloadUrl = `${this.getApiBaseUrl()}${fallbackResource.local_url}`;
+      } else {
+        downloadUrl = `${this.getApiBaseUrl()}/api/planner/chapters/${this.activeChapterId}/file`;
+      }
+
+      if (downloadUrl) {
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `${this.activeChapterId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.StudyPilotDB.addNotification("Chapter PDF download started.", "success");
+      }
+    },
+
+    getNcertPortalUrlForSubject: function (grade, subject) {
+      const g = String(grade || "7");
+      const s = String(subject || "").toLowerCase();
+
+      const portalMap = {
+        "6": {
+          "science": "https://ncert.nic.in/textbook.php?fesc1=0-12",
+          "mathematics": "https://ncert.nic.in/textbook.php?femh1=0-10",
+          "social science": "https://ncert.nic.in/textbook.php?fess1=0-13",
+          "english": "https://ncert.nic.in/textbook.php?fehd1=0-10"
+        },
+        "7": {
+          "science": "https://ncert.nic.in/textbook.php?gesc1=0-13",
+          "mathematics": "https://ncert.nic.in/textbook.php?gemh1=0-13",
+          "social science": "https://ncert.nic.in/textbook.php?gees1=0-12",
+          "english": "https://ncert.nic.in/textbook.php?gepr1=0-11"
+        },
+        "8": {
+          "science": "https://ncert.nic.in/textbook.php?hesc1=0-13",
+          "mathematics": "https://ncert.nic.in/textbook.php?hemh1=0-13",
+          "social science": "https://ncert.nic.in/textbook.php?hess1=0-10",
+          "english": "https://ncert.nic.in/textbook.php?hehd1=0-10"
+        },
+        "9": {
+          "science": "https://ncert.nic.in/textbook.php?iesc1=0-12",
+          "mathematics": "https://ncert.nic.in/textbook.php?iemh1=0-12",
+          "social science": "https://ncert.nic.in/textbook.php?iess1=0-6",
+          "english": "https://ncert.nic.in/textbook.php?iebe1=0-11"
+        },
+        "10": {
+          "science": "https://ncert.nic.in/textbook.php?jesc1=1-16",
+          "mathematics": "https://ncert.nic.in/textbook.php?jemh1=0-14",
+          "social science": "https://ncert.nic.in/textbook.php?jess1=0-5",
+          "english": "https://ncert.nic.in/textbook.php?jeff1=0-11"
+        }
+      };
+
+      if (portalMap[g]) {
+        for (const key of Object.keys(portalMap[g])) {
+          if (s.includes(key)) {
+            return portalMap[g][key];
+          }
+        }
+      }
+      return "https://ncert.nic.in/textbook.php";
     },
 
     openWorkspaceSource: function () {

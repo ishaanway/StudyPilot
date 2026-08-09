@@ -52,6 +52,9 @@
             <select id="setup-grade" onchange="window.StudyPilotSetup.handleGradeChange(this.value)">
               <option value="6">Grade 6</option>
               <option value="7" selected>Grade 7</option>
+              <option value="8">Grade 8</option>
+              <option value="9">Grade 9</option>
+              <option value="10">Grade 10</option>
             </select>
           </div>
           <div class="input-group hidden" id="setup-stream-group">
@@ -149,8 +152,8 @@
       </div>
       <nav class="sidebar-nav">
         <button class="nav-item active" data-screen="dashboard">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard</span>
+          <i data-lucide="clock"></i>
+          <span>Hourly Timetable</span>
         </button>
         <button class="nav-item" data-screen="planner">
           <i data-lucide="calendar"></i>
@@ -246,6 +249,31 @@
         </div>
       </div>
       <div class="header-right">
+        <!-- Global Grade Selector -->
+        <div class="grade-selector-container" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.4rem;">
+          <label for="global-grade-select" style="font-weight: 600; font-size: 0.825rem; color: var(--text-main); display: flex; align-items: center; gap: 0.25rem;">
+            <i data-lucide="graduation-cap" style="width:16px; height:16px;"></i> Grade:
+          </label>
+          <select id="global-grade-select" class="form-select btn-sm" onchange="window.StudyPilotApp.switchGlobalGrade(this.value)" style="padding: 0.35rem 0.6rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); cursor: pointer;">
+            <option value="6">Grade 6</option>
+            <option value="7">Grade 7</option>
+            <option value="8">Grade 8</option>
+            <option value="9">Grade 9</option>
+            <option value="10">Grade 10</option>
+          </select>
+        </div>
+
+        <!-- Global Online / Offline Mode Toggle -->
+        <div class="mode-selector-container" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;">
+          <label for="global-mode-select" style="font-weight: 600; font-size: 0.825rem; color: var(--text-main); display: flex; align-items: center; gap: 0.25rem;">
+            <i data-lucide="wifi" style="width:16px; height:16px;"></i> Mode:
+          </label>
+          <select id="global-mode-select" class="form-select btn-sm" onchange="window.StudyPilotApp.switchAppMode(this.value)" style="padding: 0.35rem 0.6rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); cursor: pointer;">
+            <option value="online" selected>🌐 Online Mode</option>
+            <option value="offline">⚡ Offline Mode</option>
+          </select>
+        </div>
+
         <!-- Parent Report Button (Parent Progress check) -->
         <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.showParentReportModal()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
           <i data-lucide="award"></i> <span>Report for Parents</span>
@@ -275,92 +303,83 @@
 
     <!-- MAIN VIEW AREA -->
     <main class="main-content">
-      
-      <!-- SCREEN: DASHBOARD -->
+      <!-- SCREEN: HOURLY SCHEDULE & TIMETABLE -->
       <section id="screen-dashboard" class="screen-view">
-        <div class="dashboard-greeting" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h1 id="dashboard-welcome">Hello, Scholar!</h1>
-            <p id="dashboard-date">Monday, 22 June 2026</p>
+        <div class="timetable-top-bar">
+          <div class="timetable-heading">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <span class="timetable-live-pulse-dot"></span>
+              <h1 id="dashboard-welcome" style="margin:0; font-size:1.75rem; font-weight:800;">Hourly Schedule &amp; Timetable</h1>
+            </div>
+            <p id="dashboard-date" class="text-muted" style="margin:0.25rem 0 0 0; font-size:0.88rem; font-weight:500;">Live 24-Hour Day Planner (12:00 AM – 11:00 PM)</p>
           </div>
-          <!-- Quick Access Report for Parents -->
-          <button class="btn btn-primary btn-sm" onclick="window.StudyPilotApp.showParentReportModal()">
-            <i data-lucide="award"></i> Report for Parents
-          </button>
+          <div class="timetable-controls">
+            <div class="timetable-view-tabs" style="display:flex; gap:0.35rem; background:var(--bg-card); padding:0.25rem; border-radius:10px; border:1px solid var(--border-color);">
+              <button class="btn btn-xs tab-btn active" id="btn-view-day" onclick="window.StudyPilotDashboard.switchTimetableMode('day')"><i data-lucide="clock" style="width:14px; height:14px;"></i> Day View (24h)</button>
+              <button class="btn btn-xs tab-btn" id="btn-view-week" onclick="window.StudyPilotDashboard.switchTimetableMode('week')"><i data-lucide="calendar" style="width:14px; height:14px;"></i> Week View</button>
+              <button class="btn btn-xs tab-btn" id="btn-view-month" onclick="window.StudyPilotDashboard.switchTimetableMode('month')"><i data-lucide="calendar-days" style="width:14px; height:14px;"></i> Month View</button>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="window.StudyPilotDashboard.jumpToToday()"><i data-lucide="compass" style="width:14px; height:14px;"></i> Today</button>
+            <button class="btn btn-primary btn-sm" onclick="window.StudyPilotDashboard.showScheduleModal()"><i data-lucide="plus" style="width:14px; height:14px;"></i> + Schedule Task</button>
+            <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.showParentReportModal()" title="Parent Progress Report"><i data-lucide="award" style="width:14px; height:14px;"></i> Parents</button>
+          </div>
         </div>
 
-        <div class="dashboard-grid">
-          <!-- Left Column (Schedules and Tasks) -->
-          <div class="dashboard-left">
-            <!-- Schedule Card -->
-            <div class="card card-schedule">
-              <div class="card-header">
-                <h2><i data-lucide="calendar"></i> Today's Schedule</h2>
-                <button class="btn-text" onclick="window.StudyPilotApp.switchScreen('planner')">View Full Calendar</button>
-              </div>
-              <div class="timeline" id="dashboard-timeline">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
+        <!-- Overdue Task Loud Alarm Alert Banner -->
+        <div id="dashboard-overdue-banner" class="hidden" style="margin-bottom: 1.25rem;"></div>
 
-            <!-- Tasks Checklist Card -->
-            <div class="card card-tasks">
-              <div class="card-header">
-                <h2><i data-lucide="check-square"></i> Today's Homework & Tasks</h2>
-                <button class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.showAddTaskModal()">+ Add Task</button>
-              </div>
-              <ul class="task-list" id="dashboard-task-list">
-                <!-- Dynamically populated -->
-              </ul>
+        <!-- DAILY HOURS SUMMARY -->
+        <div class="daily-hours-summary-card" id="daily-hours-summary">
+          <!-- Dynamically populated metrics: Total Scheduled, Completed, Remaining, Missed, Free Time -->
+        </div>
+
+        <!-- ACTIVE TASK & COUNTDOWN BAR -->
+        <div class="active-task-countdown-bar" id="active-task-countdown-bar">
+          <!-- Dynamically populated: Current active task countdown & Next upcoming task -->
+        </div>
+
+        <!-- 1. DAY VIEW: 24-Hour Vertical Timetable (12 AM to 11 PM) -->
+        <div id="timetable-day-view" class="timetable-view-container">
+          <div class="timetable-scroll-wrapper">
+            <div class="timetable-canvas-grid" id="timetable-24h-grid">
+              <!-- Dynamically populated 24 hour slots + tasks + live red line -->
             </div>
           </div>
+        </div>
 
-          <!-- Right Column (Progress, AI, Upcoming) -->
-          <div class="dashboard-right">
-            <!-- Streak & Progress Card -->
-            <div class="card card-progress">
-              <div class="progress-streak-row">
-                <div class="progress-ring-container">
-                  <svg class="progress-ring" width="80" height="80">
-                    <circle class="progress-ring__circle-bg" stroke="#e2e8f0" stroke-width="6" fill="transparent" r="34" cx="40" cy="40"/>
-                    <circle class="progress-ring__circle" stroke="#4f46e5" stroke-width="6" fill="transparent" r="34" cx="40" cy="40" stroke-dasharray="213.63" stroke-dashoffset="213.63"/>
-                  </svg>
-                  <div class="progress-ring-text" id="dashboard-progress-percent">0%</div>
-                </div>
-                <div class="streak-badge">
-                  <div class="streak-icon-container">
-                    <i data-lucide="flame" class="streak-icon"></i>
-                  </div>
-                  <div class="streak-details">
-                    <span class="streak-num" id="dashboard-streak-count">1</span>
-                    <span class="streak-label">Day Study Streak</span>
-                  </div>
-                </div>
-              </div>
-              <div class="progress-summary-text" id="dashboard-progress-summary">
-                Complete your tasks to fill your ring today!
-              </div>
+        <!-- 2. WEEK VIEW: 7-Day Column Timetable -->
+        <div id="timetable-week-view" class="timetable-view-container hidden">
+          <div class="timetable-week-header" id="timetable-week-header">
+            <!-- 7 Column Day headers -->
+          </div>
+          <div class="timetable-week-scroll-wrapper">
+            <div class="timetable-week-canvas-grid" id="timetable-week-grid">
+              <!-- Weekly 24h columns -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. MONTH VIEW: Monthly Schedule Calendar -->
+        <div id="timetable-month-view" class="timetable-view-container hidden">
+          <div class="card card-mini-calendar" style="border-radius:14px;">
+            <div class="mini-calendar-nav" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; font-weight:700;">
+              <button class="btn btn-xs btn-outline" onclick="window.StudyPilotDashboard.changeMiniMonth(-1)">&lt; Prev Month</button>
+              <span id="mini-calendar-month-year" style="font-size:1.15rem; font-weight:800;">June 2026</span>
+              <button class="btn btn-xs btn-outline" onclick="window.StudyPilotDashboard.changeMiniMonth(1)">Next Month &gt;</button>
+            </div>
+            
+            <div class="mini-calendar-weekdays" style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; font-size:0.85rem; font-weight:700; color:var(--text-muted); margin-bottom:0.6rem;">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            
+            <div id="mini-calendar-days-grid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap: 6px; text-align:center;">
+              <!-- Dynamically rendered date grid -->
             </div>
 
-            <!-- AI Suggestions Box -->
-            <div class="card card-ai-tips">
-              <div class="ai-tips-header">
-                <i data-lucide="sparkles" class="ai-spark-icon"></i>
-                <h2>AI Coach Suggestions</h2>
-              </div>
-              <div class="ai-tips-content" id="dashboard-ai-suggestions">
-                <!-- Dynamically populated -->
-              </div>
-            </div>
-
-            <!-- Upcoming Exams and Major Deadlines -->
-            <div class="card card-upcoming">
-              <div class="card-header">
-                <h2><i data-lucide="alert-circle"></i> Upcoming Exams</h2>
-                <button class="btn-text" onclick="window.StudyPilotDashboard.showAddExamModal()">Add Exam</button>
-              </div>
-              <div class="upcoming-list" id="dashboard-upcoming-exams">
-                <!-- Dynamically populated -->
+            <div class="mini-calendar-schedule-slots" style="margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+              <h4 style="font-size:0.95rem; font-weight:800; margin-bottom:0.75rem;" id="mini-calendar-selected-label">Scheduled Day &amp; Time Slots</h4>
+              <div id="mini-calendar-slots-list" class="timeline">
+                <!-- Dynamically populated time slots for selected day -->
               </div>
             </div>
           </div>
@@ -420,13 +439,13 @@
                   <p id="planner-reading-status">Fetching chapter PDF...</p>
                 </div>
                 <div class="planner-reading-actions">
-                  <button class="btn btn-secondary btn-sm" type="button" id="btn-extend-pdf" onclick="window.StudyPilotPlanner.toggleExtendPdfView()">
-                    <i data-lucide="maximize-2"></i> Extend View
+                  <button class="btn btn-primary btn-sm" type="button" onclick="window.StudyPilotPlanner.openNcertPortal()" style="display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i data-lucide="external-link"></i> 🌐 Open NCERT Portal
                   </button>
-                  <button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotPlanner.openWorkspaceSource()">
-                    <i data-lucide="external-link"></i> Open Source
+                  <button class="btn btn-secondary btn-sm" type="button" onclick="window.StudyPilotPlanner.downloadChapterPdf()" style="display:inline-flex; align-items:center; gap:0.35rem;">
+                    <i data-lucide="download"></i> 📥 Download PDF
                   </button>
-                  <button class="btn btn-primary btn-sm" type="button" onclick="window.StudyPilotPlanner.summarizeActiveChapter()">
+                  <button class="btn btn-outline btn-sm" type="button" onclick="window.StudyPilotPlanner.summarizeActiveChapter()" style="display:inline-flex; align-items:center; gap:0.35rem;">
                     <i data-lucide="sparkles"></i> AI Tutor Summary
                   </button>
                 </div>
@@ -489,6 +508,11 @@
                   <p id="tutor-bot-grade-lbl">Grade 7 CBSE Coach</p>
                 </div>
               </div>
+              <div class="mode-badge-wrapper" style="margin-left: auto;">
+                <span id="tutor-mode-badge" class="badge badge-accent" onclick="window.StudyPilotApp.toggleAppMode()" style="cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.6rem; display: inline-flex; align-items: center; gap: 0.25rem;" title="Click to switch between Online and Offline mode">
+                  🌐 Online Mode (Live AI & RAG)
+                </span>
+              </div>
             </div>
             <div class="tutor-chat-messages" id="tutor-chat-messages">
               <div class="chat-message bot">
@@ -499,8 +523,8 @@
               </div>
             </div>
             <div class="tutor-chat-input-bar">
-              <input type="text" id="tutor-chat-input" placeholder="Ask about acids and bases, fractions, simple equations...">
-              <button id="tutor-chat-send-btn" class="btn btn-primary btn-icon-only"><i data-lucide="send"></i></button>
+              <input type="text" id="tutor-chat-input" placeholder="Ask about acids and bases, fractions, simple equations..." onkeydown="if(event.key==='Enter') window.StudyPilotTutor.sendUserChatMessage()">
+              <button id="tutor-chat-send-btn" class="btn btn-primary btn-icon-only" onclick="window.StudyPilotTutor.sendUserChatMessage()"><i data-lucide="send"></i></button>
             </div>
           </div>
 
@@ -592,6 +616,16 @@
                   <h3>Generate Chapter Quiz</h3>
                   <p>Test your knowledge with 5 interactive questions based on your active CBSE syllabus.</p>
                   
+                  <div class="input-group">
+                    <label for="quiz-grade-select" style="font-weight:600;">Grade / Class</label>
+                    <select id="quiz-grade-select" onchange="window.StudyPilotApp.switchGlobalGrade(this.value)">
+                      <option value="6">Grade 6</option>
+                      <option value="7" selected>Grade 7</option>
+                      <option value="8">Grade 8</option>
+                      <option value="9">Grade 9</option>
+                      <option value="10">Grade 10</option>
+                    </select>
+                  </div>
                   <div class="input-group">
                     <label for="quiz-subject-select">Subject</label>
                     <select id="quiz-subject-select" onchange="window.StudyPilotTutor.updateQuizChapters()">
@@ -829,7 +863,10 @@
                     <label for="profile-edit-grade">Grade</label>
                     <select id="profile-edit-grade" onchange="window.StudyPilotApp.handleProfileGradeChange(this.value)">
                       <option value="6">Grade 6</option>
-                      <option value="7" selected>Grade 7</option>
+                      <option value="7">Grade 7</option>
+                      <option value="8">Grade 8</option>
+                      <option value="9">Grade 9</option>
+                      <option value="10">Grade 10</option>
                     </select>
                   </div>
                   <div class="input-group hidden" id="profile-edit-stream-group">
@@ -1150,6 +1187,87 @@
       </div>
     </div>
   </div>
+
+  <!-- MINI CALENDAR SCHEDULE TIME SLOT MODAL -->
+  <div id="modal-schedule-timeslot" class="modal-overlay hidden">
+    <div class="modal-card animate-scale-up" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i data-lucide="clock"></i> Schedule Time Slot (Alarm Enabled)</h3>
+        <button class="modal-close" onclick="window.StudyPilotDashboard.hideScheduleModal()"><i data-lucide="x"></i></button>
+      </div>
+        <!-- Quick Task Presets -->
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.35rem;">Quick Subject Presets</label>
+          <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Mathematics Study Block', 'Mathematics', 60)">📐 Mathematics (1h)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Science Chapter Study', 'Science', 60)">🔬 Science (1h)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Social Science Revision', 'Social Science', 60)">🌍 Social Science (1h)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('English Reading & Grammar', 'English', 45)">📖 English (45m)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Daily Homework', 'Homework', 90)">📝 Homework (1.5h)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Exam Practice & Formulas', 'Revision', 30)">⚡ Revision (30m)</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setPresetTask('Free Time & Rest', 'Free Time', 60)">🏖️ Free Time (1h)</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="slot-input-title">Task / Subject Title</label>
+          <input type="text" id="slot-input-title" placeholder="e.g. Mathematics Practice / Science Ch 6">
+        </div>
+
+        <div class="input-row" style="display:flex; gap:0.75rem;">
+          <div class="input-group" style="flex:1;">
+            <label for="slot-input-subject">Subject Category</label>
+            <select id="slot-input-subject">
+              <option value="Mathematics">Mathematics</option>
+              <option value="Science">Science</option>
+              <option value="Social Science">Social Science</option>
+              <option value="English">English</option>
+              <option value="Homework">Homework</option>
+              <option value="Revision">Revision</option>
+              <option value="Free Time">Free Time</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="slot-input-date">Date</label>
+            <input type="date" id="slot-input-date">
+          </div>
+        </div>
+
+        <!-- Quick Duration Buttons -->
+        <div style="margin-bottom:0.75rem;">
+          <label style="font-size:0.78rem; font-weight:700; color:var(--text-muted); display:block; margin-bottom:0.35rem;">Duration Preset</label>
+          <div style="display:flex; flex-wrap:wrap; gap:0.35rem;">
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(15)">15 mins</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(30)">30 mins</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(45)">45 mins</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(60)">1 Hour</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(90)">1.5 Hours</button>
+            <button type="button" class="btn btn-outline btn-xs" onclick="window.StudyPilotDashboard.setQuickDuration(120)">2 Hours</button>
+          </div>
+        </div>
+
+        <div class="input-row" style="display:flex; gap:0.75rem;">
+          <div class="input-group" style="flex:1;">
+            <label for="slot-input-start">Start Time</label>
+            <input type="time" id="slot-input-start" value="16:00" onchange="window.StudyPilotDashboard.onStartTimeChanged()">
+          </div>
+          <div class="input-group" style="flex:1;">
+            <label for="slot-input-end">End Time</label>
+            <input type="time" id="slot-input-end" value="17:00">
+          </div>
+        </div>
+
+        <p class="text-xs text-muted" style="margin-top:0.5rem; color:var(--text-muted);">
+          🔔 <strong>Loud Alarm Reminder:</strong> If this task is not marked completed before the end time, a loud audio alarm siren will sound!
+        </p>
+        <div class="btn-row justify-end" style="margin-top:1rem;">
+          <button class="btn btn-secondary" onclick="window.StudyPilotDashboard.hideScheduleModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="window.StudyPilotDashboard.addScheduleSlotSubmit()">Save &amp; Schedule Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CALENDAR WEEKLY SCHEDULE MODAL -->
   <div id="calendar-modal" class="modal-overlay hidden">
     <div class="modal-box modal-lg cal-modal-box animate-fade-in">
@@ -1253,16 +1371,23 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <!-- Application Modules -->
-  <script src="js/db.js?v=20260728-1"></script>
-  <script src="js/curriculum.js?v=20260728-1"></script>
-  <script src="js/books.js?v=20260728-1"></script>
-  <script src="js/setup.js?v=20260728-1"></script>
-  <script src="js/dashboard.js?v=20260728-1"></script>
-  <script src="js/planner.js?v=20260728-1"></script>
-  <script src="js/tutor.js?v=20260728-1"></script>
-  <script src="js/toolbox.js?v=20260728-1"></script>
-  <script src="js/parents.js?v=20260728-1"></script>
-  <script src="js/app.js?v=20260728-1"></script>
+  <script src="js/audio.js?v=20260808-v4"></script>
+  <script src="js/db.js?v=20260808-v4"></script>
+  <script src="js/curriculum.js?v=20260808-v5"></script>
+  <script src="js/summaries/grade6.js?v=20260808-v5"></script>
+  <script src="js/summaries/grade7.js?v=20260808-v5"></script>
+  <script src="js/summaries/grade8.js?v=20260808-v5"></script>
+  <script src="js/summaries/grade9.js?v=20260808-v5"></script>
+  <script src="js/summaries/grade10.js?v=20260808-v5"></script>
+  <script src="js/chapter_summaries.js?v=20260808-v5"></script>
+  <script src="js/books.js?v=20260808-v5"></script>
+  <script src="js/setup.js?v=20260808-v4"></script>
+  <script src="js/dashboard.js?v=20260808-v4"></script>
+  <script src="js/planner.js?v=20260808-v4"></script>
+  <script src="js/tutor.js?v=20260808-v5"></script>
+  <script src="js/toolbox.js?v=20260808-v4"></script>
+  <script src="js/parents.js?v=20260808-v4"></script>
+  <script src="js/app.js?v=20260808-v4"></script>
 
 </body>
 </html>

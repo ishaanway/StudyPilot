@@ -152,11 +152,55 @@ SEED_ENTRIES: list[dict[str, Any]] = [
         "grade": 10,
         "subject": "Science",
         "book_title": "Science",
+        "chapter_number": 1,
+        "chapter_title": "Chemical Reactions and Equations",
+        "summary": "Covers chemical equations, balancing reactions, combination, decomposition, displacement, double displacement, and oxidation-reduction reactions.",
+        "keywords": "chemical reaction equation balancing combination decomposition displacement oxidation reduction",
+        "source_url": "https://ncert.nic.in/textbook/pdf/jesc101.pdf",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 10,
+        "subject": "Science",
+        "book_title": "Science",
         "chapter_number": 2,
         "chapter_title": "Acids, Bases and Salts",
         "summary": "Introduces acids, bases, indicators, pH, and neutralisation with original study help focused on everyday applications.",
         "keywords": "acid base salt indicator ph neutralisation neutralization vinegar baking soda litmus",
         "source_url": "https://ncert.nic.in/textbook/pdf/jesc102.pdf",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 7,
+        "subject": "Mathematics",
+        "book_title": "Mathematics",
+        "chapter_number": 2,
+        "chapter_title": "Arithmetic Expressions & Order of Operations",
+        "summary": "Simplifying order of operations, brackets, BODMAS / PEMDAS rules, and calculating complex arithmetic expressions.",
+        "keywords": "arithmetic expression order operations bodmas brackets pemdas calculation",
+        "source_url": "https://ncert.nic.in/textbook/pdf/gemh102.pdf",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 8,
+        "subject": "Mathematics",
+        "book_title": "Mathematics",
+        "chapter_number": 1,
+        "chapter_title": "Rational Numbers",
+        "summary": "Properties of rational numbers, closure, commutativity, associativity, and representation on number lines.",
+        "keywords": "rational numbers closure commutativity associativity number line",
+        "source_url": "https://ncert.nic.in/textbook/pdf/hemh101.pdf",
+        "source_type": "NCERT Official",
+    },
+    {
+        "grade": 9,
+        "subject": "Mathematics",
+        "book_title": "Mathematics",
+        "chapter_number": 1,
+        "chapter_title": "Number Systems",
+        "summary": "Irrational numbers, real numbers, decimal expansions, and laws of exponents for real numbers.",
+        "keywords": "number systems irrational real numbers decimal expansion exponents",
+        "source_url": "https://ncert.nic.in/textbook/pdf/iemh101.pdf",
         "source_type": "NCERT Official",
     },
     {
@@ -1059,13 +1103,63 @@ def simple_math_answer(query: str) -> str | None:
     return f"{expression} = {value}"
 
 
-def search_knowledge(query: str, grade: int | None = None, subject: str | None = None, limit: int = 4) -> list[dict]:
+def infer_subject_from_query(query: str, fallback_subject: str = "") -> str:
+    text = (query or "").lower()
+    
+    math_keywords = [
+        "math", "arithmetic", "expression", "equation", "fraction", "decimal", "algebra",
+        "geometry", "bodmas", "number", "ratio", "percent", "probability", "triangle",
+        "congruence", "integer", "polynomial", "trigonometry", "derivative", "calculus",
+        "quadratic", "pythagoras", "perimeter", "area", "volume", "graph"
+    ]
+    science_keywords = [
+        "science", "acid", "base", "salt", "circuit", "electric", "heat", "plant", "animal",
+        "light", "cell", "photosynthesis", "magnet", "motion", "matter", "crop", "sound",
+        "atom", "molecule", "tissue", "gravity", "gravitation", "friction", "microorganism",
+        "combustion", "flame", "reflection", "refraction", "organism", "reproduction",
+        "chemical", "reaction", "element", "compound", "biology", "physics", "chemistry",
+        "heredity", "genetics", "ecosystem"
+    ]
+    ss_keywords = [
+        "history", "geography", "civics", "economics", "social", "sst", "land", "earth",
+        "continent", "ocean", "empire", "government", "constitution", "revolution", "resource",
+        "agriculture", "industry", "freedom", "democracy", "parliament", "ruler", "dynasty"
+    ]
+    english_keywords = [
+        "english", "grammar", "story", "poem", "fable", "unit", "passage", "comprehension",
+        "noun", "verb", "adjective", "tense", "vocabulary", "prose", "poet"
+    ]
+
+    for kw in math_keywords:
+        if kw in text:
+            return "Mathematics"
+    for kw in science_keywords:
+        if kw in text:
+            return "Science"
+    for kw in ss_keywords:
+        if kw in text:
+            return "Social Science"
+    for kw in english_keywords:
+        if kw in text:
+            return "English"
+
+    return fallback_subject or ""
+
+
+def search_knowledge(query: str, grade: int | str | None = None, subject: str | None = None, limit: int = 4) -> list[dict]:
     """Return the most relevant syllabus entries for a question."""
 
+    target_subject = subject or infer_subject_from_query(query)
     entries = fetch_all("SELECT * FROM knowledge_entries ORDER BY grade, subject, chapter_number")
+
+    if grade is not None and str(grade).strip():
+        entries = [e for e in entries if str(e.get("grade")) == str(grade)]
+
+    if target_subject:
+        entries = [e for e in entries if str(e.get("subject", "")).lower() == target_subject.lower()]
+
     query_tokens = _expand_query_tokens(_tokenize(query))
     query_text = (query or "").lower().strip()
-    subject_lower = subject.lower().strip() if subject else ""
 
     scored: list[tuple[int, dict]] = []
     for entry in entries:
@@ -1081,33 +1175,69 @@ def search_knowledge(query: str, grade: int | None = None, subject: str | None =
             ]
         ).lower()
 
-        if subject_lower and subject_lower in str(entry.get("subject", "")).lower():
-            score += 2
-
         chapter_title = str(entry.get("chapter_title", "")).lower()
-        if query_text and chapter_title and chapter_title in query_text:
-            score += 6
+        if query_text and chapter_title and (chapter_title in query_text or query_text in chapter_title):
+            score += 10
 
         for token in query_tokens:
             if token in entry_text:
-                score += 2
+                score += 3
                 matched_token = True
-        if grade and int(entry.get("grade") or 0) == int(grade) and matched_token:
-            score += 1
-        if matched_token:
-            score += 1
 
-        should_keep = matched_token or (subject_lower and query_text == subject_lower)
-        if score > 0 and should_keep:
+        if score > 0 or matched_token:
             scored.append((score, entry))
 
-
     scored.sort(key=lambda pair: (-pair[0], pair[1]["grade"], pair[1]["subject"], pair[1]["chapter_number"]))
-    if grade is not None:
-      same_grade = [pair for pair in scored if int(pair[1].get("grade") or 0) == int(grade)]
-      if same_grade:
-          scored = same_grade
-    return [entry for _, entry in scored[:limit]]
+    results = [entry for _, entry in scored[:limit]]
+
+    # If no database entries matched for that subject, build entry from curriculum chapter list
+    if not results and target_subject and grade:
+        ch_list = get_subject_chapter_list(grade, target_subject)
+        best_match = None
+        highest_match_count = -1
+        
+        # Check explicit chapter number in query (e.g. "chapter 6" -> 6)
+        ch_num_match = re.search(r'(?:chapter|ch|unit|lesson)\s*(\d+)', query_text)
+        req_ch_num = int(ch_num_match.group(1)) if ch_num_match else None
+
+        for ch in ch_list:
+            ch_num = ch.get("chapter_number")
+            ch_t = ch.get("chapter_title", "").lower()
+            match_count = 0
+
+            if req_ch_num is not None and ch_num == req_ch_num:
+                match_count += 50
+
+            for t in query_tokens:
+                if len(t) > 2 and t in ch_t:
+                    match_count += 3
+
+            # Fuzzy keyword matching for typos
+            if "adolescen" in query_text or "groth" in query_text or "puberty" in query_text:
+                if "adolescence" in ch_t or "growth" in ch_t:
+                    match_count += 35
+
+            if match_count > highest_match_count:
+                highest_match_count = match_count
+                best_match = ch
+
+        if not best_match and req_ch_num and req_ch_num <= len(ch_list):
+            best_match = ch_list[req_ch_num - 1]
+        elif not best_match and ch_list:
+            best_match = ch_list[0]
+
+        if best_match:
+            return [{
+                "grade": int(grade),
+                "subject": target_subject,
+                "book_title": f"NCERT Grade {grade} {target_subject}",
+                "chapter_number": best_match.get("chapter_number", 1),
+                "chapter_title": best_match.get("chapter_title", "Chapter"),
+                "summary": f"Key concepts, definitions, formulas, and step-by-step exercise solutions for {best_match.get('chapter_title')}.",
+                "source_url": "NCERT Local Library"
+            }]
+
+    return results
 
 
 def format_knowledge_context(entries: list[dict]) -> str:
@@ -1123,30 +1253,167 @@ def format_knowledge_context(entries: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def offline_answer(query: str, entries: list[dict]) -> str:
+def get_subject_chapter_list(grade: str | int, subject: str) -> list[dict]:
+    g_str = str(grade)
+    s_norm = subject.lower().strip()
+
+    entries = fetch_all(
+        "SELECT * FROM knowledge_entries WHERE strftime('%s', grade)=? AND LOWER(subject)=? ORDER BY chapter_number",
+        (g_str, s_norm)
+    )
     if not entries:
+        entries = fetch_all(
+            "SELECT * FROM knowledge_entries WHERE LOWER(subject)=? ORDER BY chapter_number",
+            (s_norm,)
+        )
+    if entries:
+        matched_entries = [e for e in entries if str(e.get("grade")) == g_str]
+        if matched_entries:
+            return matched_entries
+
+    curr_dict = {
+        "6": {
+            "Mathematics": ["Patterns in Mathematics", "Lines and Angles", "Number Play", "Data Handling and Presentation", "Prime Time", "Perimeter and Area", "Fractions", "Playing with Constructions", "Symmetry", "The Other Side of Zero"],
+            "Science": ["The Wonderful World of Science", "Diversity in the Living World", "Mindful Eating: A Path to a Healthy Body", "Exploring Magnets", "Measurement of Length and Motion", "Materials Around Us", "Temperature and its Measurement", "A Journey through States of Water", "Methods of Separation in Everyday Life", "Living Creatures: Exploring their Characteristics", "Nature's Treasures", "Beyond Earth"],
+            "Social Science": ["Locating Places on the Earth", "Oceans and Continents", "Landforms and Life", "Timeline and Sources of History", "India, That Is Bharat", "The Beginnings of Indian Civilisation", "India's Cultural Roots", "Unity in Diversity, or 'Many in the One'", "Family and Community", "Grassroots Democracy – Governance", "Local Government in Rural Areas", "Local Government in Urban Areas", "The Value of Work", "Economic Activities Around Us"],
+            "English": ["Unit 1: Fables and Folk Tales", "Unit 2: Friendship", "Unit 3: Nurturing Nature", "Unit 4: Sports and Wellness", "Unit 5: Culture and Tradition"]
+        },
+        "7": {
+            "Science": ["The Ever-Evolving World of Science", "Exploring Substances: Acidic, Basic, Neutral", "Electricity: Circuits and Components", "The World of Metals and Non-metals", "Changes Around Us: Physical and Chemical", "Adolescence: A Stage of Growth and Change", "Heat Transfer in Nature", "Measurement of Time and Motion", "Life Processes in Animals", "Life Processes in Plants", "Light: Shadows and Reflections", "Earth, Moon, and the Sun"],
+            "Mathematics": ["Large Numbers Around Us", "Arithmetic Expressions & Order of Operations", "A Peek Beyond the Point (Decimals)", "Expressions using Letter-Numbers (Algebra)", "Parallel and Intersecting Lines", "Number Play (Factors & Multiples)", "Properties of Triangles", "Working with Fractions", "Geometric Twins (Congruence)", "Operations with Integers", "Data Handling (Mean, Median, Mode)", "Percentages & Ratios", "Probability & Chance", "Geometric Constructions", "Finding the Unknown (Simple Equations)"],
+            "Social Science": ["Geographical Diversity of India", "Understanding the Weather", "Climate of India", "New Beginnings: Cities and States", "The Rise of Empires", "The Age of Reorganisation", "Gupta Era: Age of Tireless Creativity", "How the Land Becomes Sacred", "Types of Governments", "The Constitution of India", "From Barter to Money", "Understanding Markets", "The Story of Indian Farming", "India and Her Neighbours", "Empires and Kingdoms (6th-10th C)", "Turning Tides (11th-12th C)", "India, a Home to Many", "State Government and You", "Infrastructure and National Growth", "Banks and Financial Literacy"],
+            "English": ["Unit 1: Learning Together", "Unit 2: Wit and Humour", "Unit 3: Dreams and Discoveries", "Unit 4: Travel and Adventure", "Unit 5: Bravehearts"]
+        },
+        "8": {
+            "Mathematics": ["Rational Numbers", "Linear Equations in One Variable", "Understanding Quadrilaterals", "Data Handling", "Square and Square Roots", "Cube and Cube Roots", "Comparing Quantities", "Algebraic Expressions and Identities", "Mensuration", "Exponents and Powers", "Direct and Inverse Proportions", "Factorisation", "Introduction to Graphs"],
+            "Science": ["Crop Production and Management", "Microorganisms: Friend and Foe", "Coal and Petroleum", "Combustion and Flame", "Conservation of Plants and Animals", "Reproduction in Animals", "Reaching the Age of Adolescence", "Force and Pressure", "Friction", "Sound", "Chemical Effects of Electric Current", "Some Natural Phenomena", "Light"],
+            "Social Science": ["Resources", "Land, Soil, Water, Natural Vegetation", "Agriculture", "Industries", "Human Resources", "How, When and Where", "From Trade to Territory", "Ruling the Countryside", "Tribals, Dikus and Vision of Golden Age", "Indian Constitution & Secularism"],
+            "English": ["Unit 1: The Best Christmas Present in the World", "Unit 2: The Tsunami", "Unit 3: Glimpses of the Past", "Unit 4: Bepin Choudhury's Lapse of Memory", "Unit 5: The Summit Within", "Unit 6: This is Jody's Fawn"]
+        },
+        "9": {
+            "Mathematics": ["Number Systems", "Polynomials", "Coordinate Geometry", "Linear Equations in Two Variables", "Introduction to Euclid's Geometry", "Lines and Angles", "Triangles", "Quadrilaterals", "Circles", "Heron's Formula", "Surface Areas and Volumes", "Statistics"],
+            "Science": ["Matter in Our Surroundings", "Is Matter Around Us Pure", "Atoms and Molecules", "Structure of the Atom", "The Fundamental Unit of Life", "Tissues", "Motion", "Force and Laws of Motion", "Gravitation", "Work and Energy", "Sound", "Improvement in Food Resources"],
+            "Social Science": ["The French Revolution", "Socialism in Europe and Russian Revolution", "Nazism and the Rise of Hitler", "India - Size and Location", "Physical Features of India", "Drainage", "Climate", "What is Democracy? Why Democracy?", "Constitutional Design", "The Story of Village Palampur"],
+            "English": ["Unit 1: The Fun They Had", "Unit 2: The Sound of Music", "Unit 3: The Little Girl", "Unit 4: A Truly Beautiful Mind", "Unit 5: The Snake and the Mirror", "Unit 6: My Childhood"]
+        },
+        "10": {
+            "Mathematics": ["Real Numbers", "Polynomials", "Pair of Linear Equations in Two Variables", "Quadratic Equations", "Arithmetic Progressions", "Triangles", "Coordinate Geometry", "Introduction to Trigonometry", "Some Applications of Trigonometry", "Circles", "Areas Related to Circles", "Surface Areas and Volumes", "Statistics", "Probability"],
+            "Science": ["Chemical Reactions and Equations", "Acids, Bases and Salts", "Metals and Non-metals", "Carbon and Its Compounds", "Life Processes", "Control and Coordination", "How do Organisms Reproduce?", "Heredity and Evolution", "Light - Reflection and Refraction", "The Human Eye and Colourful World", "Electricity", "Magnetic Effects of Electric Current", "Our Environment"],
+            "Social Science": ["The Rise of Nationalism in Europe", "Nationalism in India", "The Making of a Global World", "Resources and Development", "Forest and Wildlife Resources", "Water Resources", "Agriculture", "Power Sharing", "Federalism", "Development"],
+            "English": ["Unit 1: A Letter to God", "Unit 2: Nelson Mandela: Long Walk to Freedom", "Unit 3: Two Stories about Flying", "Unit 4: From the Diary of Anne Frank", "Unit 5: Glimpses of India", "Unit 6: Mijbil the Otter"]
+        }
+    }
+
+    sub_dict = curr_dict.get(g_str, {}).get(subject, [])
+    return [{"chapter_number": idx + 1, "chapter_title": t, "summary": f"NCERT Grade {g_str} {subject} Chapter {idx + 1}"} for idx, t in enumerate(sub_dict)]
+
+
+def offline_answer(query: str, entries: list[dict], grade: int | str = "7", subject: str = "Science") -> str:
+    # 1. Direct arithmetic answer
+    math_ans = simple_math_answer(query)
+    if math_ans:
+        return f"### Mathematics Calculation\n**Question:** {query}\n**Answer:** {math_ans}"
+
+    lower = (query or "").lower().strip()
+
+    # 2. Key math & science definitions and doubt solvers
+    if "lcm" in lower or "hcf" in lower or "gcd" in lower or "least common multiple" in lower or "highest common factor" in lower:
         return (
-            "I do not have enough local syllabus detail for that yet. "
-            "Try asking about the official SCERT chapters that have been imported, "
-            "or connect the local LLM for broader answers."
+            f"### Mathematics: LCM vs HCF (NCERT Grade {grade})\n\n"
+            "**1. HCF (Highest Common Factor / GCD):**\n"
+            "The largest positive integer that divides two or more given numbers without leaving a remainder.\n"
+            "• *Example for 12 and 18:*\n"
+            "  Factors of 12 = {1, 2, 3, 4, **6**, 12}\n"
+            "  Factors of 18 = {1, 2, 3, **6**, 9, 18}\n"
+            "  Common Factors = {1, 2, 3, 6} → **HCF = 6**\n\n"
+            "**2. LCM (Least Common Multiple):**\n"
+            "The smallest positive integer that is a multiple of two or more given numbers.\n"
+            "• *Example for 12 and 18:*\n"
+            "  Multiples of 12 = {12, 24, **36**, 48, 60...}\n"
+            "  Multiples of 18 = {18, **36**, 54, 72...}\n"
+            "  Common Multiples = {36, 72, 108...} → **LCM = 36**\n\n"
+            "**⭐ Fundamental NCERT Formula:**\n"
+            "$$\\text{HCF}(a, b) \\times \\text{LCM}(a, b) = a \\times b$$\n"
+            "*Verification:* $6 \\times 36 = 216$ and $12 \\times 18 = 216$ ✓"
         )
 
-    primary = entries[0]
-    subject = primary["subject"]
-    chapter = primary["chapter_title"]
-    if "quiz" in query.lower():
+    if "pythagor" in lower or "hypotenuse" in lower:
         return (
-            f"Here is a quick quiz idea from {subject} - {chapter}:\n"
-            "1. Ask one definition question.\n"
-            "2. Ask one example question.\n"
-            "3. Ask one application question.\n"
-            "If you want, I can turn this into 5 MCQs next."
+            f"### Mathematics: Pythagoras Theorem (NCERT Grade {grade})\n\n"
+            "In any right-angled triangle, the square of the hypotenuse ($c$) is equal to the sum of the squares of the other two sides ($a$ and $b$):\n\n"
+            "$$a^2 + b^2 = c^2$$\n\n"
+            "• **Example:** If base $a = 3\\text{ cm}$ and perpendicular $b = 4\\text{ cm}$:\n"
+            "$$c^2 = 3^2 + 4^2 = 9 + 16 = 25 \\implies c = \\sqrt{25} = 5\\text{ cm}$$"
         )
 
+    if "quadratic" in lower or ("formula" in lower and "equation" in lower):
+        return (
+            f"### Mathematics: Quadratic Formula (NCERT Grade {grade})\n\n"
+            "For any quadratic equation in standard form: $$ax^2 + bx + c = 0$$\n\n"
+            "$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n\n"
+            "• **Discriminant ($D = b^2 - 4ac$):**\n"
+            "  - $D > 0$: Two distinct real roots.\n"
+            "  - $D = 0$: Two equal real roots.\n"
+            "  - $D < 0$: No real roots."
+        )
+
+    if "photosynthesis" in lower:
+        return (
+            f"### Science: Photosynthesis (NCERT Grade {grade})\n"
+            "**Photosynthesis** is the process by which green plants manufacture glucose and oxygen from carbon dioxide, water, and sunlight using **chlorophyll**.\n\n"
+            "**Chemical Equation:**\n"
+            "$$6CO_2 + 6H_2O \\xrightarrow{\\text{Sunlight, Chlorophyll}} C_6H_{12}O_6 + 6O_2$$\n\n"
+            "• **Location:** Leaf chloroplasts.\n"
+            "• **Inputs:** Carbon dioxide (from air), Water (from roots), Sunlight.\n"
+            "• **Outputs:** Glucose (stored as starch), Oxygen (released to air)."
+        )
+
+    if "gravity" in lower:
+        return (
+            f"### Science: Discovery of Gravity (NCERT Grade {grade})\n"
+            "**Gravity** is the universal force of attraction acting between all matter.\n\n"
+            "• **Discovered By:** Sir Isaac Newton in 1687.\n"
+            "• **Key Concept:** Mass attracts other mass. Gravitational attraction keeps Earth, the Moon, and planets in stable orbit."
+        )
+
+    if "bodmas" in lower:
+        return (
+            f"### Mathematics: BODMAS Rule (NCERT Grade {grade})\n"
+            "The **BODMAS** rule defines the correct priority order for solving arithmetic expressions:\n\n"
+            "1. **B**rackets: Solve `()` `[]` `{}` first.\n"
+            "2. **O**rders: Evaluate powers and square roots.\n"
+            "3. **D**ivision and **M**ultiplication: Left to right.\n"
+            "4. **A**ddition and **S**ubtraction: Left to right.\n\n"
+            "**Example:** $40 \\div (5 \\times 2) - 3 = 40 \\div 10 - 3 = 4 - 3 = 1$."
+        )
+
+    if "acid" in lower or "base" in lower:
+        return (
+            f"### Science: Acids, Bases and Salts (NCERT Grade {grade})\n"
+            "• **Acids:** Sour taste, turn blue litmus **RED** (pH < 7).\n"
+            "• **Bases:** Bitter taste, slippery feel, turn red litmus **BLUE** (pH > 7).\n"
+            "• **Neutralisation:** Acid + Base $\\rightarrow$ Salt + Water + Heat."
+        )
+
+    # 3. Database match answer
+    if entries:
+        primary = entries[0]
+        subj = primary.get("subject", subject)
+        ch_title = primary.get("chapter_title", "Chapter")
+        ch_num = primary.get("chapter_number", 1)
+        summary = primary.get("summary", "")
+        return (
+            f"### CBSE Grade {primary.get('grade', grade)} {subj}\n"
+            f"**Chapter {ch_num}: {ch_title}**\n\n"
+            f"{summary}\n\n"
+            f"**Study Guidance:** Focus on key NCERT definitions, solved examples, and textbook exercise questions."
+        )
+
+    # 4. Fallback NCERT guidance
     return (
-        f"Based on Grade {primary['grade']} {subject} - {chapter}, "
-        f"here is the short study help: {primary['summary']} "
-        "If you want a deeper explanation, connect the local LLM so StudyPilot can expand this with examples."
+        f"### CBSE Grade {grade} NCERT Study Assistance\n\n"
+        f"Here is guidance for **{query}** from your Grade {grade} NCERT syllabus:\n"
+        f"Review your Grade {grade} NCERT textbook. Focus on core definitions, formulas, and step-by-step exercise problems."
     )
 
 
@@ -1210,10 +1477,12 @@ def search_syllabus_nodes(
 
 
 def solve_simple_arithmetic(query: str) -> str | None:
-    """Solve a small arithmetic question like 'what is 1+1?' safely."""
+    """Solve a math question like '1x231321', '15+26', '25²', '100/4' safely."""
 
     text = re.sub(r"\s+", " ", query or "").strip()
-    text = text.replace("\u00d7", "*").replace("\u00f7", "/").replace("\u2212", "-").replace("\u2013", "-")
+    text = text.replace("\u00d7", "*").replace("x", "*").replace("X", "*").replace("\u00f7", "/").replace("\u2212", "-").replace("\u2013", "-")
+    text = text.replace("²", "**2").replace("³", "**3").replace("^", "**")
+    
     text = re.sub(
         r"^(can you\s+)?(what is|whats|what's|calculate|compute|solve|evaluate)\s*[:\-]?\s*",
         "",
@@ -1223,7 +1492,12 @@ def solve_simple_arithmetic(query: str) -> str | None:
     expression = re.sub(r"[^0-9\.\+\-\*\/\(\)\s]", " ", text)
     expression = re.sub(r"\s+", " ", expression).strip().rstrip("?.!")
 
-    if not expression or not re.search(r"[0-9]", expression) or not re.search(r"[\+\-\*\/]", expression):
+    if not expression or not re.search(r"[0-9]", expression):
+        return None
+
+    # Check if there is an operator
+    has_op = any(op in expression for op in ["+", "-", "*", "/", "**"]) or "**2" in text or "**3" in text
+    if not has_op:
         return None
 
     allowed_binops = {
@@ -1231,6 +1505,7 @@ def solve_simple_arithmetic(query: str) -> str | None:
         ast.Sub: lambda a, b: a - b,
         ast.Mult: lambda a, b: a * b,
         ast.Div: lambda a, b: a / b,
+        ast.Pow: lambda a, b: a ** b,
         ast.FloorDiv: lambda a, b: a // b,
         ast.Mod: lambda a, b: a % b,
     }
@@ -1259,4 +1534,55 @@ def solve_simple_arithmetic(query: str) -> str | None:
         return None
 
     answer = str(int(value)) if float(value).is_integer() else ("{:.10f}".format(value)).rstrip("0").rstrip(".")
-    return f"{expression} = {answer}"
+    pretty_expr = expression.replace("**2", "²").replace("**3", "³").replace("**", "^").replace("*", " × ")
+    return f"{pretty_expr} = {answer}"
+
+
+def classify_tutor_intent(question: str) -> tuple[str, dict]:
+    """
+    Classify the student's input into distinct intents:
+    - greeting: hi, hello, yoo, yo, hey, sup, namaste
+    - casual_chat: thanks, ok, lol, cool, great, awesome, bye
+    - simple_math: 1x231321, 15+26, 25², 100/4
+    - subject_list: maths, science, english, social science
+    - quiz_request: quiz, mcq, test me, generate a quiz
+    - chapter_summary: summarize, summary, recap
+    - ncert_concept: explain photosynthesis, what is bodmas, etc.
+    """
+    text = (question or "").strip().lower()
+    
+    # 1. Greetings
+    greetings = {"hi", "hello", "hey", "yoo", "yo", "sup", "namaste", "good morning", "good afternoon", "good evening"}
+    if text in greetings or any(text == g or text.startswith(g + " ") or text.startswith(g + "!") or text.startswith(g + ",") for g in greetings):
+        return ("greeting", {})
+
+    # 2. Casual chat
+    casuals = {"thanks", "thank you", "ok", "okay", "lol", "cool", "great", "awesome", "nice", "bye", "goodnight"}
+    if text in casuals or any(text == c or text.startswith(c + " ") or text.startswith(c + "!") for c in casuals):
+        return ("casual_chat", {})
+
+    # 3. Simple math
+    math_ans = solve_simple_arithmetic(question)
+    if math_ans:
+        return ("simple_math", {"answer": math_ans})
+
+    # 4. Subject list
+    subject_map = {
+        "maths": "Mathematics", "math": "Mathematics", "mathematics": "Mathematics",
+        "science": "Science",
+        "english": "English",
+        "social science": "Social Science", "sst": "Social Science", "social": "Social Science"
+    }
+    if text in subject_map:
+        return ("subject_list", {"subject": subject_map[text]})
+
+    # 5. Quiz request
+    if "quiz" in text or "mcq" in text or "test me" in text or "practice question" in text:
+        return ("quiz_request", {})
+
+    # 6. Chapter summary
+    if "summarize" in text or "summary" in text or "recap" in text:
+        return ("chapter_summary", {})
+
+    # 7. NCERT concept / Study question
+    return ("ncert_concept", {})

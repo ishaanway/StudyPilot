@@ -2,11 +2,7 @@
 /* Setup Wizard (Onboarding Flow) Styles                    */
 /* ======================================================== */
 
-.modal-overlay {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 
 .setup-card {
   background-color: var(--bg-card);

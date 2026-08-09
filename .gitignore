@@ -13,3 +13,5 @@ data/tutor_training*.jsonl
 *.bin
 *.pt
 *.ckpt
+scratch/
+.pytest_cache/

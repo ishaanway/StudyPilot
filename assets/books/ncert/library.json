@@ -1,82 +1,212 @@
 [
   {
+    "id": "g6_math",
     "title": "Ganita Prakash",
     "grade": 6,
     "subject": "Mathematics",
     "localPdfUrl": "/assets/books/ncert/grade6-mathematics-ganita-prakash.pdf",
     "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/fegp1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?fegp1=0-10"
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?fegp1=0-10",
+    "localPdfFile": "grade6-mathematics-ganita-prakash.pdf"
   },
   {
+    "id": "g6_science",
+    "title": "Curiosity",
+    "grade": 6,
+    "subject": "Science",
+    "localPdfUrl": "/assets/books/ncert/grade6-science-curiosity.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/fesc1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?fesc1=0-12",
+    "localPdfFile": "grade6-science-curiosity.pdf"
+  },
+  {
+    "id": "g6_social",
+    "title": "Exploring Society: India and Beyond",
+    "grade": 6,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/grade6-social-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/fess1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?fess1=0-14",
+    "localPdfFile": "grade6-social-science.pdf"
+  },
+  {
+    "id": "g6_english",
+    "title": "Poorvi",
+    "grade": 6,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/grade6-english-poorvi.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/fepr1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?fepr1=0-5",
+    "localPdfFile": "grade6-english-poorvi.pdf"
+  },
+  {
+    "id": "g7_science",
     "title": "Curiosity",
     "grade": 7,
     "subject": "Science",
     "localPdfUrl": "/assets/books/ncert/grade7-science-curiosity.pdf",
     "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gecu1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?gecu1=0-12"
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gecu1=0-12",
+    "localPdfFile": "grade7-science-curiosity.pdf"
   },
   {
+    "id": "g7_math",
+    "title": "Mathematics",
+    "grade": 7,
+    "subject": "Mathematics",
+    "localPdfUrl": "/assets/books/ncert/grade7-mathematics.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gemh1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gemh1=0-15",
+    "localPdfFile": "grade7-mathematics.pdf"
+  },
+  {
+    "id": "g7_social_p1",
+    "title": "Exploring Society: India and Beyond Part 1",
+    "grade": 7,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/grade7-social-science-part1.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees1=0-12",
+    "localPdfFile": "grade7-social-science-part1.pdf"
+  },
+  {
+    "id": "g7_social_p2",
+    "title": "Exploring Society: India and Beyond Part 2",
+    "grade": 7,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/grade7-social-science-part2.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees2ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees2=0-8",
+    "localPdfFile": "grade7-social-science-part2.pdf"
+  },
+  {
+    "id": "g7_english",
+    "title": "Poorvi",
+    "grade": 7,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/grade7-english-poorvi.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gepr1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?gepr1=0-11",
+    "localPdfFile": "grade7-english-poorvi.pdf"
+  },
+  {
+    "id": "g8_math",
+    "title": "Mathematics",
+    "grade": 8,
+    "subject": "Mathematics",
+    "localPdfUrl": "/assets/books/ncert/grade8-mathematics.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/hemh1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?hemh1=0-13",
+    "localPdfFile": "grade8-mathematics.pdf"
+  },
+  {
+    "id": "g8_science",
+    "title": "Science",
+    "grade": 8,
+    "subject": "Science",
+    "localPdfUrl": "/assets/books/ncert/grade8-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/hesc1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?hesc1=0-13",
+    "localPdfFile": "grade8-science.pdf"
+  },
+  {
+    "id": "g8_english",
+    "title": "Honeydew",
+    "grade": 8,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/grade8-english-honeydew.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/hehd1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?hehd1=0-10",
+    "localPdfFile": "grade8-english-honeydew.pdf"
+  },
+  {
+    "id": "g8_social",
+    "title": "Social Science",
+    "grade": 8,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/grade8-social-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/hess1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?hess1=0-10",
+    "localPdfFile": "grade8-social-science.pdf"
+  },
+  {
+    "id": "g9_math",
+    "title": "Mathematics",
+    "grade": 9,
+    "subject": "Mathematics",
+    "localPdfUrl": "/assets/books/ncert/grade9-mathematics.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/iemh1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?iemh1=0-12",
+    "localPdfFile": "grade9-mathematics.pdf"
+  },
+  {
+    "id": "g9_science",
+    "title": "Science",
+    "grade": 9,
+    "subject": "Science",
+    "localPdfUrl": "/assets/books/ncert/grade9-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/iesc1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?iesc1=0-12",
+    "localPdfFile": "grade9-science.pdf"
+  },
+  {
+    "id": "g9_english",
+    "title": "Beehive",
+    "grade": 9,
+    "subject": "English",
+    "localPdfUrl": "/assets/books/ncert/grade9-english-beehive.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/iebe1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?iebe1=0-11",
+    "localPdfFile": "grade9-english-beehive.pdf"
+  },
+  {
+    "id": "g9_social",
+    "title": "Social Science",
+    "grade": 9,
+    "subject": "Social Science",
+    "localPdfUrl": "/assets/books/ncert/grade9-social-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/iess1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?iess1=0-6",
+    "localPdfFile": "grade9-social-science.pdf"
+  },
+  {
+    "id": "g10_math",
+    "title": "Mathematics",
+    "grade": 10,
+    "subject": "Mathematics",
+    "localPdfUrl": "/assets/books/ncert/grade10-mathematics.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jemh1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jemh1=0-14",
+    "localPdfFile": "grade10-mathematics.pdf"
+  },
+  {
+    "id": "g10_science",
     "title": "Science",
     "grade": 10,
     "subject": "Science",
     "localPdfUrl": "/assets/books/ncert/grade10-science.pdf",
     "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jesc1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?jesc1=1-16"
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jesc1=1-16",
+    "localPdfFile": "grade10-science.pdf"
   },
   {
+    "id": "g10_english",
     "title": "First Flight",
     "grade": 10,
     "subject": "English",
     "localPdfUrl": "/assets/books/ncert/grade10-english-first-flight.pdf",
     "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jeff1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?jeff1=0-11"
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jeff1=0-11",
+    "localPdfFile": "grade10-english-first-flight.pdf"
   },
   {
-    "title": "Exploring Society: India and Beyond Part 1",
-    "grade": 7,
+    "id": "g10_social",
+    "title": "Social Science",
+    "grade": 10,
     "subject": "Social Science",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/ss_ch1.pdf",
-    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees1=0-12"
-  },
-  {
-    "title": "Exploring Society: India and Beyond Part 2",
-    "grade": 7,
-    "subject": "Social Science",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/ss_ch13.pdf",
-    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gees2ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?gees2=0-8"
-  },
-  {
-    "title": "Poorvi",
-    "grade": 7,
-    "subject": "English",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/en_u1.pdf",
-    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/gepr1ps.pdf",
-    "officialPageUrl": "https://ncert.nic.in/textbook.php?gepr1=0-11"
-  },
-  {
-    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 1",
-    "grade": 7,
-    "subject": "Tamil",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch1.pdf",
-    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1f1P6f7AB9-k12AnHix7M2z0Zy2dERSBV",
-    "officialPageUrl": "https://drive.google.com/file/d/1f1P6f7AB9-k12AnHix7M2z0Zy2dERSBV/view"
-  },
-  {
-    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 2",
-    "grade": 7,
-    "subject": "Tamil",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch2.pdf",
-    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1IvIPrpxpgZn15jmn_Um1gWCMDX_VyVxm",
-    "officialPageUrl": "https://drive.google.com/file/d/1IvIPrpxpgZn15jmn_Um1gWCMDX_VyVxm/view"
-  },
-  {
-    "title": "தமிழ் 7ஆம் வகுப்பு - பருவம் 3",
-    "grade": 7,
-    "subject": "Tamil",
-    "localPdfUrl": "/assets/books/ncert/planner_chapters/ta_ch3.pdf",
-    "officialPdfUrl": "https://drive.google.com/uc?export=download&id=1eks90EpMJGvb_NfiR_olAl-Ecz1os1XM",
-    "officialPageUrl": "https://drive.google.com/file/d/1eks90EpMJGvb_NfiR_olAl-Ecz1os1XM/view"
+    "localPdfUrl": "/assets/books/ncert/grade10-social-science.pdf",
+    "officialPdfUrl": "https://ncert.nic.in/textbook/pdf/jess1ps.pdf",
+    "officialPageUrl": "https://ncert.nic.in/textbook.php?jess1=0-5",
+    "localPdfFile": "grade10-social-science.pdf"
   }
 ]

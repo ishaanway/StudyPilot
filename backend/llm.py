@@ -224,23 +224,23 @@ def generate_with_ollama_fallbacks(
 ) -> tuple[str | None, str | None]:
     preferred_models = _dedupe_models(models or OLLAMA_MODEL_PREFERENCE)
     installed_models = _available_ollama_models()
+    if not installed_models:
+        return None, None
+
     candidate_models: list[str] = []
 
-    if explicit_model:
+    if explicit_model and explicit_model.strip() in installed_models:
         candidate_models.append(explicit_model.strip())
+
+    for model in preferred_models:
+        if model in installed_models and model not in candidate_models:
+            candidate_models.append(model)
 
     for model in installed_models:
         if model not in candidate_models:
             candidate_models.append(model)
 
-    for model in preferred_models:
-        if model not in candidate_models:
-            candidate_models.append(model)
-
-    candidate_models = candidate_models[:3]
-
-    if not candidate_models:
-        candidate_models = [OLLAMA_MODEL]
+    candidate_models = candidate_models[:2]
 
     for model in candidate_models:
         response = generate_with_ollama(system_prompt, user_prompt, model=model, json_mode=json_mode)

@@ -56,18 +56,38 @@
       if (!container) return;
 
       const tasks = window.StudyPilotDB.getTasks() || [];
-      if (tasks.length === 0) {
+      const completedIds = window.StudyPilotBooks ? window.StudyPilotBooks.getCompletedChapterIds() : [];
+
+      let completedChaptersHtml = "";
+      if (completedIds.length > 0) {
+        completedChaptersHtml = `
+          <div style="background:rgba(16,185,129,0.08); border:1px solid #10b981; border-radius:10px; padding:1rem; margin-bottom:1rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 style="margin:0; font-size:0.95rem; font-weight:800; color:#065f46;">📖 Chapter Completion Report</h4>
+                <p style="margin:0.2rem 0 0 0; font-size:0.78rem; color:#047857;">Student has completed <strong>${completedIds.length} chapter(s)</strong> completely with checkmark verification.</p>
+              </div>
+              <span class="badge badge-accent" style="background:#10b981; color:#ffffff; font-size:0.85rem; font-weight:800; padding:0.4rem 0.75rem;">${completedIds.length} Chapters Done ✓</span>
+            </div>
+            <div style="margin-top:0.75rem; display:flex; flex-wrap:wrap; gap:0.4rem;">
+              ${completedIds.map(id => `<span class="badge" style="background:#d1fae5; color:#065f46; border:1px solid #a7f3d0; font-size:0.72rem;">✓ ${escapeHTML(id)}</span>`).join("")}
+            </div>
+          </div>
+        `;
+      }
+
+      if (tasks.length === 0 && completedIds.length === 0) {
         container.innerHTML = `
           <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
             <i data-lucide="check-circle-2" style="width: 2.5rem; height: 2.5rem; color: var(--accent); margin-bottom: 0.5rem;"></i>
-            <p>No study tasks scheduled yet.</p>
+            <p>No study tasks or completed chapters scheduled yet.</p>
           </div>
         `;
         if (window.lucide) window.lucide.createIcons();
         return;
       }
 
-      container.innerHTML = tasks.map(task => {
+      container.innerHTML = completedChaptersHtml + tasks.map(task => {
         const isDone = task.completed || task.status === "completed" || task.status === "submitted" || task.status === "done";
         const badgeClass = isDone ? "badge-success" : "badge-warning";
         const badgeLabel = isDone ? "Completed" : "Pending";

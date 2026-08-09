@@ -7,17 +7,29 @@ provides the SQLite-backed foundation for the next phases.
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
+
+# Ensure project root is in sys.path when script is run directly
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+logger = logging.getLogger("studypilot")
+logging.basicConfig(level=logging.INFO)
 
 from flask import Flask, jsonify, request, send_file
 
 from backend.database import execute, fetch_all, fetch_one, init_db
 from backend.knowledge import (
+    classify_tutor_intent,
     format_knowledge_context,
+    get_subject_chapter_list,
     offline_answer,
     search_knowledge,
     search_syllabus_nodes,
@@ -1281,9 +1293,9 @@ def settings():
 @app.post("/api/tutor/respond")
 def tutor_respond():
     payload = _payload()
-    question = (payload.get("question") or "").strip()
+    question = (payload.get("question") or payload.get("message") or payload.get("query") or "").strip()
     if not question:
-        return _json_error("Question is required.")
+        return _json_error("Question or message is required.")
 
     student_id = _resolve_student_id(payload)
     backend_profile = fetch_one("SELECT * FROM students WHERE id = ?", (student_id,)) if student_id else None
@@ -1301,8 +1313,51 @@ def tutor_respond():
     profile_context = _profile_context(merged_profile, payload)
     analytics_summary = payload.get("analytics_summary") if isinstance(payload.get("analytics_summary"), dict) else {}
 
-    arithmetic_answer = solve_simple_arithmetic(question)
-    if arithmetic_answer:
+    intent, intent_meta = classify_tutor_intent(question)
+    app.logger.info(f"[AI Tutor Intent Debug] Grade: {grade} | Subject: '{subject}' | Intent: '{intent}' | Query: '{question}'")
+    print(f"[AI Tutor Intent Debug] Grade: {grade} | Subject: '{subject}' | Intent: '{intent}' | Query: '{question}'")
+
+    if intent == "greeting":
+        greetings_res = [
+            f"Hey! 👋 What would you like to study today in Grade {grade}?",
+            f"Hello! 👋 Ready to tackle some Grade {grade} NCERT topics today? What subject should we start with?",
+            f"Yo! 👋 What chapter or doubt are we solving today in Grade {grade}?",
+        ]
+        answer = greetings_res[len(question) % len(greetings_res)]
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "greeting",
+                "study_mode": study_mode,
+                "provider": "tutor_bot",
+                "model": "",
+                "answer": answer,
+                "sources": [],
+            }
+        )
+
+    if intent == "casual_chat":
+        casual_res = [
+            "You're welcome! Let me know whenever you want to solve some questions or revise a chapter.",
+            "Awesome! Tell me whenever you're ready for your next study topic.",
+            "Great! I'm here whenever you need help with your NCERT textbooks.",
+        ]
+        answer = casual_res[len(question) % len(casual_res)]
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "casual_chat",
+                "study_mode": study_mode,
+                "provider": "tutor_bot",
+                "model": "",
+                "answer": answer,
+                "sources": [],
+            }
+        )
+
+    if intent == "simple_math":
+        math_ans = intent_meta.get("answer", "")
+        answer = f"### Mathematics Calculation\n**Question:** {question}\n**Answer:** **{math_ans}**"
         return jsonify(
             {
                 "ok": True,
@@ -1310,18 +1365,55 @@ def tutor_respond():
                 "study_mode": study_mode,
                 "provider": "calculator",
                 "model": "",
-                "answer": _step_by_step_arithmetic_response(question, arithmetic_answer),
+                "answer": answer,
                 "sources": [],
             }
         )
 
-    use_knowledge = (not greeting_mode) and (not subject or subject.lower() == "science")
+    if intent == "subject_list":
+        target_subject = intent_meta.get("subject", "Science")
+        chapters = get_subject_chapter_list(grade, target_subject)
+        chapter_lines = "\n".join([f"• Chapter {ch.get('chapter_number', idx+1)}: {ch.get('chapter_title', 'Chapter')}" for idx, ch in enumerate(chapters)])
+        answer = f"Here are your Grade {grade} {target_subject} chapters:\n{chapter_lines}\n\nAsk me about any of these chapters to summarize, explain, or get practice questions!"
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "offline_knowledge",
+                "study_mode": study_mode,
+                "provider": "offline_knowledge",
+                "model": "",
+                "answer": answer,
+                "sources": [
+                    {
+                        "grade": grade,
+                        "subject": target_subject,
+                        "book_title": f"Grade {grade} {target_subject}",
+                        "chapter_number": "All",
+                        "chapter_title": "Syllabus Overview",
+                    }
+                ],
+            }
+        )
+
+    if intent == "quiz_request":
+        answer = f"### Interactive Quiz Generator (Grade {grade})\nReady to test your knowledge! Go to the **Practice Quizzes** tab on the right to select your subject & chapter and start a 5-question MCQ quiz."
+        return jsonify(
+            {
+                "ok": True,
+                "mode": "quiz_request",
+                "study_mode": study_mode,
+                "provider": "tutor_bot",
+                "model": "",
+                "answer": answer,
+                "sources": [],
+            }
+        )
+
+    use_knowledge = not greeting_mode
     matches = search_knowledge(question, grade=grade, subject=subject, limit=4) if use_knowledge else []
     syllabus_matches = [] if greeting_mode else search_syllabus_nodes(question, grade=grade, subject=subject, limit=6)
-    if not greeting_mode and not matches and not syllabus_matches:
-        syllabus_matches = search_syllabus_nodes(question, grade=None, subject=subject, limit=6)
     if syllabus_matches:
-        same_grade_matches = [row for row in syllabus_matches if row.get("grade") in {None, grade}]
+        same_grade_matches = [row for row in syllabus_matches if str(row.get("grade") or "") == str(grade or "")]
         if same_grade_matches:
             syllabus_matches = same_grade_matches
     context = format_knowledge_context(matches) if matches else ""
@@ -1337,9 +1429,8 @@ def tutor_respond():
     system_prompt = _build_tutor_system_prompt(study_mode, profile_context)
     if greeting_mode:
         system_prompt = (
-            "You are StudyPilot, an AI tutor for Tamil Nadu State Board students.\n\n"
-            "Respond warmly to the student's greeting, introduce yourself, and ask what subject they want to study. "
-            "Example: 'Ok, let's dive into [SubjectName]. What chapter are we looking for?'"
+            f"You are StudyPilot, an AI tutor for CBSE Grade {grade} students.\n\n"
+            "Respond warmly to the student's greeting, introduce yourself, and ask what subject or chapter they want to study today."
         )
 
     user_prompt = json.dumps(
@@ -1375,8 +1466,8 @@ def tutor_respond():
     if llm_mode.startswith("ollama") and _looks_like_prompt_echo(response_text):
         if greeting_mode:
             retry_system_prompt = (
-                "You are StudyPilot, an AI tutor for Tamil Nadu State Board students. "
-                "Reply with exactly one short friendly greeting and ask what subject they want to dive into."
+                f"You are StudyPilot, an AI tutor for CBSE Grade {grade} students. "
+                "Reply with exactly one short friendly greeting and ask what subject or chapter they want to dive into."
             )
             retry_user_prompt = json.dumps(
                 {
@@ -1390,22 +1481,11 @@ def tutor_respond():
             )
         else:
             retry_system_prompt = (
-                "You are StudyPilot, an AI tutor for Tamil Nadu State Board students.\n\n"
-                "VERY IMPORTANT RULES:\n"
-                "1. Never use NCERT textbooks.\n"
-                "2. Never use CBSE textbooks.\n"
-                "3. Never invent chapter names.\n"
-                "4. Never answer from your own memory.\n"
-                "5. Only answer using the uploaded Tamil Nadu SCERT textbook.\n\n"
-                "Before answering:\n"
-                "- Find the requested chapter in the uploaded Grade 7 Tamil SCERT textbook.\n"
-                "- Use the exact chapter title from the book.\n"
-                "- If the chapter is not present, reply exactly: \"This chapter does not exist in the Tamil Nadu Grade 7 SCERT textbook.\"\n"
-                "- Never substitute another chapter.\n"
-                "- Never guess.\n"
-                "- Always quote the official chapter title first.\n"
-                "- Then explain the lesson in simple language suitable for Grade 7.\n\n"
-                "If they ask DOUBTS, help them with their questions using the local Ollama tutor and textbook context."
+                f"You are StudyPilot, an AI tutor for CBSE Grade {grade} students using official NCERT textbooks.\n\n"
+                "INSTRUCTIONS:\n"
+                "1. Use CBSE NCERT textbooks and curriculum guidelines for Grade " + str(grade) + ".\n"
+                "2. Provide clear, student-friendly explanations with examples.\n"
+                "3. Help with doubts, textbook exercises, MCQs, and summaries.\n"
             )
             retry_user_prompt = (
                 json.dumps(
@@ -1432,8 +1512,13 @@ def tutor_respond():
             llm_mode = retry_mode
 
     if not response_text:
-        response_text = offline_answer(question, matches)
+        response_text = offline_answer(question, matches, grade=grade, subject=subject)
         llm_mode = "offline_knowledge"
+
+    matched_ch = matches[0].get("chapter_title") if matches else "N/A"
+    matched_bk = matches[0].get("book_title") if matches else "N/A"
+    logger.info(f"[AI Tutor Detailed Debug] Grade: {grade} | Subject: '{subject or 'Auto-detected'}' | Intent: '{intent}' | Matched Book: '{matched_bk}' | Matched Chapter: '{matched_ch}' | Mode: {llm_mode}")
+    print(f"[AI Tutor Detailed Debug] Grade: {grade} | Subject: '{subject or 'Auto-detected'}' | Intent: '{intent}' | Matched Book: '{matched_bk}' | Matched Chapter: '{matched_ch}' | Mode: {llm_mode}")
 
     resolved_provider, resolved_model = _resolve_llm_details(llm_mode, requested_provider, requested_model)
 
@@ -1499,13 +1584,12 @@ def parents_query():
     pending_tasks = total_tasks - completed_tasks
 
     system_prompt = (
-        "You are StudyPilot AI Parent Coach, a warm and knowledgeable counselor helping parents support their child's education.\n\n"
-        "VERY IMPORTANT RULES:\n"
-        "1. Never use NCERT or CBSE textbooks.\n"
-        "2. Provide highly practical, specific advice on how the parent can support, guide, or encourage the student.\n"
-        "3. Emphasize Grade 7 Tamil Nadu State Board (SCERT) alignment and study habits.\n"
-        "4. Keep the tone encouraging, warm, and professional. Respond in short, clear paragraphs.\n"
-        "5. Address the parent directly (e.g. 'You can help...', 'Encourage your child...')."
+        "You are StudyPilot AI Parent Coach, a warm and knowledgeable counselor helping parents support their child's CBSE education.\n\n"
+        "GUIDELINES:\n"
+        "1. Provide practical, specific advice on how parents can support, guide, or encourage the student.\n"
+        "2. Emphasize CBSE NCERT curriculum alignment and structured study habits.\n"
+        "3. Keep the tone encouraging, warm, and professional.\n"
+        "4. Address the parent directly (e.g. 'You can help...', 'Encourage your child...')."
     )
 
     user_prompt = json.dumps(
@@ -1514,7 +1598,7 @@ def parents_query():
             "student_profile": {
                 "name": student_name,
                 "grade": grade,
-                "board": board,
+                "board": "CBSE",
                 "favorite_subjects": profile.get("favorite_subjects", []),
                 "academic_goal": profile.get("goal", "Improve overall grades")
             },
@@ -1540,21 +1624,21 @@ def parents_query():
         lower = question.lower()
         if "time" in lower or "schedule" in lower or "habit" in lower:
             response_text = (
-                f"To help {student_name} manage study time better, encourage them to use the Pomodoro timer in the Student Toolbox. "
+                f"To help {student_name} manage study time better, encourage them to use the Pomodoro focus timer in StudyPilot. "
                 "You can sit with them for a 25-minute focus session, and then ensure they take a full 5-minute break. "
                 "Establishing consistent daily study blocks is key to building structured habits."
             )
         elif "struggling" in lower or "subject" in lower or "weak" in lower:
             response_text = (
-                f"If {student_name} is struggling with a subject like Science or Tamil, you can sit together and review the "
-                "flashcards in the AI Tutor tab. Asking them to 'teach' a concept back to you is one of the most effective ways "
+                f"If {student_name} is struggling with a subject like Science or Mathematics, you can sit together and review the "
+                "flashcards and chapter quizzes in the AI Tutor tab. Asking them to 'teach' a concept back to you is one of the most effective ways "
                 "to reinforce learning without pressure."
             )
-        elif "tamil" in lower or "scert" in lower or "exam" in lower:
+        elif "cbse" in lower or "ncert" in lower or "exam" in lower:
             response_text = (
-                f"To support {student_name} in their Grade 7 Tamil exam prep, verify that they are studying the official Tamil Nadu "
-                "SCERT textbook chapters (such as 'எங்கள்தமிழ்'). Encourage them to use the AI Tutor to generate practice summaries "
-                "and test themselves before the exams."
+                f"To support {student_name} in their Grade {grade} CBSE exam prep, verify that they are studying the official NCERT "
+                "textbook chapters. Encourage them to use the AI Tutor to generate practice summaries "
+                "and test themselves before term exams."
             )
         else:
             response_text = (
@@ -2127,6 +2211,6 @@ seed_knowledge_base()
 seed_official_curriculum_catalog()
 
 
-if __name__ in {"__main__", "backend.app"}:
+if __name__ == "__main__":
     debug_mode = os.environ.get("FLASK_DEBUG", "0").lower() in {"1", "true", "yes"}
     app.run(host="127.0.0.1", port=5000, debug=debug_mode)

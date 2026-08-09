@@ -28,6 +28,10 @@
       this.initGlobalSearch();
       
       this.loadUserProfile();
+
+      if (window.StudyPilotTutor && typeof window.StudyPilotTutor.init === "function") {
+        window.StudyPilotTutor.init();
+      }
       
       window.addEventListener("studypilot_notification", () => {
         this.updateNotificationBadge();
@@ -198,9 +202,21 @@
       document.getElementById("profile-details").innerText = `${gradeDisplay}${streamDisplay} Student • ${profile.board} Board`;
       document.getElementById("profile-goal-badge").innerText = profile.goal;
 
-      // Populate edit details values
-      document.getElementById("profile-edit-name").value = profile.name;
-      document.getElementById("profile-edit-grade").value = profile.grade;
+      const profEditGrade = document.getElementById("profile-edit-grade");
+      if (profEditGrade) {
+        profEditGrade.value = profile.grade;
+      }
+
+      const globalGradeSel = document.getElementById("global-grade-select");
+      if (globalGradeSel) {
+        globalGradeSel.value = profile.grade;
+      }
+
+      const globalModeSel = document.getElementById("global-mode-select");
+      if (globalModeSel) {
+        globalModeSel.value = profile.aiMode || profile.mode || "online";
+      }
+
       document.getElementById("profile-edit-board").value = profile.board;
       document.getElementById("profile-edit-goal").value = profile.goal;
       document.getElementById("profile-edit-target-date").value = profile.targetDate || "";
@@ -295,15 +311,98 @@
       }
     },
 
+    switchAppMode: function (mode) {
+      const profile = window.StudyPilotDB.getProfile();
+      const targetMode = mode === "online" ? "online" : "offline";
+      profile.aiMode = targetMode;
+      profile.mode = targetMode;
+      window.StudyPilotDB.saveProfile(profile);
+
+      // Sync select dropdown in header
+      const modeSelect = document.getElementById("global-mode-select");
+      if (modeSelect) modeSelect.value = targetMode;
+
+      // Sync badge in AI Tutor
+      const tutorBadge = document.getElementById("tutor-mode-badge");
+      if (tutorBadge) {
+        if (targetMode === "online") {
+          tutorBadge.className = "badge badge-accent";
+          tutorBadge.innerHTML = "🌐 Online Mode (Live AI & RAG)";
+        } else {
+          tutorBadge.className = "badge badge-indigo";
+          tutorBadge.innerHTML = "⚡ Offline Mode (Local NCERT DB)";
+        }
+      }
+
+      const notifMsg = targetMode === "online" 
+        ? "Switched to 🌐 Online Mode (Live AI & Web RAG enabled)." 
+        : "Switched to ⚡ Offline Mode (100% Local NCERT Database).";
+
+      window.StudyPilotDB.addNotification(notifMsg, "info");
+      console.log(`[StudyPilot Mode Debug] Switched app mode to: ${targetMode}`);
+    },
+
+    toggleAppMode: function () {
+      const profile = window.StudyPilotDB.getProfile();
+      const currentMode = profile.aiMode || profile.mode || "online";
+      const nextMode = currentMode === "online" ? "offline" : "online";
+      this.switchAppMode(nextMode);
+    },
+
+    switchGlobalGrade: function (newGrade) {
+      const profile = window.StudyPilotDB.getProfile();
+      const gradeStr = String(newGrade || "7");
+
+      const curriculum = window.StudyPilotDB.getCurriculum(gradeStr, profile.stream || "Science");
+      profile.grade = gradeStr;
+      profile.subjects = curriculum.subjects || ["Science", "Mathematics", "Social Science", "English"];
+      window.StudyPilotDB.saveProfile(profile);
+
+      // Sync ALL grade select dropdowns across top header, profile, books, setup, and quizzes
+      const selectsToUpdate = ["global-grade-select", "profile-edit-grade", "feed-input-grade", "setup-grade", "quiz-grade-select"];
+      selectsToUpdate.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = gradeStr;
+      });
+
+      this.loadUserProfile();
+
+      window.dispatchEvent(new CustomEvent("studypilot_profile_updated"));
+
+      if (window.StudyPilotDashboard && typeof window.StudyPilotDashboard.init === "function") window.StudyPilotDashboard.init();
+      if (window.StudyPilotPlanner && typeof window.StudyPilotPlanner.init === "function") window.StudyPilotPlanner.init();
+      if (window.StudyPilotTutor) {
+        if (typeof window.StudyPilotTutor.init === "function") window.StudyPilotTutor.init();
+        if (typeof window.StudyPilotTutor.updateQuizChapters === "function") window.StudyPilotTutor.updateQuizChapters();
+        if (typeof window.StudyPilotTutor.updateTutorWelcomeLabels === "function") window.StudyPilotTutor.updateTutorWelcomeLabels();
+      }
+      if (window.StudyPilotToolbox && typeof window.StudyPilotToolbox.init === "function") window.StudyPilotToolbox.init();
+      if (window.StudyPilotBooks) {
+        window.StudyPilotBooks.selectedGrade = gradeStr;
+        if (typeof window.StudyPilotBooks.init === "function") window.StudyPilotBooks.init();
+        if (typeof window.StudyPilotBooks.render === "function") window.StudyPilotBooks.render();
+      }
+      if (window.StudyPilotParents && typeof window.StudyPilotParents.init === "function") window.StudyPilotParents.init();
+
+      console.log(`[StudyPilot Grade Switch Debug] Successfully switched app to Grade ${gradeStr}`);
+      window.StudyPilotDB.addNotification(`Switched app to Grade ${gradeStr}.`, "success");
+    },
+
     // Profiles stream group triggers
     handleProfileGradeChange: function (grade) {
       const streamGroup = document.getElementById("profile-edit-stream-group");
-      if (!streamGroup) return;
-
-      if (grade === "11" || grade === "12") {
-        streamGroup.classList.remove("hidden");
-      } else {
-        streamGroup.classList.add("hidden");
+      if (streamGroup) {
+        if (grade === "11" || grade === "12") {
+          streamGroup.classList.remove("hidden");
+        } else {
+          streamGroup.classList.add("hidden");
+        }
+      }
+      if (grade) {
+        const profile = window.StudyPilotDB.getProfile();
+        if (profile.grade !== String(grade)) {
+          this.switchGlobalGrade(grade);
+        }
       }
     },
 
