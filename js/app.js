@@ -179,6 +179,10 @@
       const profile = window.StudyPilotDB.getProfile();
       if (!profile.setupComplete) return;
 
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.checkStreak === "function") {
+        window.StudyPilotDB.checkStreak();
+      }
+
       const greetEl = document.getElementById("dashboard-welcome");
       if (greetEl) {
         greetEl.innerText = `Hello, ${profile.name}!`;

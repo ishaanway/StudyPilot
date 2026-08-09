@@ -574,6 +574,7 @@
         subject: "Mathematics",
         book_title: "Ganita Prakash (Class 6 Mathematics)",
         page_url: "https://ncert.nic.in/textbook.php?fegp1=0-10",
+        localPdf: "assets/books/ncert/grade6-mathematics-ganita-prakash.pdf",
         chapters: [
           "Ch 1: Patterns in Mathematics", "Ch 2: Lines and Angles", "Ch 3: Number Play",
           "Ch 4: Data Handling and Presentation", "Ch 5: Prime Time", "Ch 6: Perimeter and Area",
@@ -584,6 +585,7 @@
         subject: "Science",
         book_title: "Curiosity (Class 6 Science)",
         page_url: "https://ncert.nic.in/textbook.php?fesc1=0-12",
+        localPdf: "assets/books/ncert/grade6-science-curiosity.pdf",
         chapters: [
           "Ch 1: The Wonderful World of Science", "Ch 2: Diversity in the Living World", "Ch 3: Mindful Eating: A Path to a Healthy Body",
           "Ch 4: Exploring Magnets", "Ch 5: Measurement of Length and Motion", "Ch 6: Materials Around Us",
@@ -595,6 +597,7 @@
         subject: "Social Science",
         book_title: "Exploring Society: India and Beyond (Class 6)",
         page_url: "https://ncert.nic.in/textbook.php?fess1=0-14",
+        localPdf: "assets/books/ncert/grade6-social-science.pdf",
         chapters: [
           "Ch 1: Locating Places on the Earth", "Ch 2: Oceans and Continents", "Ch 3: Landforms and Life",
           "Ch 4: Timeline and Sources of History", "Ch 5: India, That Is Bharat", "Ch 6: The Beginnings of Indian Civilisation",
@@ -607,6 +610,7 @@
         subject: "English",
         book_title: "Poorvi (Class 6 English)",
         page_url: "https://ncert.nic.in/textbook.php?fepr1=0-5",
+        localPdf: "assets/books/ncert/grade6-english-poorvi.pdf",
         chapters: [
           "Unit 1: Fables and Folk Tales", "Unit 2: Friendship", "Unit 3: Nurturing Nature",
           "Unit 4: Sports and Wellness", "Unit 5: Culture and Tradition"
@@ -619,6 +623,7 @@
         subject: "Science",
         book_title: "Curiosity (Class 7 Science)",
         page_url: "https://ncert.nic.in/textbook.php?gecu1=0-12",
+        localPdf: "assets/books/ncert/grade7-science-curiosity.pdf",
         chapters: [
           "Ch 1: The Ever-Evolving World of Science", "Ch 2: Exploring Substances: Acidic, Basic, Neutral",
           "Ch 3: Electricity: Circuits and Components", "Ch 4: The World of Metals and Non-metals",
@@ -632,6 +637,7 @@
         subject: "Mathematics",
         book_title: "Mathematics (Class 7)",
         page_url: "https://ncert.nic.in/textbook.php?gemh1=0-15",
+        localPdf: "assets/books/ncert/grade7-mathematics.pdf",
         chapters: [
           "Ch 1: Large Numbers Around Us", "Ch 2: Arithmetic Expressions & Order of Operations",
           "Ch 3: A Peek Beyond the Point (Decimals)", "Ch 4: Expressions using Letter-Numbers (Algebra)",
@@ -647,6 +653,7 @@
         subject: "Social Science",
         book_title: "Exploring Society: India and Beyond Part 1 & 2",
         page_url: "https://ncert.nic.in/textbook.php?gees1=0-12",
+        localPdf: "assets/books/ncert/grade7-social-science-part1.pdf",
         chapters: [
           "Ch 1: Geographical Diversity of India", "Ch 2: Understanding the Weather", "Ch 3: Climate of India",
           "Ch 4: New Beginnings: Cities and States", "Ch 5: The Rise of Empires", "Ch 6: The Age of Reorganisation",
@@ -662,6 +669,7 @@
         subject: "English",
         book_title: "Poorvi (Class 7 English)",
         page_url: "https://ncert.nic.in/textbook.php?gepr1=0-11",
+        localPdf: "assets/books/ncert/grade7-english-poorvi.pdf",
         chapters: [
           "Unit 1: Learning Together", "Unit 2: Wit and Humour", "Unit 3: Dreams and Discoveries",
           "Unit 4: Travel and Adventure", "Unit 5: Bravehearts"

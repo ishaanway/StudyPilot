@@ -497,6 +497,9 @@
         window.StudyPilotAudio.stopAlarm();
         window.StudyPilotAudio.playClickSound();
       }
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.checkStreak === "function") {
+        window.StudyPilotDB.checkStreak();
+      }
       this.render24HourGrid();
       this.renderDailySummary();
       this.renderActiveTaskCountdown();
@@ -726,6 +729,82 @@
         "Revision": "linear-gradient(135deg, #e11d48, #f43f5e)"
       };
       return map[subject] || "linear-gradient(135deg, #4f46e5, #6366f1)";
+    },
+
+    // Compatibility & Legacy Modal Handlers
+    renderTimeline: function () {
+      if (typeof this.render24HourGrid === "function") this.render24HourGrid();
+      if (typeof this.renderDailySummary === "function") this.renderDailySummary();
+    },
+
+    renderAISuggestions: function () {
+      if (typeof this.renderDailySummary === "function") this.renderDailySummary();
+    },
+
+    showAddTaskModal: function () {
+      const modal = document.getElementById("modal-add-task");
+      if (modal) modal.classList.remove("hidden");
+    },
+
+    hideAddTaskModal: function () {
+      const modal = document.getElementById("modal-add-task");
+      if (modal) modal.classList.add("hidden");
+    },
+
+    addTaskSubmit: function () {
+      const title = (document.getElementById("task-input-title") || {}).value;
+      const subject = (document.getElementById("task-input-subject") || {}).value || "General";
+      const duration = parseInt((document.getElementById("task-input-duration") || {}).value || "45", 10);
+      if (!title || !title.trim()) {
+        alert("Please enter a task title.");
+        return;
+      }
+      const now = new Date();
+      const startH = String(now.getHours()).padStart(2, "0") + ":00";
+      const endMins = (now.getHours() * 60) + duration;
+      const endH = String(Math.floor(endMins / 60) % 24).padStart(2, "0") + ":" + String(endMins % 60).padStart(2, "0");
+      const dateStr = now.toISOString().split("T")[0];
+
+      const tasks = this.getTasks();
+      tasks.push({
+        id: "task_" + Date.now(),
+        title: title.trim(),
+        subject: subject,
+        date: dateStr,
+        start: startH,
+        end: endH,
+        completed: false
+      });
+      this.saveTasks(tasks);
+      this.hideAddTaskModal();
+      if (document.getElementById("task-input-title")) document.getElementById("task-input-title").value = "";
+      this.render24HourGrid();
+      this.renderDailySummary();
+    },
+
+    showAddExamModal: function () {
+      const modal = document.getElementById("modal-add-exam");
+      if (modal) modal.classList.remove("hidden");
+    },
+
+    hideAddExamModal: function () {
+      const modal = document.getElementById("modal-add-exam");
+      if (modal) modal.classList.add("hidden");
+    },
+
+    addExamSubmit: function () {
+      const subject = (document.getElementById("exam-input-subject") || {}).value || "General";
+      const topic = (document.getElementById("exam-input-topic") || {}).value || "Exam";
+      const date = (document.getElementById("exam-input-date") || {}).value;
+      if (!date) {
+        alert("Please select an exam date.");
+        return;
+      }
+      if (window.StudyPilotDB && typeof window.StudyPilotDB.addExam === "function") {
+        window.StudyPilotDB.addExam(subject, topic, date);
+      }
+      this.hideAddExamModal();
+      if (document.getElementById("exam-input-topic")) document.getElementById("exam-input-topic").value = "";
     }
   };
 })();

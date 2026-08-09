@@ -1240,14 +1240,37 @@ window.getStudyPilotApiBaseUrl = function () {
     checkStreak: function () {
       const profile = this.getProfile();
       if (!profile.setupComplete) return;
-      const todayStr = "2026-06-22";
-      if (profile.lastActive && profile.lastActive !== todayStr) {
-        if (profile.lastActive !== "2026-06-21") {
-          profile.streak = 1;
-        }
+
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0];
+      const yesterday = new Date(Date.now() - 86400000);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      if (!profile.lastActive) {
+        profile.lastActive = todayStr;
+        profile.streak = Math.max(1, parseInt(profile.streak, 10) || 1);
+        this.saveProfile(profile);
+      } else if (profile.lastActive === todayStr) {
+        profile.streak = Math.max(1, parseInt(profile.streak, 10) || 1);
+      } else if (profile.lastActive === yesterdayStr) {
+        profile.streak = (parseInt(profile.streak, 10) || 0) + 1;
+        profile.lastActive = todayStr;
+        this.saveProfile(profile);
+      } else {
+        profile.streak = 1;
         profile.lastActive = todayStr;
         this.saveProfile(profile);
       }
+      this.updateStreakDisplay();
+    },
+
+    updateStreakDisplay: function () {
+      const profile = this.getProfile();
+      const streak = Math.max(1, parseInt(profile.streak, 10) || 1);
+      const globalBadge = document.getElementById("global-streak-count");
+      if (globalBadge) globalBadge.textContent = streak;
+      const profileBadge = document.getElementById("profile-streak-count");
+      if (profileBadge) profileBadge.textContent = streak;
     }
   };
 

@@ -274,6 +274,11 @@
           </select>
         </div>
 
+        <!-- Study Streak Badge -->
+        <div id="header-streak-badge" class="header-streak-pill" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.825rem; font-weight: 700; color: #ea580c; background: rgba(251, 146, 60, 0.12); border: 1px solid rgba(251, 146, 60, 0.35); padding: 0.35rem 0.65rem; border-radius: 20px; cursor: default;" title="Your Daily Study Streak">
+          <span>🔥</span> <span id="global-streak-count">1</span> <span class="streak-label">Day Streak</span>
+        </div>
+
         <!-- Parent Report Button (Parent Progress check) -->
         <button class="btn btn-outline btn-sm" onclick="window.StudyPilotApp.showParentReportModal()" style="display: inline-flex; align-items: center; gap: 0.35rem;">
           <i data-lucide="award"></i> <span>Report for Parents</span>
@@ -841,7 +846,10 @@
             <div>
               <h1 id="profile-fullname">Ishaan</h1>
               <p id="profile-details">Grade 7 Student • CBSE Board</p>
-              <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.35rem;">
+                <span class="badge badge-indigo" id="profile-goal-badge">Improve overall grades</span>
+                <span class="badge" id="profile-streak-badge" style="background:#ea580c; color:#ffffff; font-weight:700;">🔥 <span id="profile-streak-count">1</span> Day Streak</span>
+              </div>
             </div>
           </div>
         </div>
