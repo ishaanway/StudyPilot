@@ -278,10 +278,11 @@
         const startM = this.timeToMinutes(t.start);
         const durM = this.getTaskDurationMinutes(t);
         const top = startM * (HOUR_HEIGHT / 60);
-        const height = Math.max(24, durM * (HOUR_HEIGHT / 60));
+        const height = Math.max(28, durM * (HOUR_HEIGHT / 60));
 
         const isOverdue = !t.completed && this.isSlotOverdue(t);
         const colorBg = this.getSubjectColor(t.subject);
+        const iconStr = this.getSubjectIcon(t.subject);
 
         html += `
           <div class="timetable-task-block ${t.completed ? 'completed' : ''} ${isOverdue ? 'overdue' : ''} ${t.isOverlapping ? (t.isOverlapOffset ? 'overlap-offset' : 'overlapping') : ''}"
@@ -290,18 +291,19 @@
                ondragstart="window.StudyPilotDashboard.handleDragStart(event, '${t.id}')">
             
             <div class="task-block-header">
-              <div style="display:flex; align-items:center; gap:0.35rem; max-width:70%;">
-                <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="event.stopPropagation(); window.StudyPilotDashboard.toggleSlotCompleted('${t.id}')" style="cursor:pointer;">
-                <span class="task-block-title">${escapeHTML(t.title)}</span>
-                ${t.isOverlapping ? '<span class="badge" style="background:#ef4444; color:#fff; font-size:9px; padding:1px 3px;">⚠️ Overlap</span>' : ''}
+              <div style="display:flex; align-items:center; gap:0.4rem; max-width:75%;">
+                <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="event.stopPropagation(); window.StudyPilotDashboard.toggleSlotCompleted('${t.id}')" style="cursor:pointer; width:15px; height:15px; accent-color:#10b981;">
+                <span class="task-block-title">${iconStr} ${escapeHTML(t.title)}</span>
+                ${t.isOverlapping ? '<span class="badge" style="background:#ef4444; color:#fff; font-size:9px; padding:1px 4px; font-weight:800;">⚠️ Overlap</span>' : ''}
               </div>
               <div class="task-block-actions">
-                <button class="btn-icon" style="color:#ffffff; opacity:0.85;" onclick="event.stopPropagation(); window.StudyPilotDashboard.deleteSlot('${t.id}')" title="Delete Task">✕</button>
+                <button class="btn-icon" style="color:#ffffff; opacity:0.9; font-size:12px; font-weight:700; width:20px; height:20px;" onclick="event.stopPropagation(); window.StudyPilotDashboard.deleteSlot('${t.id}')" title="Delete Task">✕</button>
               </div>
             </div>
 
             <div class="task-block-time">
-              ⏰ ${formatTime12(t.start)} – ${formatTime12(t.end)} (${durM}m) ${t.completed ? '✓' : ''}
+              <span>⏰ ${formatTime12(t.start)} – ${formatTime12(t.end)}</span>
+              <span style="opacity:0.85; font-size:0.7rem;">(${durM}m) ${t.completed ? '✓ Completed' : ''}</span>
             </div>
 
             <!-- Drag Resize Handle -->
@@ -720,15 +722,28 @@
 
     getSubjectColor: function (subject) {
       const map = {
-        "Mathematics": "linear-gradient(135deg, #4f46e5, #6366f1)",
-        "Science": "linear-gradient(135deg, #059669, #10b981)",
-        "Social Science": "linear-gradient(135deg, #d97706, #f59e0b)",
-        "English": "linear-gradient(135deg, #9333ea, #a855f7)",
-        "Free Time": "linear-gradient(135deg, #64748b, #94a3b8)",
-        "Homework": "linear-gradient(135deg, #2563eb, #3b82f6)",
-        "Revision": "linear-gradient(135deg, #e11d48, #f43f5e)"
+        "Mathematics": "linear-gradient(135deg, #4338ca, #6366f1)",
+        "Science": "linear-gradient(135deg, #047857, #10b981)",
+        "Social Science": "linear-gradient(135deg, #b45309, #f59e0b)",
+        "English": "linear-gradient(135deg, #7e22ce, #a855f7)",
+        "Free Time": "linear-gradient(135deg, #475569, #64748b)",
+        "Homework": "linear-gradient(135deg, #1d4ed8, #3b82f6)",
+        "Revision": "linear-gradient(135deg, #be123c, #f43f5e)"
       };
-      return map[subject] || "linear-gradient(135deg, #4f46e5, #6366f1)";
+      return map[subject] || "linear-gradient(135deg, #4338ca, #6366f1)";
+    },
+
+    getSubjectIcon: function (subject) {
+      const map = {
+        "Mathematics": "📐",
+        "Science": "🔬",
+        "Social Science": "🌍",
+        "English": "📖",
+        "Free Time": "🏖️",
+        "Homework": "📝",
+        "Revision": "⚡"
+      };
+      return map[subject] || "📌";
     },
 
     // Compatibility & Legacy Modal Handlers

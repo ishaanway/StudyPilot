@@ -279,8 +279,113 @@
     selectSyllabusSubject: function (subj) {
       this.selectedSubject = subj;
       this.initSubjectsTabs();
+      this.renderTabularGradesMatrix();
       this.renderSyllabusExplorer();
       this.renderTextbookProgress();
+    },
+
+    // Render permanent Tabular Grades Matrix
+    renderTabularGradesMatrix: function () {
+      const root = document.getElementById("planner-tabular-matrix-root");
+      if (!root) return;
+
+      const profile = window.StudyPilotDB.getProfile();
+      const curriculum = window.StudyPilotDB.getCurriculum(profile.grade, profile.stream);
+      const chapters = curriculum.chapters[this.selectedSubject] || [];
+      const displayChapters = chapters.length > 0
+        ? chapters
+        : this.getCatalogChaptersForSubject(this.selectedSubject, profile.grade);
+
+      if (displayChapters.length === 0) {
+        root.innerHTML = "";
+        return;
+      }
+
+      const progress = window.StudyPilotDB.getLessonProgress();
+
+      let tableRows = displayChapters.map(ch => {
+        const chSections = ch.sections || [];
+        let chapterProgressSum = 0;
+        chSections.forEach(sec => {
+          const status = progress[sec.id] || "Not Started";
+          chapterProgressSum += getStatusWeight(status);
+        });
+        const chapterPct = chSections.length > 0 ? Math.round(chapterProgressSum / chSections.length) : 0;
+
+        let statusBadge = `<span class="badge badge-indigo" style="font-size:0.75rem; font-weight:700;">Not Started (0%)</span>`;
+        if (chapterPct === 100) {
+          statusBadge = `<span class="badge badge-accent" style="font-size:0.75rem; font-weight:700; background:#d1fae5; color:#065f46;">🟢 Fully Ready (100%)</span>`;
+        } else if (chapterPct >= 75) {
+          statusBadge = `<span class="badge" style="font-size:0.75rem; font-weight:700; background:#fef3c7; color:#b45309;">🟠 Revised (${chapterPct}%)</span>`;
+        } else if (chapterPct >= 50) {
+          statusBadge = `<span class="badge" style="font-size:0.75rem; font-weight:700; background:#e0e7ff; color:#4338ca;">🟣 Studied (${chapterPct}%)</span>`;
+        } else if (chapterPct > 0) {
+          statusBadge = `<span class="badge" style="font-size:0.75rem; font-weight:700; background:#cff4fc; color:#055160;">🔵 Initial Pass (${chapterPct}%)</span>`;
+        }
+
+        const sectionPills = chSections.length > 0
+          ? chSections.map(sec => {
+              const st = progress[sec.id] || "Not Started";
+              return `<span style="display:inline-block; font-size:0.7rem; padding:0.15rem 0.4rem; border-radius:4px; margin:0.1rem; background:var(--bg-app); border:1px solid var(--border-color); color:var(--text-main); font-weight:500;">
+                ${sec.num} ${escapeHTML(sec.title)}: <strong>${st}</strong>
+              </span>`;
+            }).join("")
+          : `<span style="font-size:0.75rem; color:var(--text-muted);">Standard Chapter</span>`;
+
+        return `
+          <tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:0.75rem; font-weight:700; font-size:0.85rem; color:var(--text-main); vertical-align:top; width:22%;">
+              Ch ${ch.num}: ${escapeHTML(ch.title)}
+            </td>
+            <td style="padding:0.75rem; vertical-align:top;">
+              <div style="display:flex; flex-wrap:wrap; gap:0.25rem;">${sectionPills}</div>
+            </td>
+            <td style="padding:0.75rem; vertical-align:top; width:18%; text-align:center;">
+              <div style="margin-bottom:0.35rem;">${statusBadge}</div>
+              <div class="quiz-progress-bar" style="height:6px; background:var(--bg-app);">
+                <div class="quiz-progress-fill" style="width:${chapterPct}%; background:${chapterPct === 100 ? '#10b981' : 'var(--primary)'};"></div>
+              </div>
+            </td>
+            <td style="padding:0.75rem; vertical-align:top; width:15%; text-align:right;">
+              <button class="btn btn-primary btn-xs" style="padding:0.35rem 0.65rem;" onclick="window.StudyPilotPlanner.openChapterWorkspace('${ch.id}', '${escapeHTML(this.selectedSubject)}')">
+                <i data-lucide="book-open" style="width:12px;height:12px;"></i> Open Workspace
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      root.innerHTML = `
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1.1rem; box-shadow:var(--shadow-sm);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem; border-bottom:1px solid var(--border-color); padding-bottom:0.6rem;">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <i data-lucide="table" style="color:var(--primary); width:18px; height:18px;"></i>
+              <h3 style="margin:0; font-size:1.05rem; font-weight:800; color:var(--text-main);">${escapeHTML(this.selectedSubject)} Tabular Grades & Progress Matrix</h3>
+            </div>
+            <span class="badge badge-accent" style="font-weight:700;">Always Visible Data Table</span>
+          </div>
+          
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; text-align:left;">
+              <thead>
+                <tr style="background:var(--bg-app); border-bottom:2px solid var(--border-color); font-size:0.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+                  <th style="padding:0.6rem 0.75rem;">Chapter</th>
+                  <th style="padding:0.6rem 0.75rem;">Sub-Sections &amp; Status Grades</th>
+                  <th style="padding:0.6rem 0.75rem; text-align:center;">Readiness Level</th>
+                  <th style="padding:0.6rem 0.75rem; text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
     },
 
     // 2. Syllabus Accordion & Sub-chapters Sections
@@ -322,34 +427,46 @@
         }
 
         return `
-          <div class="chapter-accordion-item" id="ch-item-${ch.id}">
+          <div class="chapter-accordion-item expanded" id="ch-item-${ch.id}">
             <div class="chapter-header" onclick="window.StudyPilotPlanner.toggleChapter('${ch.id}')" style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="chapter-title" style="flex-grow:1; text-align:left;">Ch ${ch.num}: ${escapeHTML(ch.title)}</span>
+              <span class="chapter-title" style="flex-grow:1; text-align:left; font-weight:700;">Ch ${ch.num}: ${escapeHTML(ch.title)}</span>
               <div style="display:flex; align-items:center; gap:0.5rem;">
                 ${completionBadge}
                 <i data-lucide="chevron-down"></i>
               </div>
             </div>
-            <div class="chapter-body hidden" id="ch-body-${ch.id}" style="padding-bottom:0.75rem;">
+            <div class="chapter-body" id="ch-body-${ch.id}" style="padding-bottom:0.75rem;">
               <p style="margin-bottom:0.75rem; font-size:0.75rem; color:var(--text-muted);">${escapeHTML(ch.desc)}</p>
               
-              <!-- Sub-chapters sections dropdown status tracker (Dad's Progress feature) -->
-              <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem; background:var(--bg-app); padding:0.65rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
-                ${chSections.map(sec => {
-                  const status = progress[sec.id] || "Not Started";
-                  return `
-                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.75rem; padding:0.25rem 0;">
-                      <span style="font-weight:600; color:var(--text-main); text-align:left; max-width:65%;">${sec.num} ${escapeHTML(sec.title)}</span>
-                      <select style="font-size:0.7rem; padding:0.15rem 0.35rem; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); outline:none; cursor:pointer;" onchange="window.StudyPilotPlanner.changeSectionStatus('${sec.id}', this.value)">
-                        <option value="Not Started" ${status === 'Not Started' ? 'selected' : ''}>Not Started</option>
-                        <option value="Initial Pass" ${status === 'Initial Pass' ? 'selected' : ''}>Initial Pass</option>
-                        <option value="Studied" ${status === 'Studied' ? 'selected' : ''}>Studied</option>
-                        <option value="Revised" ${status === 'Revised' ? 'selected' : ''}>Revised</option>
-                        <option value="Fully Ready" ${status === 'Fully Ready' ? 'selected' : ''}>Fully Ready</option>
-                      </select>
-                    </div>
-                  `;
-                }).join("")}
+              <!-- Tabular Sub-chapters sections status tracker -->
+              <div style="margin-bottom:0.75rem; background:var(--bg-card); padding:0.5rem; border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                  <thead>
+                    <tr style="border-bottom:1px solid var(--border-color); font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+                      <th style="padding:0.35rem 0.5rem;">Sub-Section Topic</th>
+                      <th style="padding:0.35rem 0.5rem; text-align:right;">Graded Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${chSections.map(sec => {
+                      const status = progress[sec.id] || "Not Started";
+                      return `
+                        <tr style="border-bottom:1px dashed var(--border-color);">
+                          <td style="padding:0.4rem 0.5rem; font-size:0.75rem; font-weight:600; color:var(--text-main);">${sec.num} ${escapeHTML(sec.title)}</td>
+                          <td style="padding:0.4rem 0.5rem; text-align:right;">
+                            <select style="font-size:0.72rem; font-weight:600; padding:0.2rem 0.4rem; border-radius:6px; border:1px solid var(--border-color); background:var(--bg-app); color:var(--text-main); outline:none; cursor:pointer;" onchange="window.StudyPilotPlanner.changeSectionStatus('${sec.id}', this.value)">
+                              <option value="Not Started" ${status === 'Not Started' ? 'selected' : ''}>⚪ Not Started (0%)</option>
+                              <option value="Initial Pass" ${status === 'Initial Pass' ? 'selected' : ''}>🔵 Initial Pass (25%)</option>
+                              <option value="Studied" ${status === 'Studied' ? 'selected' : ''}>🟣 Studied (50%)</option>
+                              <option value="Revised" ${status === 'Revised' ? 'selected' : ''}>🟠 Revised (75%)</option>
+                              <option value="Fully Ready" ${status === 'Fully Ready' ? 'selected' : ''}>🟢 Fully Ready (100%)</option>
+                            </select>
+                          </td>
+                        </tr>
+                      `;
+                    }).join("")}
+                  </tbody>
+                </table>
               </div>
 
               <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">

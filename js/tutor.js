@@ -489,13 +489,6 @@
       this.chatHistory.push({ role: "user", content: msg });
 
       const profile = window.StudyPilotDB.getProfile();
-      const currentMode = profile.aiMode || profile.mode || "offline";
-
-      // If user selected ⚡ Offline Mode, execute local NCERT engine immediately
-      if (currentMode === "offline") {
-        this.handleLocalFallbackMessage(msg);
-        return;
-      }
 
       // 🌐 Online Mode: Attempt Live AI API Call with fallback
       const loader = this.appendMessage("AI is thinking (Online Mode)...", "bot temp");

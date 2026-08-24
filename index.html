@@ -263,16 +263,7 @@
           </select>
         </div>
 
-        <!-- Global Online / Offline Mode Toggle -->
-        <div class="mode-selector-container" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;">
-          <label for="global-mode-select" style="font-weight: 600; font-size: 0.825rem; color: var(--text-main); display: flex; align-items: center; gap: 0.25rem;">
-            <i data-lucide="wifi" style="width:16px; height:16px;"></i> Mode:
-          </label>
-          <select id="global-mode-select" class="form-select btn-sm" onchange="window.StudyPilotApp.switchAppMode(this.value)" style="padding: 0.35rem 0.6rem; font-weight: 600; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main); cursor: pointer;">
-            <option value="online" selected>🌐 Online Mode</option>
-            <option value="offline">⚡ Offline Mode</option>
-          </select>
-        </div>
+
 
         <!-- Study Streak Badge -->
         <div id="header-streak-badge" class="header-streak-pill" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.825rem; font-weight: 700; color: #ea580c; background: rgba(251, 146, 60, 0.12); border: 1px solid rgba(251, 146, 60, 0.35); padding: 0.35rem 0.65rem; border-radius: 20px; cursor: default;" title="Your Daily Study Streak">
@@ -424,6 +415,9 @@
             </div>
           </div>
 
+          <!-- Permanent Tabular Grades & Syllabus Matrix -->
+          <div id="planner-tabular-matrix-root" class="planner-matrix-container" style="margin-bottom: 1.5rem;"></div>
+
           <!-- Main Syllabus Checklist Explorer -->
           <div class="chapters-accordion-main" id="syllabus-chapters-list">
             <!-- Dynamically populated chapters & subchapters -->
@@ -514,8 +508,8 @@
                 </div>
               </div>
               <div class="mode-badge-wrapper" style="margin-left: auto;">
-                <span id="tutor-mode-badge" class="badge badge-accent" onclick="window.StudyPilotApp.toggleAppMode()" style="cursor: pointer; font-size: 0.75rem; padding: 0.3rem 0.6rem; display: inline-flex; align-items: center; gap: 0.25rem;" title="Click to switch between Online and Offline mode">
-                  🌐 Online Mode (Live AI & RAG)
+                <span id="tutor-mode-badge" class="badge badge-accent" style="font-size: 0.75rem; padding: 0.3rem 0.6rem; display: inline-flex; align-items: center; gap: 0.25rem;" title="AI Tutor Live Engine">
+                  🌐 AI Online Tutor
                 </span>
               </div>
             </div>
@@ -915,7 +909,7 @@
               </div>
               <div class="card-body">
                 <p class="text-muted text-xs" style="margin-bottom: 0.75rem; line-height: 1.4;">
-                  Configure your local Ollama tutor for fully offline, private AI assistance. Make sure Ollama is running at <code>http://127.0.0.1:11434</code>.
+                  Configure your local Ollama tutor model for private AI assistance. Make sure Ollama is running at <code>http://127.0.0.1:11434</code>.
                 </p>
                 <div class="input-group" style="margin-bottom:0.75rem;">
                   <label for="profile-ollama-model">Selected Ollama Model</label>
@@ -1351,7 +1345,7 @@
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e2e8f0);">
         <div>
           <h3 id="book-viewer-title" style="margin: 0; font-size: 1.1rem; font-weight: 700;">NCERT Book Viewer</h3>
-          <p id="book-viewer-subtitle" class="text-muted text-xs" style="margin: 0.2rem 0 0 0;">Offline PDF Reader</p>
+          <p id="book-viewer-subtitle" class="text-muted text-xs" style="margin: 0.2rem 0 0 0;">NCERT PDF Reader</p>
         </div>
         <div style="display: flex; gap: 0.5rem; align-items: center;">
           <button class="btn btn-outline btn-xs" type="button" onclick="window.StudyPilotBooks.openViewerExternal()">Open External <i data-lucide="external-link"></i></button>

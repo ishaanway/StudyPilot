@@ -574,10 +574,10 @@ def _settings_from_row(row: dict | None, student_id: int | None = None) -> dict:
         return {
             "student_id": student_id,
             "theme": "light",
-            "offline_mode_enabled": True,
+            "offline_mode_enabled": False,
             "notifications_enabled": True,
             "reminder_time": "18:00",
-            "ai_mode": "offline",
+            "ai_mode": "online",
         }
 
     return {
@@ -587,7 +587,7 @@ def _settings_from_row(row: dict | None, student_id: int | None = None) -> dict:
         "offline_mode_enabled": bool(row.get("offline_mode_enabled")),
         "notifications_enabled": bool(row.get("notifications_enabled")),
         "reminder_time": row.get("reminder_time"),
-        "ai_mode": row.get("ai_mode"),
+        "ai_mode": row.get("ai_mode", "online"),
         "updated_at": row.get("updated_at"),
     }
 
@@ -608,8 +608,8 @@ def _upsert_settings(student_id: int, payload: dict[str, Any]) -> dict:
     existing = fetch_one("SELECT * FROM settings WHERE student_id = ?", (student_id,))
     theme = payload.get("theme", existing.get("theme") if existing else "light")
     reminder_time = payload.get("reminder_time", existing.get("reminder_time") if existing else "18:00")
-    ai_mode = payload.get("ai_mode", existing.get("ai_mode") if existing else "offline")
-    offline_mode_enabled = 1 if bool(payload.get("offline_mode_enabled", True)) else 0
+    ai_mode = payload.get("ai_mode", existing.get("ai_mode") if existing else "online")
+    offline_mode_enabled = 1 if bool(payload.get("offline_mode_enabled", False)) else 0
     notifications_enabled = 1 if bool(payload.get("notifications_enabled", True)) else 0
 
     if existing:

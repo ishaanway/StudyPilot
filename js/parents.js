@@ -87,26 +87,43 @@
         return;
       }
 
-      container.innerHTML = completedChaptersHtml + tasks.map(task => {
+      const taskRows = tasks.map(task => {
         const isDone = task.completed || task.status === "completed" || task.status === "submitted" || task.status === "done";
-        const badgeClass = isDone ? "badge-success" : "badge-warning";
-        const badgeLabel = isDone ? "Completed" : "Pending";
-        const iconName = isDone ? "check-circle" : "circle";
-        const iconColor = isDone ? "var(--accent)" : "var(--text-muted)";
+        const badgeClass = isDone ? "badge-accent" : "badge-indigo";
+        const badgeLabel = isDone ? "🟢 Completed (100%)" : "🟡 Pending";
+        const badgeStyle = isDone ? "background:#d1fae5; color:#065f46; font-weight:700;" : "background:#fef3c7; color:#b45309; font-weight:700;";
 
         return `
-          <div class="upcoming-item" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <i data-lucide="${iconName}" style="color: ${iconColor}; width: 1.25rem; height: 1.25rem;"></i>
-              <div>
-                <div style="font-weight: 600; font-size: 0.9rem;">${escapeHTML(task.title)}</div>
-                <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHTML(task.subject || "General")} &bull; Due: ${escapeHTML(task.due_date || task.date || "Today")}</div>
-              </div>
-            </div>
-            <span class="badge ${badgeClass}">${badgeLabel}</span>
-          </div>
+          <tr style="border-bottom:1px solid var(--border-color); font-size:0.82rem;">
+            <td style="padding:0.6rem 0.75rem; font-weight:600; color:var(--text-main);">${escapeHTML(task.title)}</td>
+            <td style="padding:0.6rem 0.75rem; color:var(--text-muted);">${escapeHTML(task.subject || "General")}</td>
+            <td style="padding:0.6rem 0.75rem; color:var(--text-muted);">${escapeHTML(task.due_date || task.date || "Today")}</td>
+            <td style="padding:0.6rem 0.75rem; text-align:right;">
+              <span class="badge ${badgeClass}" style="${badgeStyle}">${badgeLabel}</span>
+            </td>
+          </tr>
         `;
       }).join("");
+
+      const tasksTableHtml = tasks.length > 0 ? `
+        <div style="background:var(--bg-card); border:1px solid var(--border-color); border-radius:10px; overflow-x:auto; margin-top:0.75rem;">
+          <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+              <tr style="background:var(--bg-app); border-bottom:2px solid var(--border-color); font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em;">
+                <th style="padding:0.5rem 0.75rem;">Task Title</th>
+                <th style="padding:0.5rem 0.75rem;">Subject</th>
+                <th style="padding:0.5rem 0.75rem;">Due Date</th>
+                <th style="padding:0.5rem 0.75rem; text-align:right;">Graded Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${taskRows}
+            </tbody>
+          </table>
+        </div>
+      ` : "";
+
+      container.innerHTML = completedChaptersHtml + tasksTableHtml;
 
       if (window.lucide) {
         window.lucide.createIcons();

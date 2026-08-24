@@ -216,11 +216,6 @@
         globalGradeSel.value = profile.grade;
       }
 
-      const globalModeSel = document.getElementById("global-mode-select");
-      if (globalModeSel) {
-        globalModeSel.value = profile.aiMode || profile.mode || "online";
-      }
-
       document.getElementById("profile-edit-board").value = profile.board;
       document.getElementById("profile-edit-goal").value = profile.goal;
       document.getElementById("profile-edit-target-date").value = profile.targetDate || "";
@@ -250,7 +245,13 @@
       }
       this.refreshOllamaModels();
 
-      document.getElementById("dashboard-date").innerText = "Saturday, 27 June 2026"; // Adjusted to current local demo date
+      const now = new Date();
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateStr = now.toLocaleDateString('en-US', options);
+      const dashDateEl = document.getElementById("dashboard-date");
+      if (dashDateEl) {
+        dashDateEl.innerText = `${dateStr} • Live Day Planner`;
+      }
     },
 
     // Switch screens routing
@@ -317,40 +318,13 @@
 
     switchAppMode: function (mode) {
       const profile = window.StudyPilotDB.getProfile();
-      const targetMode = mode === "online" ? "online" : "offline";
-      profile.aiMode = targetMode;
-      profile.mode = targetMode;
+      profile.aiMode = "online";
+      profile.mode = "online";
       window.StudyPilotDB.saveProfile(profile);
-
-      // Sync select dropdown in header
-      const modeSelect = document.getElementById("global-mode-select");
-      if (modeSelect) modeSelect.value = targetMode;
-
-      // Sync badge in AI Tutor
-      const tutorBadge = document.getElementById("tutor-mode-badge");
-      if (tutorBadge) {
-        if (targetMode === "online") {
-          tutorBadge.className = "badge badge-accent";
-          tutorBadge.innerHTML = "🌐 Online Mode (Live AI & RAG)";
-        } else {
-          tutorBadge.className = "badge badge-indigo";
-          tutorBadge.innerHTML = "⚡ Offline Mode (Local NCERT DB)";
-        }
-      }
-
-      const notifMsg = targetMode === "online" 
-        ? "Switched to 🌐 Online Mode (Live AI & Web RAG enabled)." 
-        : "Switched to ⚡ Offline Mode (100% Local NCERT Database).";
-
-      window.StudyPilotDB.addNotification(notifMsg, "info");
-      console.log(`[StudyPilot Mode Debug] Switched app mode to: ${targetMode}`);
     },
 
     toggleAppMode: function () {
-      const profile = window.StudyPilotDB.getProfile();
-      const currentMode = profile.aiMode || profile.mode || "online";
-      const nextMode = currentMode === "online" ? "offline" : "online";
-      this.switchAppMode(nextMode);
+      this.switchAppMode("online");
     },
 
     switchGlobalGrade: function (newGrade) {
@@ -546,10 +520,10 @@
             return;
           }
         }
-        statusLbl.innerText = "Offline (Local Browser Mode)";
+        statusLbl.innerText = "Ready (Local Engine)";
         statusLbl.style.color = "var(--text-muted)";
       } catch (error) {
-        statusLbl.innerText = "Offline (Local Browser Mode)";
+        statusLbl.innerText = "Ready (Local Engine)";
         statusLbl.style.color = "var(--text-muted)";
       }
     },

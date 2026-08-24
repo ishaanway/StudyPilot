@@ -903,7 +903,7 @@
 
     this.viewerBook = resolvedBook;
     title.textContent = `${resolvedBook.book_title || resolvedBook.title || "NCERT Book"} - ${resolvedBook.chapter_label || "Book"}`;
-    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject || ""} (Offline Reader)`;
+    subtitle.textContent = `${resolvedBook.grade_label || `Class ${resolvedBook.grade}`} · ${resolvedBook.subject || ""} (NCERT Reader)`;
 
     // Prioritize local PDF URL for offline reading
     const rawPath = resolvedBook.local_url || resolvedBook.localPdfUrl || resolvedBook.pdf_url || resolvedBook.pdfUrl || resolvedBook.page_url || "";
